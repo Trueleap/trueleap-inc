@@ -1,0 +1,82 @@
+# TrueLeap Site Development Principles
+
+## Core Philosophy
+
+This project embodies **Premium Fluidity** - the intersection of editorial elegance and technical precision. Every decision prioritizes user trust, accessibility, and performance.
+
+## Design Principles
+
+### 1. Trust Through Craft
+B2G audiences judge credibility through visual refinement. Every pixel, animation, and interaction must feel deliberate. No generic patterns.
+
+### 2. Performance as Feature
+Sub-100KB initial JS. Defer everything non-critical. Perceived speed > actual speed. First contentful paint under 1.5s.
+
+### 3. Accessibility First
+WCAG AA minimum. Color contrast, keyboard navigation, screen reader support are requirements, not afterthoughts. Mix-blend-difference must maintain 4.5:1 contrast.
+
+### 4. Motion with Purpose
+Animation guides attention, never distracts. Use the signature `cubic-bezier(0.22, 1, 0.36, 1)` easing consistently. Respect reduced-motion preferences.
+
+### 5. Content Hierarchy
+Monospace for metadata. Serif for impact. Sans-serif for reading. Typography signals information architecture.
+
+## Technical Principles
+
+### 1. Islands Architecture
+React components are islands of interactivity in a sea of static HTML. Minimize hydration surface.
+
+### 2. Progressive Enhancement
+Core content works without JS. Interactivity enhances, never gates. The globe is a delight, not a requirement.
+
+### 3. Internationalization Ready
+All user-facing strings externalized. Route structure supports `/[lang]/` prefix. RTL consideration in layouts.
+
+### 4. CMS Agnostic Content
+Content schemas define structure. Tina is the current adapter. Switching CMSs should require only adapter changes.
+
+### 5. Component Composition
+Prefer composition over configuration. Components should be combinable, not configurable with boolean props.
+
+## Testing Principles
+
+### 1. Test User Journeys
+Focus on critical paths: navigation, form submissions, content discovery. E2E tests for key flows.
+
+### 2. Component Isolation
+Unit test complex logic in isolation. Visual regression for design system components.
+
+### 3. Accessibility Testing
+Automated a11y audits in CI. Manual screen reader testing for interactive components.
+
+### 4. Performance Budgets
+Lighthouse CI with thresholds. Bundle size checks on PR. Core Web Vitals monitoring.
+
+## Code Standards
+
+### File Organization
+- `src/components/` - Reusable UI primitives
+- `src/layouts/` - Page-level structural components
+- `src/pages/` - Route definitions only, minimal logic
+- `src/content/` - Content collections and schemas
+- `src/lib/` - Utilities, hooks, helpers
+- `src/styles/` - Global styles, Tailwind config
+
+### Naming
+- Components: PascalCase (`WaveTransition.tsx`)
+- Utilities: camelCase (`formatDate.ts`)
+- CSS classes: Tailwind utilities, custom classes use BEM for complex components
+
+### Performance Rules
+- No barrel exports
+- Dynamic import for components >20KB
+- Preload on hover for route changes
+- Images: WebP with fallbacks, explicit dimensions
+
+## Accessibility Checklist
+- [ ] Focus indicators visible
+- [ ] Skip links present
+- [ ] Headings hierarchical
+- [ ] ARIA labels on interactive elements
+- [ ] Color not sole information carrier
+- [ ] Reduced motion respected
