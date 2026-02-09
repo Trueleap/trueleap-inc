@@ -1,0 +1,43 @@
+src/content/jobs/government-sales-director-apac/index.mdx
+  c53fc0470b09febe 1-10
+src/content/jobs/frontend-engineer/index.mdx
+  c53fc0470b09febe 1-10
+src/content/jobs/product-manager-edge-platform/index.mdx
+  c53fc0470b09febe 1-10
+src/pages/en/company/careers.astro
+  c53fc0470b09febe 127
+src/content/jobs/field-operations-lead-east-africa/index.mdx
+  c53fc0470b09febe 1-10
+keystatic.config.ts
+  c53fc0470b09febe 175-176,200,203
+src/content/jobs/field-operations-lead-west-africa/index.mdx
+  c53fc0470b09febe 1-10
+src/middleware.ts
+  c53fc0470b09febe 6,9,12-17,19,23-24,26-29,32-40,43-58,61-64,67,69-74,104-106
+src/content/jobs/senior-infrastructure-engineer/index.mdx
+  c53fc0470b09febe 1-10
+src/content/jobs/staff-machine-learning-engineer/index.mdx
+  c53fc0470b09febe 1-10
+src/content/jobs/solutions-architect/index.mdx
+  c53fc0470b09febe 1-10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.0.42",
+  "base_commit_sha": "59473e6d3f287945c1de235b3d4dccc8efb9c121",
+  "prompts": {
+    "c53fc0470b09febe": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5f24576a-9cb7-46b0-9972-95873a7ec41f",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Bikash Phukan <bphkns@gmail.com>",
+      "messages": [],
+      "total_additions": 150,
+      "total_deletions": 57,
+      "accepted_lines": 145,
+      "overriden_lines": 0
+    }
+  }
+}
