@@ -1,0 +1,23 @@
+src/middleware.ts
+  40f9a1df57e0c647 13-18,25-46,97-122
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.0.42",
+  "base_commit_sha": "abc7c313af3d704e90c97dfcf7b3dcb98124b9f9",
+  "prompts": {
+    "40f9a1df57e0c647": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9bc462de-601d-40f4-a162-45ff5b156126",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Bikash Phukan <bphkns@gmail.com>",
+      "messages": [],
+      "total_additions": 54,
+      "total_deletions": 5,
+      "accepted_lines": 54,
+      "overriden_lines": 0
+    }
+  }
+}
