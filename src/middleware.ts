@@ -24,24 +24,43 @@ const READ_ONLY_BANNER = `
 </div>
 <script>
 (function() {
-  function disableEditing() {
-    // Disable all buttons (save, create, delete, etc.)
-    document.querySelectorAll('button').forEach(function(btn) {
-      if (btn.closest('.ks-readonly-banner')) return;
-      btn.disabled = true;
-      btn.classList.add('ks-disabled');
-    });
-    // Disable all form inputs
-    document.querySelectorAll('input, textarea, select, [contenteditable="true"]').forEach(function(el) {
-      if (el.closest('.ks-readonly-banner')) return;
-      el.disabled = true;
-      el.readOnly = true;
-      el.classList.add('ks-disabled');
-      if (el.getAttribute('contenteditable')) el.setAttribute('contenteditable', 'false');
-    });
+  function disableNode(el) {
+    if (el.closest && el.closest('.ks-readonly-banner')) return;
+    if (el.tagName === 'BUTTON') { el.disabled = true; el.classList.add('ks-disabled'); }
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') {
+      el.disabled = true; el.readOnly = true; el.classList.add('ks-disabled');
+    }
+    if (el.getAttribute && el.getAttribute('contenteditable') === 'true') {
+      el.setAttribute('contenteditable', 'false'); el.classList.add('ks-disabled');
+    }
   }
-  disableEditing();
-  new MutationObserver(disableEditing).observe(document.body, { childList: true, subtree: true });
+  function disableTree(root) {
+    root.querySelectorAll('button, input, textarea, select, [contenteditable="true"]').forEach(disableNode);
+  }
+  // Initial pass
+  disableTree(document.body);
+  // Only process added nodes, debounced via rAF
+  var pending = false;
+  var queue = [];
+  new MutationObserver(function(mutations) {
+    for (var i = 0; i < mutations.length; i++) {
+      var added = mutations[i].addedNodes;
+      for (var j = 0; j < added.length; j++) {
+        if (added[j].nodeType === 1) queue.push(added[j]);
+      }
+    }
+    if (!pending && queue.length) {
+      pending = true;
+      requestAnimationFrame(function() {
+        for (var k = 0; k < queue.length; k++) {
+          disableNode(queue[k]);
+          if (queue[k].querySelectorAll) disableTree(queue[k]);
+        }
+        queue = [];
+        pending = false;
+      });
+    }
+  }).observe(document.body, { childList: true, subtree: true });
 })();
 </script>`;
 
@@ -94,29 +113,18 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return context.redirect('/admin', 302);
   }
 
-  // Block Keystatic API write operations targeting main branch
+  // Block Keystatic API write operations from main branch view
+  // (GitHub branch protection is the real enforcement — this is defense-in-depth)
   if (pathname.startsWith('/api/keystatic')) {
     const method = context.request.method.toUpperCase();
     if (method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS') {
       const referer = context.request.headers.get('referer') || '';
-      // Check if the request originates from the main branch view
       if (referer.includes('/keystatic/branch/main')) {
         return new Response(JSON.stringify({ error: 'Main branch is read-only' }), {
           status: 403,
           headers: { 'Content-Type': 'application/json' },
         });
       }
-      // Also check request body for main branch references
-      try {
-        const clone = context.request.clone();
-        const text = await clone.text();
-        if (text && (text.includes('"branch":"main"') || text.includes('"ref":"refs/heads/main"'))) {
-          return new Response(JSON.stringify({ error: 'Main branch is read-only' }), {
-            status: 403,
-            headers: { 'Content-Type': 'application/json' },
-          });
-        }
-      } catch {}
     }
   }
 
