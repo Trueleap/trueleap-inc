@@ -207,30 +207,42 @@ const PDF_IMPORT_INJECTION = `
   // We simulate a paste event so Slate processes the markdown.
   function fillBodyEditor(markdown) {
     if (!markdown) return;
-    // Find the Slate editor's contenteditable div (has data-slate-editor attribute)
-    var editor = document.querySelector('[data-slate-editor="true"]')
-                 || document.querySelector('[contenteditable="true"]');
-    if (!editor) return;
 
-    // Focus the editor first
-    editor.focus();
+    // Allow time for editor to fully mount after picker interactions
+    setTimeout(function() {
+      var editor = document.querySelector('[data-slate-editor="true"]');
+      if (!editor) return;
 
-    // Select all existing content so paste replaces it
-    var sel = window.getSelection();
-    var range = document.createRange();
-    range.selectNodeContents(editor);
-    sel.removeAllRanges();
-    sel.addRange(range);
+      // Scroll into view and focus
+      editor.scrollIntoView({ block: 'center' });
+      editor.focus();
 
-    // Create a paste event with our markdown
-    var dt = new DataTransfer();
-    dt.setData('text/plain', markdown);
-    var pasteEvent = new ClipboardEvent('paste', {
-      bubbles: true,
-      cancelable: true,
-      clipboardData: dt
-    });
-    editor.dispatchEvent(pasteEvent);
+      setTimeout(function() {
+        // Select all existing content so paste replaces it
+        var sel = window.getSelection();
+        var range = document.createRange();
+        range.selectNodeContents(editor);
+        sel.removeAllRanges();
+        sel.addRange(range);
+
+        // Create DataTransfer with our markdown
+        var dt = new DataTransfer();
+        dt.setData('text/plain', markdown);
+
+        // Dispatch paste event — Slate calls preventDefault() if it handles it
+        var pasteEvent = new ClipboardEvent('paste', {
+          bubbles: true,
+          cancelable: true,
+          clipboardData: dt,
+        });
+        var cancelled = !editor.dispatchEvent(pasteEvent);
+
+        if (!cancelled) {
+          // Slate didn't handle the synthetic paste — fallback to insertText
+          document.execCommand('insertText', false, markdown);
+        }
+      }, 150);
+    }, 300);
   }
 
   // ── Main setup ──

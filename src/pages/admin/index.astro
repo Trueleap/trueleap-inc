@@ -523,6 +523,30 @@ const draftBranches = branches.filter((b) => !b.pr);
     .confirm-box p { font-size: 0.8125rem; color: #a1a1aa; line-height: 1.5; margin-bottom: 1.25rem; }
     .confirm-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
 
+    /* Preview button states */
+    .btn-preview-deploying {
+      background: #27272a;
+      color: #a1a1aa;
+      border: 1px solid #3f3f46;
+      cursor: wait;
+    }
+    .btn-preview-deploying .spinner {
+      width: 0.75rem;
+      height: 0.75rem;
+      border-width: 1.5px;
+    }
+    .btn-preview-ready {
+      background: #052e16;
+      color: #4ade80;
+      border: 1px solid #14532d;
+    }
+    .btn-preview-ready:hover { background: #14532d; }
+    .btn-preview-failed {
+      background: #450a0a;
+      color: #fca5a5;
+      border: 1px solid #7f1d1d;
+    }
+
     /* Spinner */
     .spinner {
       display: inline-block;
@@ -659,7 +683,10 @@ const draftBranches = branches.filter((b) => !b.pr);
                 <span class={`step ${ready ? 'step-active' : 'step-future'}`}><span class="step-num">4</span>Publish</span>
               </div>
               <div class="card-actions">
-                <a href={b.previewUrl} target="_blank" rel="noopener" class="btn btn-ghost btn-sm">Preview</a>
+                <a href={b.previewUrl} target="_blank" rel="noopener" class="btn btn-ghost btn-sm preview-btn" data-branch={b.name} data-preview-url={b.previewUrl}>
+                  <span class="spinner" style="display:none;"></span>
+                  <span class="preview-label">Preview</span>
+                </a>
                 <a href={b.keystaticlUrl} class="btn btn-ghost btn-sm">Edit in CMS</a>
                 {conflict && (
                   <button class="btn btn-amber btn-sm" data-pr-number={b.pr!.number} onclick="rebasePr(this)">
@@ -934,6 +961,71 @@ const draftBranches = branches.filter((b) => !b.pr);
     // Escape to close confirm
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') closeConfirm();
+    });
+
+    // ── Preview deployment status polling ──
+    var previewPolls = {};
+
+    function updatePreviewBtn(btn, status) {
+      var label = btn.querySelector('.preview-label');
+      var spinner = btn.querySelector('.spinner');
+      btn.className = 'btn btn-sm preview-btn';
+      spinner.style.display = 'none';
+
+      if (status === 'deploying' || status === 'pending') {
+        btn.classList.add('btn-preview-deploying');
+        btn.removeAttribute('href');
+        btn.style.pointerEvents = 'none';
+        spinner.style.display = 'inline-block';
+        label.textContent = status === 'pending' ? 'Queued...' : 'Deploying...';
+      } else if (status === 'ready') {
+        btn.classList.add('btn-preview-ready');
+        btn.href = btn.dataset.previewUrl;
+        btn.style.pointerEvents = '';
+        label.textContent = 'Preview Ready';
+      } else if (status === 'failed') {
+        btn.classList.add('btn-preview-failed');
+        btn.href = btn.dataset.previewUrl;
+        btn.style.pointerEvents = '';
+        label.textContent = 'Preview (build failed)';
+      } else {
+        // 'none' or unknown — keep as regular link
+        btn.classList.add('btn-ghost');
+        btn.href = btn.dataset.previewUrl;
+        btn.style.pointerEvents = '';
+        label.textContent = 'Preview';
+      }
+    }
+
+    function pollPreviewStatus(branch, btn) {
+      if (previewPolls[branch]) return; // Already polling
+      previewPolls[branch] = true;
+
+      function check() {
+        fetch('/api/admin/preview-status?branch=' + encodeURIComponent(branch))
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            updatePreviewBtn(btn, data.status);
+            // Keep polling if not terminal
+            if (data.status === 'deploying' || data.status === 'pending' || data.status === 'none') {
+              setTimeout(check, 8000);
+            } else {
+              delete previewPolls[branch];
+            }
+          })
+          .catch(function() {
+            // On error, stop polling and show default
+            delete previewPolls[branch];
+          });
+      }
+
+      check();
+    }
+
+    // Start polling for all active branches on page load
+    document.querySelectorAll('.preview-btn').forEach(function(btn) {
+      var branch = btn.dataset.branch;
+      if (branch) pollPreviewStatus(branch, btn);
     });
   </script>
 </body>
