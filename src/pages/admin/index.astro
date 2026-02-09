@@ -343,6 +343,87 @@ const draftBranches = branches.filter((b) => !b.pr);
       font-style: italic;
     }
 
+    /* Next-step action banner */
+    .next-step {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.875rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+    .next-step-icon {
+      flex-shrink: 0;
+      width: 1.125rem;
+      height: 1.125rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.625rem;
+      font-weight: 700;
+    }
+    .next-step-draft {
+      background: #172554;
+      border: 1px solid #1e3a5f;
+      color: #93c5fd;
+    }
+    .next-step-draft .next-step-icon { background: #3b82f6; color: #fff; }
+    .next-step-ready {
+      background: #052e16;
+      border: 1px solid #14532d;
+      color: #86efac;
+    }
+    .next-step-ready .next-step-icon { background: #22c55e; color: #fff; }
+    .next-step-conflict {
+      background: #431407;
+      border: 1px solid #7c2d12;
+      color: #fdba74;
+    }
+    .next-step-conflict .next-step-icon { background: #f97316; color: #fff; }
+    .next-step-checking {
+      background: #18181b;
+      border: 1px solid #27272a;
+      color: #a1a1aa;
+    }
+    .next-step-checking .next-step-icon { background: #52525b; color: #fff; }
+
+    /* Step flow indicator */
+    .step-flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-top: 0.75rem;
+      font-size: 0.6875rem;
+    }
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+    }
+    .step-num {
+      width: 1rem;
+      height: 1rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.5625rem;
+      font-weight: 700;
+    }
+    .step-active { color: #e4e4e7; font-weight: 600; }
+    .step-active .step-num { background: #3b82f6; color: #fff; }
+    .step-done { color: #4ade80; }
+    .step-done .step-num { background: #052e16; color: #4ade80; }
+    .step-future { color: #52525b; }
+    .step-future .step-num { background: #27272a; color: #52525b; }
+    .step-arrow { color: #3f3f46; font-size: 0.625rem; margin: 0 0.125rem; }
+
     .empty p { margin-bottom: 0.5rem; font-size: 0.875rem; }
     .empty .hint { font-size: 0.75rem; color: #52525b; }
 
@@ -483,6 +564,15 @@ const draftBranches = branches.filter((b) => !b.pr);
                   <span class="badge badge-checking"><span class="badge-dot"></span>Checking</span>
                 )}
               </div>
+              <div class="step-flow">
+                <span class="step step-done"><span class="step-num">&#10003;</span>Edit</span>
+                <span class="step-arrow">&rarr;</span>
+                <span class="step step-done"><span class="step-num">&#10003;</span>Submit</span>
+                <span class="step-arrow">&rarr;</span>
+                <span class={`step ${ready ? 'step-done' : 'step-active'}`}><span class="step-num">{ready ? '\u2713' : '3'}</span>Preview</span>
+                <span class="step-arrow">&rarr;</span>
+                <span class={`step ${ready ? 'step-active' : 'step-future'}`}><span class="step-num">4</span>Publish</span>
+              </div>
               <div class="card-actions">
                 <a href={b.previewUrl} target="_blank" rel="noopener" class="btn btn-ghost btn-sm">Preview</a>
                 <a href={b.keystaticlUrl} class="btn btn-ghost btn-sm">Edit in CMS</a>
@@ -500,6 +590,24 @@ const draftBranches = branches.filter((b) => !b.pr);
                   Publish
                 </button>
               </div>
+              {conflict && (
+                <div class="next-step next-step-conflict">
+                  <span class="next-step-icon">!</span>
+                  Branch has conflicts with main. Click <strong>Rebase</strong> to update, then preview and publish.
+                </div>
+              )}
+              {ready && (
+                <div class="next-step next-step-ready">
+                  <span class="next-step-icon">&rarr;</span>
+                  Ready to go live. <strong>Preview</strong> your changes, then click <strong>Publish</strong> to deploy.
+                </div>
+              )}
+              {!ready && !conflict && (
+                <div class="next-step next-step-checking">
+                  <span class="next-step-icon">&#8230;</span>
+                  Checking merge status. Preview your changes while you wait.
+                </div>
+              )}
             </div>
           );
         })}
@@ -515,8 +623,18 @@ const draftBranches = branches.filter((b) => !b.pr);
             <div class="card-top">
               <div class="card-info">
                 <div class="card-title"><code>{b.name}</code></div>
-                <div class="card-meta">No changes committed yet</div>
+                <div class="card-meta">Draft — not yet submitted for review</div>
               </div>
+              <span class="badge badge-checking"><span class="badge-dot"></span>Draft</span>
+            </div>
+            <div class="step-flow">
+              <span class="step step-active"><span class="step-num">1</span>Edit</span>
+              <span class="step-arrow">&rarr;</span>
+              <span class="step step-future"><span class="step-num">2</span>Submit</span>
+              <span class="step-arrow">&rarr;</span>
+              <span class="step step-future"><span class="step-num">3</span>Preview</span>
+              <span class="step-arrow">&rarr;</span>
+              <span class="step step-future"><span class="step-num">4</span>Publish</span>
             </div>
             <div class="card-actions">
               <a href={b.keystaticlUrl} class="btn btn-ghost btn-sm">Edit in CMS</a>
@@ -527,7 +645,10 @@ const draftBranches = branches.filter((b) => !b.pr);
                 Delete Branch
               </button>
             </div>
-            <div class="card-hint">Preview will be available once you submit for review.</div>
+            <div class="next-step next-step-draft">
+              <span class="next-step-icon">&rarr;</span>
+              Edit content in the CMS, then submit for review to enable preview and publishing.
+            </div>
           </div>
         ))}
       </div>
