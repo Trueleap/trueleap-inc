@@ -142,7 +142,7 @@ export function Header({ lang = 'en', variant = 'transparent', navigationData, h
           className="transition-opacity duration-300 hover:opacity-80"
         >
           <img 
-            src="/trueleap-logo.png"
+            src="/trueleap-logo.svg"
             alt="TrueLeap" 
             className="h-12 w-auto"
           />
