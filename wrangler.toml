@@ -1,4 +1,5 @@
-name = "trueleapinc"
+name = "trueleap-inc"
+account_id = "b01357b51e0ceb9e37e2bdf82bbcbc34"
 main = "./dist/_worker.js/index.js"
 compatibility_date = "2026-02-04"
 compatibility_flags = ["nodejs_compat"]
