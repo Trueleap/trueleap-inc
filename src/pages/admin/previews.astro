@@ -21,7 +21,7 @@ let error = '';
 try {
   const res = await fetch(
     `https://api.github.com/repos/${REPO}/pulls?state=open&per_page=50`,
-    { headers: { Authorization: `Bearer ${GITHUB_TOKEN}`, Accept: 'application/vnd.github+json' } }
+    { headers: { Authorization: `Bearer ${GITHUB_TOKEN}`, Accept: 'application/vnd.github+json', 'User-Agent': 'TrueLeap-Admin' } }
   );
   if (!res.ok) throw new Error(`GitHub API: ${res.status}`);
   const all: PR[] = await res.json();

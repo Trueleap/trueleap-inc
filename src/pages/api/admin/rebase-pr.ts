@@ -35,6 +35,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const headers = {
     Authorization: `Bearer ${GITHUB_TOKEN}`,
     Accept: 'application/vnd.github+json',
+    'User-Agent': 'TrueLeap-Admin',
   };
 
   // Fetch PR to validate
