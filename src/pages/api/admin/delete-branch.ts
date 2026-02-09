@@ -52,17 +52,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
     'User-Agent': 'TrueLeap-Admin',
   };
 
-  // Check for open PRs on this branch
+  // Close any open PRs on this branch
   const prsRes = await fetch(
-    `https://api.github.com/repos/${REPO}/pulls?state=open&head=Trueleap:${branch}&per_page=1`,
+    `https://api.github.com/repos/${REPO}/pulls?state=open&head=Trueleap:${branch}&per_page=10`,
     { headers }
   );
   if (prsRes.ok) {
     const prs = await prsRes.json();
-    if (prs.length > 0) {
-      return new Response(JSON.stringify({ error: `Branch has open PR #${prs[0].number}. Merge or close it first.` }), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json' },
+    for (const pr of prs) {
+      await fetch(`https://api.github.com/repos/${REPO}/pulls/${pr.number}`, {
+        method: 'PATCH',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ state: 'closed' }),
       });
     }
   }

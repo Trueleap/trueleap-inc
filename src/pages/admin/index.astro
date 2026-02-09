@@ -674,6 +674,9 @@ const draftBranches = branches.filter((b) => !b.pr);
                 >
                   Publish
                 </button>
+                <button class="btn btn-danger btn-sm" data-branch={b.name} onclick="confirmDelete(this)">
+                  Delete
+                </button>
               </div>
               {conflict && (
                 <div class="next-step next-step-conflict">
