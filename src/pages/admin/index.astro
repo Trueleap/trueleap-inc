@@ -424,6 +424,53 @@ const draftBranches = branches.filter((b) => !b.pr);
     .step-future .step-num { background: #27272a; color: #52525b; }
     .step-arrow { color: #3f3f46; font-size: 0.625rem; margin: 0 0.125rem; }
 
+    /* Status legend */
+    .status-legend {
+      padding: 1rem 1.25rem;
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 0.75rem;
+      margin-bottom: 2rem;
+    }
+    .legend-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #71717a;
+      margin-bottom: 0.625rem;
+    }
+    .legend-items {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+    }
+    .legend-dot {
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .legend-name {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #e4e4e7;
+    }
+    .legend-desc {
+      font-size: 0.6875rem;
+      color: #71717a;
+    }
+    .legend-arrow {
+      color: #3f3f46;
+      font-size: 0.75rem;
+    }
+
     .empty p { margin-bottom: 0.5rem; font-size: 0.875rem; }
     .empty .hint { font-size: 0.75rem; color: #52525b; }
 
@@ -505,7 +552,8 @@ const draftBranches = branches.filter((b) => !b.pr);
       <h1>TrueLeap Admin</h1>
     </div>
     <div class="header-right">
-      <a href="/keystatic/branch/main" class="btn btn-ghost btn-sm">Browse CMS</a>
+      <a href="https://dev.trueleapinc.com" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">View Live Site</a>
+      <a href="/keystatic/branch/main" class="btn btn-ghost btn-sm">Browse Content</a>
       <button onclick="location.reload()" class="btn btn-ghost btn-sm">Refresh</button>
     </div>
   </div>
@@ -528,6 +576,43 @@ const draftBranches = branches.filter((b) => !b.pr);
         />
       </div>
       <button id="create-btn" class="btn btn-primary" onclick="createBranch()">Create Branch</button>
+    </div>
+
+    <!-- Workflow status legend -->
+    <div class="status-legend">
+      <div class="legend-label">Workflow</div>
+      <div class="legend-items">
+        <div class="legend-item">
+          <span class="legend-dot" style="background:#3b82f6;"></span>
+          <span class="legend-name">Draft</span>
+          <span class="legend-desc">Editing in CMS</span>
+        </div>
+        <span class="legend-arrow">&rarr;</span>
+        <div class="legend-item">
+          <span class="legend-dot" style="background:#a1a1aa;"></span>
+          <span class="legend-name">Checking</span>
+          <span class="legend-desc">Verifying changes</span>
+        </div>
+        <span class="legend-arrow">&rarr;</span>
+        <div class="legend-item">
+          <span class="legend-dot" style="background:#4ade80;"></span>
+          <span class="legend-name">Ready</span>
+          <span class="legend-desc">Can preview &amp; publish</span>
+        </div>
+        <span class="legend-arrow">&rarr;</span>
+        <div class="legend-item">
+          <span class="legend-dot" style="background:#22c55e;"></span>
+          <span class="legend-name">Published</span>
+          <span class="legend-desc">Live on the website</span>
+        </div>
+      </div>
+      <div class="legend-items" style="margin-top:0.375rem;">
+        <div class="legend-item">
+          <span class="legend-dot" style="background:#fb923c;"></span>
+          <span class="legend-name">Conflict</span>
+          <span class="legend-desc">Someone else made changes — needs updating</span>
+        </div>
+      </div>
     </div>
 
     {/* Active Branches (with PRs) */}
@@ -578,7 +663,7 @@ const draftBranches = branches.filter((b) => !b.pr);
                 <a href={b.keystaticlUrl} class="btn btn-ghost btn-sm">Edit in CMS</a>
                 {conflict && (
                   <button class="btn btn-amber btn-sm" data-pr-number={b.pr!.number} onclick="rebasePr(this)">
-                    Rebase
+                    Update Branch
                   </button>
                 )}
                 <button
@@ -593,19 +678,19 @@ const draftBranches = branches.filter((b) => !b.pr);
               {conflict && (
                 <div class="next-step next-step-conflict">
                   <span class="next-step-icon">!</span>
-                  Branch has conflicts with main. Click <strong>Rebase</strong> to update, then preview and publish.
+                  Someone else updated the site since you started. Click <strong>Update Branch</strong> to sync your changes, then preview and publish.
                 </div>
               )}
               {ready && (
                 <div class="next-step next-step-ready">
                   <span class="next-step-icon">&rarr;</span>
-                  Ready to go live. <strong>Preview</strong> your changes, then click <strong>Publish</strong> to deploy.
+                  Your changes look good! <strong>Preview</strong> them first, then click <strong>Publish</strong> to make them live. Editing more? Preview auto-updates after each save.
                 </div>
               )}
               {!ready && !conflict && (
                 <div class="next-step next-step-checking">
                   <span class="next-step-icon">&#8230;</span>
-                  Checking merge status. Preview your changes while you wait.
+                  We're verifying your changes. You can preview them while you wait. Preview auto-updates after each save in the editor.
                 </div>
               )}
             </div>
@@ -623,7 +708,7 @@ const draftBranches = branches.filter((b) => !b.pr);
             <div class="card-top">
               <div class="card-info">
                 <div class="card-title"><code>{b.name}</code></div>
-                <div class="card-meta">Draft — not yet submitted for review</div>
+                <div class="card-meta">Not yet submitted — edit and submit when ready</div>
               </div>
               <span class="badge badge-checking"><span class="badge-dot"></span>Draft</span>
             </div>
@@ -647,7 +732,7 @@ const draftBranches = branches.filter((b) => !b.pr);
             </div>
             <div class="next-step next-step-draft">
               <span class="next-step-icon">&rarr;</span>
-              Edit content in the CMS, then submit for review to enable preview and publishing.
+              Open the editor to make your changes, then submit for review when you're ready to preview and publish.
             </div>
           </div>
         ))}
@@ -658,8 +743,8 @@ const draftBranches = branches.filter((b) => !b.pr);
     {branches.length === 0 && !error && (
       <div class="empty">
         <div class="empty-icon">+</div>
-        <p>No content branches yet.</p>
-        <p class="hint">Create a branch above to start editing content.</p>
+        <p>No content updates in progress.</p>
+        <p class="hint">Type a name above and click Create Branch to start editing.</p>
       </div>
     )}
   </div>
@@ -736,8 +821,8 @@ const draftBranches = branches.filter((b) => !b.pr);
     function confirmPublish(btn) {
       var prNumber = Number(btn.dataset.prNumber);
       openConfirm(
-        'Publish to production?',
-        'This will merge PR #' + prNumber + ' and deploy the content changes immediately.',
+        'Make it live?',
+        'This will publish your content changes to the website immediately.',
         'Publish',
         'btn-success',
         function() { publishPr(prNumber, btn); }
@@ -767,7 +852,7 @@ const draftBranches = branches.filter((b) => !b.pr);
     async function rebasePr(btn) {
       var prNumber = Number(btn.dataset.prNumber);
       btn.disabled = true;
-      btn.innerHTML = '<span class="spinner"></span> Rebasing...';
+      btn.innerHTML = '<span class="spinner"></span> Updating...';
       try {
         var res = await fetch('/api/admin/rebase-pr', {
           method: 'POST',
@@ -775,21 +860,21 @@ const draftBranches = branches.filter((b) => !b.pr);
           body: JSON.stringify({ prNumber: prNumber }),
         });
         var data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Rebase failed');
+        if (!res.ok) throw new Error(data.error || 'Update failed');
         showToast('Branch updated!');
         setTimeout(function() { location.reload(); }, 800);
       } catch (e) {
         showToast(e.message, true);
         btn.disabled = false;
-        btn.textContent = 'Rebase';
+        btn.textContent = 'Update Branch';
       }
     }
 
     function confirmDelete(btn) {
       var branch = btn.dataset.branch;
       openConfirm(
-        'Delete branch?',
-        'This will permanently delete "' + branch + '". Any uncommitted edits in the CMS will be lost.',
+        'Delete this update?',
+        'This will permanently delete "' + branch + '". Any unsaved edits will be lost.',
         'Delete',
         'btn-danger',
         function() { deleteBranch(branch, btn); }
@@ -820,7 +905,7 @@ const draftBranches = branches.filter((b) => !b.pr);
     async function submitForReview(btn) {
       var branch = btn.dataset.branch;
       btn.disabled = true;
-      btn.innerHTML = '<span class="spinner"></span> Creating PR...';
+      btn.innerHTML = '<span class="spinner"></span> Submitting...';
       try {
         var res = await fetch('/api/admin/create-pr', {
           method: 'POST',
@@ -829,7 +914,7 @@ const draftBranches = branches.filter((b) => !b.pr);
         });
         var data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Failed to create PR');
-        showToast('PR #' + data.prNumber + ' created!');
+        showToast('Submitted! Preview will be ready shortly.');
         setTimeout(function() { location.reload(); }, 800);
       } catch (e) {
         showToast(e.message, true);
