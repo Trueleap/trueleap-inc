@@ -10,17 +10,40 @@ const READ_ONLY_BANNER = `
     text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
   }
   .ks-readonly-banner a { color: #000; text-decoration: underline; margin-left: 8px; }
-  /* Block all interaction below the banner — branch protection is the real enforcement */
-  .ks-readonly-shield {
-    position: fixed; top: 44px; left: 0; right: 0; bottom: 0;
-    z-index: 2147483646; cursor: not-allowed;
+  /* Disabled state for buttons and inputs */
+  .ks-disabled {
+    opacity: 0.35 !important;
+    pointer-events: none !important;
+    cursor: not-allowed !important;
+    user-select: none !important;
   }
 </style>
 <div class="ks-readonly-banner">
   READ-ONLY &#8212; You are viewing main. Editing is disabled.
   <a href="/admin">Go to Admin Dashboard</a>
 </div>
-<div class="ks-readonly-shield"></div>`;
+<script>
+(function() {
+  function disableEditing() {
+    // Disable all buttons (save, create, delete, etc.)
+    document.querySelectorAll('button').forEach(function(btn) {
+      if (btn.closest('.ks-readonly-banner')) return;
+      btn.disabled = true;
+      btn.classList.add('ks-disabled');
+    });
+    // Disable all form inputs
+    document.querySelectorAll('input, textarea, select, [contenteditable="true"]').forEach(function(el) {
+      if (el.closest('.ks-readonly-banner')) return;
+      el.disabled = true;
+      el.readOnly = true;
+      el.classList.add('ks-disabled');
+      if (el.getAttribute('contenteditable')) el.setAttribute('contenteditable', 'false');
+    });
+  }
+  disableEditing();
+  new MutationObserver(disableEditing).observe(document.body, { childList: true, subtree: true });
+})();
+</script>`;
 
 const ADMIN_NAV_BUTTON = `
 <style>
@@ -69,6 +92,32 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // Redirect /keystatic or /keystatic/ to /admin
   if (pathname === '/keystatic' || pathname === '/keystatic/') {
     return context.redirect('/admin', 302);
+  }
+
+  // Block Keystatic API write operations targeting main branch
+  if (pathname.startsWith('/api/keystatic')) {
+    const method = context.request.method.toUpperCase();
+    if (method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS') {
+      const referer = context.request.headers.get('referer') || '';
+      // Check if the request originates from the main branch view
+      if (referer.includes('/keystatic/branch/main')) {
+        return new Response(JSON.stringify({ error: 'Main branch is read-only' }), {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      // Also check request body for main branch references
+      try {
+        const clone = context.request.clone();
+        const text = await clone.text();
+        if (text && (text.includes('"branch":"main"') || text.includes('"ref":"refs/heads/main"'))) {
+          return new Response(JSON.stringify({ error: 'Main branch is read-only' }), {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+      } catch {}
+    }
   }
 
   const response = await next();
