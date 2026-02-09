@@ -1,0 +1,23 @@
+wrangler.toml
+  6ae4b26496fcfd34 1-2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.0.42",
+  "base_commit_sha": "4340f7620826b1bff8ae742a33354b5c9bd7056c",
+  "prompts": {
+    "6ae4b26496fcfd34": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "49a208f4-98e9-45b6-aba6-d8bdb2965a94",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Bikash Phukan <bphkns@gmail.com>",
+      "messages": [],
+      "total_additions": 15,
+      "total_deletions": 14,
+      "accepted_lines": 7,
+      "overriden_lines": 0
+    }
+  }
+}
