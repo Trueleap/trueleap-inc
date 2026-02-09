@@ -1,0 +1,23 @@
+.github/workflows/deploy-preview.yml
+  40f9a1df57e0c647 34-41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.0.42",
+  "base_commit_sha": "0274491456416b237e19b6afc94d8d12d0344584",
+  "prompts": {
+    "40f9a1df57e0c647": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9bc462de-601d-40f4-a162-45ff5b156126",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Bikash Phukan <bphkns@gmail.com>",
+      "messages": [],
+      "total_additions": 8,
+      "total_deletions": 0,
+      "accepted_lines": 8,
+      "overriden_lines": 0
+    }
+  }
+}
