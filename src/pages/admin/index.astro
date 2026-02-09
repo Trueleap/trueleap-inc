@@ -1,0 +1,698 @@
+---
+export const prerender = false;
+
+const runtime = (Astro.locals as any).runtime;
+const GITHUB_TOKEN = runtime?.env?.GITHUB_TOKEN;
+const REPO = 'Trueleap/trueleap-inc';
+
+type BranchInfo = {
+  name: string;
+  shortName: string;
+  pr: {
+    number: number;
+    title: string;
+    mergeable: boolean | null;
+    changed_files: number;
+    created_at: string;
+    user: string;
+  } | null;
+  previewUrl: string;
+  keystaticlUrl: string;
+};
+
+let branches: BranchInfo[] = [];
+let error = '';
+
+if (!GITHUB_TOKEN) {
+  error = 'GITHUB_TOKEN not configured';
+} else {
+  const headers = {
+    Authorization: `Bearer ${GITHUB_TOKEN}`,
+    Accept: 'application/vnd.github+json',
+    'User-Agent': 'TrueLeap-Admin',
+  };
+
+  try {
+    // Fetch branches and open PRs in parallel
+    const [branchesRes, prsRes] = await Promise.all([
+      fetch(`https://api.github.com/repos/${REPO}/branches?per_page=100`, { headers }),
+      fetch(`https://api.github.com/repos/${REPO}/pulls?state=open&per_page=100`, { headers }),
+    ]);
+
+    if (!branchesRes.ok) throw new Error(`Branches API: ${branchesRes.status}`);
+    if (!prsRes.ok) throw new Error(`PRs API: ${prsRes.status}`);
+
+    const allBranches: { name: string }[] = await branchesRes.json();
+    const allPrs: any[] = await prsRes.json();
+
+    const contentBranches = allBranches.filter((b) => b.name.startsWith('content/'));
+    const contentPrs = allPrs.filter((pr) => pr.head.ref.startsWith('content/'));
+
+    // Fetch PR details in parallel for mergeable + changed_files
+    const prDetails = await Promise.all(
+      contentPrs.map(async (pr) => {
+        try {
+          const detailRes = await fetch(`https://api.github.com/repos/${REPO}/pulls/${pr.number}`, { headers });
+          if (detailRes.ok) return await detailRes.json();
+        } catch {}
+        return pr;
+      })
+    );
+
+    // Build a map of branch name → PR detail
+    const prMap = new Map<string, any>();
+    for (const pr of prDetails) {
+      prMap.set(pr.head.ref, pr);
+    }
+
+    // Build BranchInfo array
+    branches = contentBranches.map((b) => {
+      const pr = prMap.get(b.name);
+      const shortName = b.name.replace('content/', '');
+      const slug = b.name.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+      return {
+        name: b.name,
+        shortName,
+        pr: pr
+          ? {
+              number: pr.number,
+              title: pr.title,
+              mergeable: pr.mergeable,
+              changed_files: pr.changed_files ?? 0,
+              created_at: pr.created_at,
+              user: pr.user?.login ?? 'unknown',
+            }
+          : null,
+        previewUrl: `https://${slug}.trueleap-inc.pages.dev`,
+        keystaticlUrl: `/keystatic/branch/${b.name.replace(/\//g, '~2F')}`,
+      };
+    });
+
+    // Sort: branches with PRs first (newest first), then drafts (alphabetical)
+    branches.sort((a, b) => {
+      if (a.pr && !b.pr) return -1;
+      if (!a.pr && b.pr) return 1;
+      if (a.pr && b.pr) {
+        return new Date(b.pr.created_at).getTime() - new Date(a.pr.created_at).getTime();
+      }
+      return a.shortName.localeCompare(b.shortName);
+    });
+  } catch (e: any) {
+    error = e.message;
+  }
+}
+
+function relativeTime(dateStr: string) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
+const activeBranches = branches.filter((b) => b.pr);
+const draftBranches = branches.filter((b) => !b.pr);
+---
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TrueLeap Admin</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif;
+      background: #09090b;
+      color: #e4e4e7;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      height: 3.5rem;
+      border-bottom: 1px solid #27272a;
+      background: #09090b;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(12px);
+    }
+    .header-left { display: flex; align-items: center; gap: 0.75rem; }
+    .logo {
+      width: 1.5rem;
+      height: 1.5rem;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      border-radius: 0.375rem;
+    }
+    .header h1 { font-size: 0.9375rem; font-weight: 600; color: #fafafa; letter-spacing: -0.01em; }
+    .header-right { display: flex; align-items: center; gap: 0.5rem; }
+
+    /* Container */
+    .container { max-width: 56rem; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    /* Create branch bar */
+    .create-bar {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 0.75rem;
+    }
+    .create-input-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      background: #09090b;
+      border: 1px solid #3f3f46;
+      border-radius: 0.5rem;
+      padding: 0 0.75rem;
+      transition: border-color 0.15s;
+    }
+    .create-input-wrapper:focus-within { border-color: #3b82f6; }
+    .create-prefix {
+      color: #22c55e;
+      font-size: 0.8125rem;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .create-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #e4e4e7;
+      padding: 0.5rem 0.375rem;
+      font-size: 0.8125rem;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+    .create-input::placeholder { color: #52525b; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-decoration: none;
+      white-space: nowrap;
+      line-height: 1.25rem;
+    }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
+    .btn-primary { background: #3b82f6; color: #fff; }
+    .btn-primary:hover { background: #2563eb; }
+    .btn-ghost { background: transparent; color: #a1a1aa; border: 1px solid #3f3f46; }
+    .btn-ghost:hover { background: #27272a; color: #e4e4e7; }
+    .btn-success { background: #16a34a; color: #fff; }
+    .btn-success:hover { background: #15803d; }
+    .btn-amber { background: #d97706; color: #fff; }
+    .btn-amber:hover { background: #b45309; }
+    .btn-danger { background: transparent; color: #ef4444; border: 1px solid #3f3f46; }
+    .btn-danger:hover { background: #7f1d1d22; border-color: #ef4444; }
+    .btn-sm { padding: 0.375rem 0.75rem; font-size: 0.75rem; }
+
+    /* Section */
+    .section { margin-bottom: 2rem; }
+    .section-title {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #71717a;
+      margin-bottom: 0.75rem;
+      padding-left: 0.125rem;
+    }
+
+    /* Cards */
+    .card {
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      margin-bottom: 0.5rem;
+      transition: border-color 0.15s;
+    }
+    .card:hover { border-color: #3f3f46; }
+    .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+    .card-info { flex: 1; min-width: 0; }
+    .card-title {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: #fafafa;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .card-title code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.8125rem;
+      font-weight: 500;
+    }
+    .card-meta {
+      font-size: 0.75rem;
+      color: #71717a;
+      margin-top: 0.375rem;
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      flex-wrap: wrap;
+    }
+    .meta-sep { color: #3f3f46; }
+    .card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.375rem;
+      margin-top: 1rem;
+    }
+
+    /* Badge */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.125rem 0.625rem;
+      border-radius: 9999px;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      flex-shrink: 0;
+    }
+    .badge-dot {
+      width: 0.375rem;
+      height: 0.375rem;
+      border-radius: 50%;
+    }
+    .badge-ready { background: #052e1680; color: #4ade80; }
+    .badge-ready .badge-dot { background: #4ade80; }
+    .badge-conflict { background: #451a0380; color: #fb923c; }
+    .badge-conflict .badge-dot { background: #fb923c; }
+    .badge-checking { background: #27272a80; color: #a1a1aa; }
+    .badge-checking .badge-dot { background: #a1a1aa; }
+
+    /* Error banner */
+    .error-banner {
+      background: #450a0a;
+      border: 1px solid #7f1d1d;
+      color: #fca5a5;
+      padding: 0.875rem 1rem;
+      border-radius: 0.75rem;
+      font-size: 0.8125rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Empty state */
+    .empty {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: #71717a;
+    }
+    .empty-icon {
+      width: 3rem;
+      height: 3rem;
+      border: 2px dashed #3f3f46;
+      border-radius: 0.75rem;
+      margin: 0 auto 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      color: #52525b;
+    }
+    .empty p { margin-bottom: 0.5rem; font-size: 0.875rem; }
+    .empty .hint { font-size: 0.75rem; color: #52525b; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      background: #18181b;
+      border: 1px solid #3f3f46;
+      color: #e4e4e7;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.8125rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      transform: translateY(100%);
+      opacity: 0;
+      transition: all 0.2s ease;
+      z-index: 100;
+      max-width: 24rem;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.error { border-color: #7f1d1d; color: #fca5a5; }
+
+    /* Confirm overlay */
+    .confirm-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s;
+    }
+    .confirm-overlay.open { opacity: 1; pointer-events: auto; }
+    .confirm-box {
+      background: #18181b;
+      border: 1px solid #3f3f46;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      max-width: 26rem;
+      width: 90vw;
+    }
+    .confirm-box h3 { font-size: 0.9375rem; font-weight: 600; color: #fafafa; margin-bottom: 0.5rem; }
+    .confirm-box p { font-size: 0.8125rem; color: #a1a1aa; line-height: 1.5; margin-bottom: 1.25rem; }
+    .confirm-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
+
+    /* Spinner */
+    .spinner {
+      display: inline-block;
+      width: 0.875rem;
+      height: 0.875rem;
+      border: 2px solid transparent;
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .header { padding: 0 1rem; }
+      .container { padding: 1.5rem 1rem; }
+      .create-bar { flex-direction: column; }
+      .card-top { flex-direction: column; gap: 0.5rem; }
+      .card-actions { flex-direction: column; }
+      .card-actions .btn { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      <div class="logo"></div>
+      <h1>TrueLeap Admin</h1>
+    </div>
+    <div class="header-right">
+      <a href="/keystatic/branch/main" class="btn btn-ghost btn-sm">Browse CMS</a>
+      <button onclick="location.reload()" class="btn btn-ghost btn-sm">Refresh</button>
+    </div>
+  </div>
+
+  <div class="container">
+    {error && <div class="error-banner">Failed to load data: {error}</div>}
+
+    <!-- Create Branch -->
+    <div class="create-bar">
+      <div class="create-input-wrapper">
+        <span class="create-prefix">content/</span>
+        <input
+          type="text"
+          id="branch-name"
+          class="create-input"
+          placeholder="my-edits"
+          maxlength="60"
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </div>
+      <button id="create-btn" class="btn btn-primary" onclick="createBranch()">Create Branch</button>
+    </div>
+
+    {/* Active Branches (with PRs) */}
+    {activeBranches.length > 0 && (
+      <div class="section">
+        <div class="section-title">Active Branches</div>
+        {activeBranches.map((b) => {
+          const ready = b.pr!.mergeable === true;
+          const conflict = b.pr!.mergeable === false;
+          return (
+            <div class="card" data-branch={b.name} data-pr={b.pr!.number}>
+              <div class="card-top">
+                <div class="card-info">
+                  <div class="card-title">
+                    <code>{b.name}</code>
+                    <span class="meta-sep">&#8226;</span>
+                    <span style="font-size:0.75rem;color:#71717a;">PR #{b.pr!.number}</span>
+                  </div>
+                  <div class="card-meta">
+                    <span>{b.pr!.user}</span>
+                    <span class="meta-sep">&#8226;</span>
+                    <span>{relativeTime(b.pr!.created_at)}</span>
+                    <span class="meta-sep">&#8226;</span>
+                    <span>{b.pr!.changed_files} file{b.pr!.changed_files !== 1 ? 's' : ''} changed</span>
+                  </div>
+                </div>
+                {ready && (
+                  <span class="badge badge-ready"><span class="badge-dot"></span>Ready</span>
+                )}
+                {conflict && (
+                  <span class="badge badge-conflict"><span class="badge-dot"></span>Conflict</span>
+                )}
+                {!ready && !conflict && (
+                  <span class="badge badge-checking"><span class="badge-dot"></span>Checking</span>
+                )}
+              </div>
+              <div class="card-actions">
+                <a href={b.previewUrl} target="_blank" rel="noopener" class="btn btn-ghost btn-sm">Preview</a>
+                <a href={b.keystaticlUrl} class="btn btn-ghost btn-sm">Edit in CMS</a>
+                {conflict && (
+                  <button class="btn btn-amber btn-sm" data-pr-number={b.pr!.number} onclick="rebasePr(this)">
+                    Rebase
+                  </button>
+                )}
+                <button
+                  class="btn btn-success btn-sm"
+                  data-pr-number={b.pr!.number}
+                  disabled={conflict}
+                  onclick="confirmPublish(this)"
+                >
+                  Publish
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    )}
+
+    {/* Draft Branches (no PR) */}
+    {draftBranches.length > 0 && (
+      <div class="section">
+        <div class="section-title">Draft Branches</div>
+        {draftBranches.map((b) => (
+          <div class="card" data-branch={b.name}>
+            <div class="card-top">
+              <div class="card-info">
+                <div class="card-title"><code>{b.name}</code></div>
+                <div class="card-meta">No changes committed yet</div>
+              </div>
+            </div>
+            <div class="card-actions">
+              <a href={b.keystaticlUrl} class="btn btn-ghost btn-sm">Edit in CMS</a>
+              <button class="btn btn-danger btn-sm" data-branch={b.name} onclick="confirmDelete(this)">
+                Delete Branch
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+
+    {/* Empty state */}
+    {branches.length === 0 && !error && (
+      <div class="empty">
+        <div class="empty-icon">+</div>
+        <p>No content branches yet.</p>
+        <p class="hint">Create a branch above to start editing content.</p>
+      </div>
+    )}
+  </div>
+
+  <!-- Confirm Overlay -->
+  <div class="confirm-overlay" id="confirm-overlay">
+    <div class="confirm-box">
+      <h3 id="confirm-title">Confirm</h3>
+      <p id="confirm-message">Are you sure?</p>
+      <div class="confirm-actions">
+        <button class="btn btn-ghost btn-sm" onclick="closeConfirm()">Cancel</button>
+        <button class="btn btn-sm" id="confirm-action-btn" onclick="executeConfirm()">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script is:inline>
+    var pendingAction = null;
+
+    function showToast(msg, isError) {
+      var el = document.getElementById('toast');
+      el.textContent = msg;
+      el.className = 'toast show' + (isError ? ' error' : '');
+      clearTimeout(el._t);
+      el._t = setTimeout(function() { el.className = 'toast'; }, 3500);
+    }
+
+    function openConfirm(title, message, btnText, btnClass, action) {
+      document.getElementById('confirm-title').textContent = title;
+      document.getElementById('confirm-message').textContent = message;
+      var btn = document.getElementById('confirm-action-btn');
+      btn.textContent = btnText;
+      btn.className = 'btn btn-sm ' + btnClass;
+      pendingAction = action;
+      document.getElementById('confirm-overlay').classList.add('open');
+    }
+
+    function closeConfirm() {
+      document.getElementById('confirm-overlay').classList.remove('open');
+      pendingAction = null;
+    }
+
+    function executeConfirm() {
+      if (pendingAction) pendingAction();
+      closeConfirm();
+    }
+
+    async function createBranch() {
+      var input = document.getElementById('branch-name');
+      var name = input.value.trim().replace(/[^a-zA-Z0-9_-]/g, '-');
+      if (!name) { showToast('Enter a branch name', true); input.focus(); return; }
+      var btn = document.getElementById('create-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Creating...';
+      try {
+        var res = await fetch('/api/admin/create-branch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: name }),
+        });
+        var data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed');
+        window.location.href = data.keystaticlUrl;
+      } catch (e) {
+        showToast(e.message, true);
+        btn.disabled = false;
+        btn.textContent = 'Create Branch';
+      }
+    }
+
+    function confirmPublish(btn) {
+      var prNumber = Number(btn.dataset.prNumber);
+      openConfirm(
+        'Publish to production?',
+        'This will merge PR #' + prNumber + ' and deploy the content changes immediately.',
+        'Publish',
+        'btn-success',
+        function() { publishPr(prNumber, btn); }
+      );
+    }
+
+    async function publishPr(prNumber, btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Publishing...';
+      try {
+        var res = await fetch('/api/admin/merge-pr', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prNumber: prNumber }),
+        });
+        var data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Merge failed');
+        showToast('Published successfully!');
+        setTimeout(function() { location.reload(); }, 800);
+      } catch (e) {
+        showToast(e.message, true);
+        btn.disabled = false;
+        btn.textContent = 'Publish';
+      }
+    }
+
+    async function rebasePr(btn) {
+      var prNumber = Number(btn.dataset.prNumber);
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Rebasing...';
+      try {
+        var res = await fetch('/api/admin/rebase-pr', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prNumber: prNumber }),
+        });
+        var data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Rebase failed');
+        showToast('Branch updated!');
+        setTimeout(function() { location.reload(); }, 800);
+      } catch (e) {
+        showToast(e.message, true);
+        btn.disabled = false;
+        btn.textContent = 'Rebase';
+      }
+    }
+
+    function confirmDelete(btn) {
+      var branch = btn.dataset.branch;
+      openConfirm(
+        'Delete branch?',
+        'This will permanently delete "' + branch + '". Any uncommitted edits in the CMS will be lost.',
+        'Delete',
+        'btn-danger',
+        function() { deleteBranch(branch, btn); }
+      );
+    }
+
+    async function deleteBranch(branch, btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Deleting...';
+      try {
+        var res = await fetch('/api/admin/delete-branch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ branch: branch }),
+        });
+        var data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Delete failed');
+        showToast('Branch deleted');
+        var card = btn.closest('.card');
+        if (card) card.remove();
+      } catch (e) {
+        showToast(e.message, true);
+        btn.disabled = false;
+        btn.textContent = 'Delete Branch';
+      }
+    }
+
+    // Enter key on branch name input
+    document.getElementById('branch-name').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') createBranch();
+    });
+
+    // Escape to close confirm
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeConfirm();
+    });
+  </script>
+</body>
+</html>
