@@ -1,0 +1,220 @@
+{
+  "headerGroups": [
+    {
+      "label": "Platform",
+      "href": "/platform",
+      "children": [
+        {
+          "label": "The Trueleap Stack",
+          "href": "/platform/stack"
+        },
+        {
+          "label": "Physical Infrastructure",
+          "href": "/platform/infrastructure"
+        },
+        {
+          "label": "Edge AI Engine",
+          "href": "/platform/edge-ai"
+        },
+        {
+          "label": "Digital Systems",
+          "href": "/platform/digital-systems"
+        }
+      ]
+    },
+    {
+      "label": "Solutions",
+      "href": "/solutions",
+      "children": [
+        {
+          "label": "Governments",
+          "href": "/solutions/industry/governments"
+        },
+        {
+          "label": "Education",
+          "href": "/solutions/industry/education"
+        },
+        {
+          "label": "NGOs",
+          "href": "/solutions/industry/ngos"
+        },
+        {
+          "label": "Enterprise",
+          "href": "/solutions/industry/enterprise"
+        },
+        {
+          "label": "Digital Sovereignty",
+          "href": "/solutions/outcome/digital-sovereignty"
+        },
+        {
+          "label": "Workforce Readiness",
+          "href": "/solutions/outcome/workforce-readiness"
+        },
+        {
+          "label": "Rural Connectivity",
+          "href": "/solutions/outcome/rural-connectivity"
+        }
+      ]
+    },
+    {
+      "label": "Global Impact",
+      "href": "/impact",
+      "children": [
+        {
+          "label": "Live Network Map",
+          "href": "/impact/network-map"
+        },
+        {
+          "label": "Impact Data",
+          "href": "/impact/metrics"
+        },
+        {
+          "label": "Case Studies",
+          "href": "/impact/case-studies"
+        },
+        {
+          "label": "The Last Mile",
+          "href": "/impact/last-mile"
+        }
+      ]
+    },
+    {
+      "label": "Company",
+      "href": "/company",
+      "children": [
+        {
+          "label": "Mission & Vision",
+          "href": "/company/mission"
+        },
+        {
+          "label": "Leadership",
+          "href": "/company/leadership"
+        },
+        {
+          "label": "Partners",
+          "href": "/company/partners"
+        },
+        {
+          "label": "Careers",
+          "href": "/company/careers"
+        }
+      ]
+    },
+    {
+      "label": "Resources",
+      "href": "/resources",
+      "children": [
+        {
+          "label": "Trust Center",
+          "href": "/resources/trust-center"
+        },
+        {
+          "label": "Newsroom",
+          "href": "/resources/newsroom"
+        },
+        {
+          "label": "Documentation",
+          "href": "/resources/docs"
+        }
+      ]
+    }
+  ],
+  "headerCta": {
+    "secondaryText": "Careers",
+    "secondaryHref": "/company/careers",
+    "primaryText": "Contact Us",
+    "primaryHref": "/company/contact"
+  },
+  "footerGroups": [
+    {
+      "label": "Platform",
+      "links": [
+        {
+          "label": "The Stack",
+          "href": "/platform/stack",
+          "external": false
+        },
+        {
+          "label": "Infrastructure",
+          "href": "/platform/infrastructure",
+          "external": false
+        },
+        {
+          "label": "Digital Systems",
+          "href": "/platform/digital-systems",
+          "external": false
+        },
+        {
+          "label": "Edge AI",
+          "href": "/platform/edge-ai",
+          "external": false
+        }
+      ]
+    },
+    {
+      "label": "Company",
+      "links": [
+        {
+          "label": "Mission",
+          "href": "/company/mission",
+          "external": false
+        },
+        {
+          "label": "Leadership",
+          "href": "/company/leadership",
+          "external": false
+        },
+        {
+          "label": "Careers",
+          "href": "/company/careers",
+          "external": false
+        },
+        {
+          "label": "Partners",
+          "href": "/company/partners",
+          "external": false
+        }
+      ]
+    },
+    {
+      "label": "Resources",
+      "links": [
+        {
+          "label": "Trust Center",
+          "href": "/resources/trust-center",
+          "external": false
+        },
+        {
+          "label": "Newsroom",
+          "href": "/resources/newsroom",
+          "external": false
+        },
+        {
+          "label": "Documentation",
+          "href": "/resources/docs",
+          "external": false
+        }
+      ]
+    },
+    {
+      "label": "Connect",
+      "links": [
+        {
+          "label": "LinkedIn",
+          "href": "https://linkedin.com/company/trueleap",
+          "external": true
+        },
+        {
+          "label": "Twitter",
+          "href": "https://twitter.com/trueleap",
+          "external": true
+        },
+        {
+          "label": "hello@trueleapinc.com",
+          "href": "mailto:hello@trueleapinc.com",
+          "external": true
+        }
+      ]
+    }
+  ]
+}

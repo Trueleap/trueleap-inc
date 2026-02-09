@@ -1,0 +1,37 @@
+{
+  "hero": {
+    "eyebrow": "Global Impact",
+    "headline": "Measuring What",
+    "headlineAccent": "Matters",
+    "description": "Real impact data from deployments across 47 countries. Every metric represents real people gaining access to digital tools that can transform their lives."
+  },
+  "stats": [
+    { "value": "12M+", "label": "People Connected" },
+    { "value": "47", "label": "Countries" },
+    { "value": "2,400+", "label": "Edge Nodes" },
+    { "value": "99.7%", "label": "Uptime" }
+  ],
+  "navCards": [
+    { "title": "Live Network Map", "description": "Real-time view of our global network", "href": "/en/impact/network-map" },
+    { "title": "Impact Data", "description": "Metrics and outcomes from our deployments", "href": "/en/impact/metrics" },
+    { "title": "Case Studies", "description": "Deep dives into specific deployments", "href": "/en/impact/case-studies" },
+    { "title": "The Last Mile", "description": "Thought leadership on digital inclusion", "href": "/en/impact/last-mile" }
+  ],
+  "regionalHighlights": [
+    { "region": "Sub-Saharan Africa", "description": "Our largest deployment region with 1,200+ nodes across 23 countries.", "story": "In rural Rwanda, TrueLeap nodes provide the only digital infrastructure for 500+ villages." },
+    { "region": "South Asia", "description": "Rapid growth region with 400+ nodes serving education and government programs.", "story": "In Bihar, India, 200,000 farmers use TrueLeap-powered agriculture extension services." },
+    { "region": "Southeast Asia", "description": "Island deployments across the Philippines and Indonesia.", "story": "The Thousand Islands project connects 127 remote islands in the Java Sea." },
+    { "region": "Latin America", "description": "Growing presence in Colombia, Brazil, and Peru.", "story": "In the Colombian Amazon, TrueLeap enables telemedicine for 50,000 indigenous community members." }
+  ],
+  "testimonialQuote": {
+    "text": "Before TrueLeap, the nearest internet connection was a 4-hour drive. Now my children do their homework on tablets connected to the village node.",
+    "attribution": "Jean Ndayisaba",
+    "role": "Community Leader, Nyagatare District, Rwanda"
+  },
+  "cta": {
+    "headline": "See the data for yourself",
+    "description": "Explore our live network map to see real-time deployment data from around the world.",
+    "primaryCta": { "text": "View Live Map", "href": "/en/impact/network-map" },
+    "secondaryCta": { "text": "Download Report", "href": "#" }
+  }
+}

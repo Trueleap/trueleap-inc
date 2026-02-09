@@ -1,78 +1,20 @@
 ---
+export const prerender = true;
 import Page from '../../../layouts/Page.astro';
+import { reader } from '../../../lib/keystatic';
+
 const lang = 'en';
 
-const executives = [
-  {
-    name: 'Amara Okonkwo',
-    title: 'Chief Executive Officer',
-    bio: 'Former Director of Digital Infrastructure at the African Development Bank. Led the $2B Digital Africa Initiative connecting 15 million people across 12 countries. Stanford MBA, Oxford PPE.',
-    initials: 'AO',
-    linkedin: '#',
-  },
-  {
-    name: 'Dr. Raj Mehta',
-    title: 'Chief Technology Officer',
-    bio: 'Previously Principal Engineer at Google X, where he led Project Loon\'s mesh networking team. PhD in Distributed Systems from MIT. 47 patents in edge computing and wireless protocols.',
-    initials: 'RM',
-    linkedin: '#',
-  },
-  {
-    name: 'Elena Vasquez',
-    title: 'Chief Operating Officer',
-    bio: 'Scaled operations at Zipline from 3 to 47 countries. Former McKinsey Partner specializing in emerging market infrastructure. Harvard Business School.',
-    initials: 'EV',
-    linkedin: '#',
-  },
-  {
-    name: 'James Kariuki',
-    title: 'Chief Revenue Officer',
-    bio: '20 years in B2G sales across Africa, Asia, and Latin America. Former VP at Microsoft Philanthropies. Built the public sector practice at Andela.',
-    initials: 'JK',
-    linkedin: '#',
-  },
-  {
-    name: 'Dr. Fatou Diallo',
-    title: 'Chief Impact Officer',
-    bio: 'Former UNDP Advisor on Digital Development. Led monitoring and evaluation for USAID\'s Digital Strategy. PhD in Development Economics from LSE.',
-    initials: 'FD',
-    linkedin: '#',
-  },
-  {
-    name: 'Marcus Chen',
-    title: 'Chief Product Officer',
-    bio: 'Built offline-first products at WhatsApp serving 500M users in low-connectivity regions. Former product lead at M-Pesa. Caltech Computer Science.',
-    initials: 'MC',
-    linkedin: '#',
-  },
-];
-
-const advisors = [
-  {
-    name: 'Dr. Ngozi Obi-Iweala',
-    role: 'Strategic Advisor',
-    affiliation: 'Former Finance Minister, Nigeria',
-    initials: 'NO',
-  },
-  {
-    name: 'Paul Kagame Jr.',
-    role: 'Africa Advisory Board',
-    affiliation: 'Rwanda Innovation Fund',
-    initials: 'PK',
-  },
-  {
-    name: 'Dr. Vint Cerf',
-    role: 'Technical Advisor',
-    affiliation: 'Internet Pioneer, Google VP',
-    initials: 'VC',
-  },
-  {
-    name: 'Leila Janah',
-    role: 'Impact Advisor',
-    affiliation: 'Samasource Foundation',
-    initials: 'LJ',
-  },
-];
+const teamSlugs = await reader.collections.team.list();
+const teamMembers = await Promise.all(
+  teamSlugs.map(async (slug) => {
+    const member = await reader.collections.team.read(slug);
+    return member ? { ...member, slug } : null;
+  })
+);
+const allMembers = teamMembers.filter(Boolean).sort((a, b) => (a?.order ?? 0) - (b?.order ?? 0));
+const executives = allMembers.filter((m) => m?.category === 'executive');
+const advisors = allMembers.filter((m) => m?.category === 'advisory');
 ---
 
 <Page title="Leadership" lang={lang}>
@@ -85,7 +27,7 @@ const advisors = [
         Our <span class="display-serif">Leadership</span>
       </h1>
       <p class="text-body-lg text-muted max-w-3xl">
-        A team of engineers, operators, and development professionals united by a 
+        A team of engineers, operators, and development professionals united by a
         single mission: building infrastructure for the next billion.
       </p>
     </div>
@@ -96,23 +38,25 @@ const advisors = [
     <div class="max-w-7xl mx-auto px-6">
       <span class="text-caption text-primary mb-4 block">Executive Team</span>
       <h2 class="text-display-md text-charcoal mb-16">The people building TrueLeap</h2>
-      
+
       <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
         {executives.map((person) => (
           <div class="group">
             <div class="aspect-square mb-6 bg-gradient-to-br from-cream to-paper border border-border flex items-center justify-center relative overflow-hidden">
-              <span class="text-6xl font-display text-charcoal/20">{person.initials}</span>
+              <span class="text-6xl font-display text-charcoal/20">{person?.initials}</span>
               <div class="absolute inset-0 bg-charcoal/0 group-hover:bg-charcoal/5 transition-colors" style="transition-duration: var(--duration-normal);"></div>
             </div>
-            <h3 class="text-xl font-medium text-charcoal mb-1">{person.name}</h3>
-            <p class="text-sm text-primary mb-3">{person.title}</p>
-            <p class="text-sm text-muted leading-relaxed mb-4">{person.bio}</p>
-            <a href={person.linkedin} class="text-sm text-charcoal hover:text-primary transition-colors inline-flex items-center gap-1">
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-              </svg>
-              LinkedIn
-            </a>
+            <h3 class="text-xl font-medium text-charcoal mb-1">{person?.name}</h3>
+            <p class="text-sm text-primary mb-3">{person?.title}</p>
+            <p class="text-sm text-muted leading-relaxed mb-4">{person?.bio}</p>
+            {person?.linkedin && (
+              <a href={person?.linkedin} class="text-sm text-charcoal hover:text-primary transition-colors inline-flex items-center gap-1">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                </svg>
+                LinkedIn
+              </a>
+            )}
           </div>
         ))}
       </div>
@@ -124,16 +68,16 @@ const advisors = [
     <div class="max-w-7xl mx-auto px-6">
       <span class="text-caption text-primary mb-4 block">Advisory Board</span>
       <h2 class="text-display-md text-charcoal mb-16">Guided by global expertise</h2>
-      
+
       <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
         {advisors.map((advisor) => (
           <div class="card text-center">
             <div class="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-primary-lighter to-cream rounded-full flex items-center justify-center">
-              <span class="text-2xl font-display text-primary">{advisor.initials}</span>
+              <span class="text-2xl font-display text-primary">{advisor?.initials}</span>
             </div>
-            <h3 class="text-lg font-medium text-charcoal mb-1">{advisor.name}</h3>
-            <p class="text-sm text-primary mb-1">{advisor.role}</p>
-            <p class="text-xs text-muted">{advisor.affiliation}</p>
+            <h3 class="text-lg font-medium text-charcoal mb-1">{advisor?.name}</h3>
+            <p class="text-sm text-primary mb-1">{advisor?.title}</p>
+            <p class="text-xs text-muted">{advisor?.affiliation}</p>
           </div>
         ))}
       </div>
@@ -145,7 +89,7 @@ const advisors = [
     <div class="max-w-3xl mx-auto px-6 text-center">
       <h2 class="text-display-md text-white mb-6">Join our team</h2>
       <p class="text-body-lg text-white/70 mb-8">
-        We're building technology that matters. If you're passionate about 
+        We're building technology that matters. If you're passionate about
         using your skills to create real-world impact, we want to hear from you.
       </p>
       <a href="/en/company/careers" class="btn bg-white text-charcoal hover:bg-white/90">

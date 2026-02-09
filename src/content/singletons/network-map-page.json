@@ -1,0 +1,38 @@
+{
+  "hero": {
+    "eyebrow": "Live Network",
+    "headline": "Network",
+    "headlineAccent": "Map",
+    "description": "Real-time view of TrueLeap's global network. Every dot represents an active edge node serving a community."
+  },
+  "liveStats": [
+    { "value": 2437, "suffix": "", "label": "Active Nodes" },
+    { "value": 47, "suffix": "", "label": "Countries" },
+    { "value": 99.7, "suffix": "%", "label": "Uptime" },
+    { "value": 12, "suffix": "M+", "label": "People Served" }
+  ],
+  "regionalDistribution": [
+    { "region": "Sub-Saharan Africa", "nodes": "1,247", "growth": "+23%", "description": "Largest deployment region" },
+    { "region": "South Asia", "nodes": "438", "growth": "+45%", "description": "Fastest growing region" },
+    { "region": "Southeast Asia", "nodes": "312", "growth": "+31%", "description": "Island-focused deployments" },
+    { "region": "Latin America", "nodes": "228", "growth": "+38%", "description": "Expanding presence" },
+    { "region": "Other", "nodes": "212", "growth": "+18%", "description": "Middle East, Central Asia, Pacific" }
+  ],
+  "recentDeployments": [
+    { "location": "Kigali, Rwanda", "nodes": "50 nodes", "status": "Operational" },
+    { "location": "Cebu, Philippines", "nodes": "25 nodes", "status": "Deploying" },
+    { "location": "Kumasi, Ghana", "nodes": "35 nodes", "status": "Operational" },
+    { "location": "Bihar, India", "nodes": "75 nodes", "status": "Operational" }
+  ],
+  "networkArchitecture": [
+    { "title": "Edge Processing", "description": "Data processed locally at each node. Only aggregated, anonymized metrics are transmitted for network health monitoring." },
+    { "title": "Mesh Networking", "description": "Nodes form self-healing mesh networks that automatically route around failures and optimize for latency." },
+    { "title": "Solar Powered", "description": "All nodes are solar-powered with 72hr battery backup. Average power draw is under 2W per node." }
+  ],
+  "cta": {
+    "headline": "Want to see the network in action?",
+    "description": "Schedule a live demo to see real-time data from our deployed nodes, or explore our technical documentation.",
+    "primaryCta": { "text": "Schedule Demo", "href": "mailto:hello@trueleapinc.com" },
+    "secondaryCta": { "text": "Technical Docs", "href": "/en/resources/docs" }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "hero": {
+    "eyebrow": "Careers",
+    "headline": "Join Our",
+    "headlineAccent": "Mission",
+    "description": "Build technology that matters. We're connecting the next billion people to the digital economy, and we need talented people who want their work to have real-world impact.",
+    "ctaPrimary": { "text": "View Open Positions", "href": "#open-positions" },
+    "ctaSecondary": { "text": "Learn About Us", "href": "/en/company" }
+  },
+  "stats": [
+    { "value": "180+", "label": "Team Members" },
+    { "value": "12", "label": "Global Offices" },
+    { "value": "35+", "label": "Nationalities" },
+    { "value": "12M+", "label": "People Impacted" }
+  ],
+  "benefits": [
+    { "title": "Mission-Driven Work", "description": "Build technology that directly impacts the lives of millions of people in underserved communities." },
+    { "title": "Global Team", "description": "Work with colleagues across 12 offices on four continents, bringing diverse perspectives." },
+    { "title": "Competitive Compensation", "description": "Salary benchmarked to top tech companies plus equity participation in our growth." },
+    { "title": "Flexible Work", "description": "Remote-first culture with optional offices. Work from where you're most productive." },
+    { "title": "Learning Budget", "description": "$3,000 annual budget for conferences, courses, and professional development." },
+    { "title": "Impact Leave", "description": "Two weeks paid leave annually to volunteer with organizations aligned with our mission." }
+  ],
+  "hiringProcess": [
+    { "step": "01", "title": "Apply", "description": "Submit your application with resume and cover letter." },
+    { "step": "02", "title": "Screen", "description": "Quick call with our recruiting team to learn more about you." },
+    { "step": "03", "title": "Interview", "description": "Technical or role-specific interviews with the team." },
+    { "step": "04", "title": "Offer", "description": "We move fast. Expect a decision within two weeks." }
+  ],
+  "cta": {
+    "headline": "Don't see the right role?",
+    "description": "We're always looking for talented people who share our mission. Send us your resume and tell us how you'd like to contribute.",
+    "ctaText": "Get in Touch",
+    "ctaHref": "mailto:careers@trueleapinc.com"
+  }
+}

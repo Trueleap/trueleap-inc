@@ -1,4 +1,365 @@
 ---
-// Redirect root to default language
-return Astro.redirect('/en');
+export const prerender = true;
+import Page from '../layouts/Page.astro';
+import { AnimatedSection } from '../components/ui/AnimatedSection';
+import { AnimatedHeadline } from '../components/ui/AnimatedHeadline';
+import { TypingHeadline } from '../components/ui/TypingHeadline';
+import { StaggerGrid } from '../components/ui/StaggerGrid';
+import { ParallaxImage } from '../components/ui/ParallaxImage';
+import { WireframePlaceholder } from '../components/ui/WireframePlaceholder';
+import { NumberTicker } from '../components/ui/NumberTicker';
+import { HorizontalScroll, HorizontalSlide } from '../components/ui/HorizontalScroll';
+import { HeroWireframe } from '../components/ui/HeroWireframe';
+import { PartnerLogos } from '../components/ui/PartnerLogos';
+import { TestimonialMarquee, sampleTestimonials } from '../components/ui/TestimonialMarquee';
+import { reader } from '../lib/keystatic';
+
+const lang = 'en';
+const page = await reader.singletons.homepage.read();
+
+const capabilities = page?.platform?.capabilities ?? [];
+const products = page?.products?.items ?? [];
+const solutions = page?.solutions?.items ?? [];
+const caseStudies = page?.caseStudies?.items ?? [];
 ---
+
+<Page title="Home" lang={lang}>
+  <!-- Hero -->
+  <section class="min-h-screen bg-cream relative overflow-hidden">
+    <!-- Subtle grid background -->
+    <div class="absolute inset-0 grid-lines opacity-40"></div>
+
+    <div class="relative z-10 pt-32 md:pt-40 pb-16">
+      <div class="max-w-7xl mx-auto px-6">
+        <!-- Hero content -->
+        <div class="max-w-4xl mx-auto text-center">
+          <!-- Eyebrow -->
+          <AnimatedSection client:visible delay={0} direction="up">
+            <p class="text-caption text-muted mb-6">{page?.hero?.eyebrow}</p>
+          </AnimatedSection>
+
+          <!-- Main headline with typing effect -->
+          <TypingHeadline
+            client:visible
+            line1={page?.hero?.line1 ?? ''}
+            line2={page?.hero?.line2 ?? ''}
+            typingDelay={50}
+            withSound={true}
+          />
+
+          <!-- Subheadline -->
+          <AnimatedSection client:visible delay={0.3} direction="up">
+            <p class="text-body-lg text-muted max-w-2xl mx-auto mb-10">
+              {page?.hero?.subheadline}
+            </p>
+          </AnimatedSection>
+
+          <!-- CTAs -->
+          <AnimatedSection client:visible delay={0.4} direction="up">
+            <div class="flex flex-wrap justify-center gap-4 mb-8">
+              <a href={page?.hero?.ctaPrimary?.href} class="btn btn-primary">
+                {page?.hero?.ctaPrimary?.text}
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </a>
+              <a href={page?.hero?.ctaSecondary?.href} class="btn btn-secondary">
+                {page?.hero?.ctaSecondary?.text}
+              </a>
+            </div>
+          </AnimatedSection>
+
+          <!-- Quick stats inline -->
+          <AnimatedSection client:visible delay={0.5} direction="up">
+            <div class="flex flex-wrap justify-center items-center gap-x-8 gap-y-3 text-sm">
+              {page?.hero?.stats?.map((stat: any) => (
+                <div class="flex items-center gap-2">
+                  <span class="font-medium text-ink" set:html={stat.value} />
+                  <span class="text-muted">{stat.label}</span>
+                </div>
+              ))}
+            </div>
+          </AnimatedSection>
+        </div>
+
+        <!-- Hero wireframe with scroll animation -->
+        <div class="mt-16 md:mt-24 lg:mt-28">
+          <HeroWireframe client:visible className="max-w-6xl mx-auto" />
+        </div>
+
+        <!-- Partner logos -->
+        <div class="mt-20 md:mt-28">
+          <PartnerLogos
+            client:visible
+            title={page?.hero?.partnerLogosTitle ?? 'Built on trusted technology'}
+          />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mission -->
+  <section class="py-32 bg-white">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid lg:grid-cols-2 gap-16 items-center">
+        <AnimatedSection client:visible direction="up">
+          <p class="text-caption text-muted mb-6">{page?.mission?.eyebrow}</p>
+          <h2 class="text-display-md mb-6">
+            {page?.mission?.headline}
+            <span class="display-serif text-gradient"> {page?.mission?.headlineAccent}</span>
+          </h2>
+          <p class="text-body-lg text-muted mb-6">
+            {page?.mission?.paragraph1}
+          </p>
+          <p class="text-body text-muted mb-8">
+            {page?.mission?.paragraph2}
+          </p>
+          <a href={page?.mission?.linkHref} class="link-arrow text-ink font-medium">
+            {page?.mission?.linkText}
+          </a>
+        </AnimatedSection>
+
+        <AnimatedSection client:visible direction="left" delay={0.2}>
+          <ParallaxImage client:visible speed={-0.08} className="w-full">
+            <WireframePlaceholder
+              variant="photo"
+              aspect="4:3"
+              label="Community deployment"
+              className="border border-border"
+            />
+          </ParallaxImage>
+        </AnimatedSection>
+      </div>
+    </div>
+  </section>
+
+  <!-- Platform -->
+  <section class="py-32 bg-charcoal text-white">
+    <div class="max-w-7xl mx-auto px-6">
+      <AnimatedSection client:visible direction="up">
+        <p class="text-caption text-primary-light mb-6">{page?.platform?.eyebrow}</p>
+        <h2 class="text-display-lg text-white mb-4">{page?.platform?.headline}</h2>
+        <p class="text-body-lg text-white/60 max-w-2xl mb-16">
+          {page?.platform?.description}
+        </p>
+      </AnimatedSection>
+
+      <StaggerGrid client:visible className="grid md:grid-cols-3 gap-px bg-white/5" stagger={0.15}>
+        {capabilities.map((cap) => (
+          <a href={cap.href} class="group bg-charcoal p-8 hover:bg-charcoal-light transition-colors" style="transition-duration: var(--duration-normal);">
+            <p class="text-caption text-white/70 mb-4">{cap.label}</p>
+            <h3 class="text-xl font-medium text-white mb-3">{cap.title}</h3>
+            <p class="text-white/60 mb-6">{cap.description}</p>
+            <span class="inline-flex items-center gap-2 text-primary-light text-sm font-medium group-hover:gap-3 transition-all" style="transition-duration: var(--duration-normal);">
+              Learn more
+              <span>→</span>
+            </span>
+          </a>
+        ))}
+      </StaggerGrid>
+    </div>
+  </section>
+
+  <!-- Products - Horizontal Scroll -->
+  <section class="bg-cream">
+    <div class="py-16 max-w-7xl mx-auto px-6">
+      <AnimatedSection client:visible direction="up">
+        <p class="text-caption text-muted mb-6">{page?.products?.eyebrow}</p>
+        <h2 class="text-display-lg mb-4">{page?.products?.headline}</h2>
+        <p class="text-body-lg text-muted max-w-2xl">
+          {page?.products?.description}
+        </p>
+      </AnimatedSection>
+    </div>
+
+    <HorizontalScroll client:visible className="gap-8" speed={1.2}>
+      {products.map((product, i) => (
+        <HorizontalSlide width="min(600px, 85vw)" className="py-8">
+          <div class="h-full bg-white p-8 border border-border">
+            <p class="text-caption text-muted mb-2">{product.tagline}</p>
+            <h3 class="text-display-md mb-4">{product.name}</h3>
+            <p class="text-muted mb-8">{product.description}</p>
+            <WireframePlaceholder
+              variant={product.wireframe}
+              aspect="16:9"
+              label={`${product.name} Interface`}
+            />
+          </div>
+        </HorizontalSlide>
+      ))}
+      <HorizontalSlide width="min(400px, 70vw)" className="py-8 flex items-center">
+        <div class="text-center px-8">
+          <p class="text-muted mb-4">See all products</p>
+          <a href="/en/platform/digital-systems" class="btn btn-secondary">
+            Explore Digital Systems
+          </a>
+        </div>
+      </HorizontalSlide>
+    </HorizontalScroll>
+  </section>
+
+  <!-- Solutions -->
+  <section class="py-32 bg-white">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
+        <AnimatedSection client:visible direction="up">
+          <p class="text-caption text-muted mb-6">{page?.solutions?.eyebrow}</p>
+          <h2 class="text-display-md">{page?.solutions?.headline}</h2>
+        </AnimatedSection>
+        <AnimatedSection client:visible direction="up" delay={0.1}>
+          <a href={page?.solutions?.linkHref} class="link-arrow text-ink font-medium">
+            {page?.solutions?.linkText}
+          </a>
+        </AnimatedSection>
+      </div>
+
+      <StaggerGrid client:visible className="grid md:grid-cols-4 gap-px bg-border" stagger={0.1}>
+        {solutions.map((solution) => (
+          <a href={solution.href} class="group bg-cream p-8 hover:bg-white transition-colors" style="transition-duration: var(--duration-normal);">
+            <h3 class="text-xl font-medium text-ink mb-4 group-hover:text-primary transition-colors" style="transition-duration: var(--duration-normal);">
+              {solution.title}
+            </h3>
+            <span class="inline-flex items-center gap-2 text-sm text-muted group-hover:text-ink group-hover:gap-3 transition-all" style="transition-duration: var(--duration-normal);">
+              Explore
+              <span>→</span>
+            </span>
+          </a>
+        ))}
+      </StaggerGrid>
+    </div>
+  </section>
+
+  <!-- Case Studies - Horizontal Scroll -->
+  <section class="bg-paper">
+    <div class="py-16 max-w-7xl mx-auto px-6">
+      <AnimatedSection client:visible direction="up">
+        <p class="text-caption text-muted mb-6">{page?.caseStudies?.eyebrow}</p>
+        <h2 class="text-display-lg mb-4">{page?.caseStudies?.headline}</h2>
+      </AnimatedSection>
+    </div>
+
+    <HorizontalScroll client:visible className="gap-6" speed={1}>
+      {caseStudies.map((study) => (
+        <HorizontalSlide width="min(500px, 85vw)" className="py-4">
+          <div class="h-full bg-white p-6 border border-border">
+            <WireframePlaceholder
+              variant="photo"
+              aspect="16:9"
+              label={study.tag}
+              className="mb-6"
+            />
+            <p class="text-caption text-muted mb-2">{study.tag}</p>
+            <h3 class="text-xl font-medium mb-3">{study.title}</h3>
+            <p class="text-muted text-sm mb-6">{study.description}</p>
+            <div class="pt-4 border-t border-border">
+              <p class="text-2xl font-medium">{study.metric}</p>
+              <p class="text-xs text-muted">{study.metricLabel}</p>
+            </div>
+          </div>
+        </HorizontalSlide>
+      ))}
+      <HorizontalSlide width="min(300px, 60vw)" className="py-4 flex items-center">
+        <div class="text-center px-6">
+          <a href="/en/impact/case-studies" class="link-arrow text-ink font-medium">
+            View all case studies
+          </a>
+        </div>
+      </HorizontalSlide>
+    </HorizontalScroll>
+  </section>
+
+  <!-- Impact -->
+  <section class="py-32 bg-charcoal text-white">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid lg:grid-cols-2 gap-16 items-center">
+        <AnimatedSection client:visible direction="up">
+          <p class="text-caption text-primary-light mb-6">{page?.impact?.eyebrow}</p>
+          <h2 class="text-display-md text-white mb-6">
+            {page?.impact?.headline}
+            <span class="display-serif"> {page?.impact?.headlineAccent}</span>
+          </h2>
+          <p class="text-body-lg text-white/60 mb-8">
+            {page?.impact?.description}
+          </p>
+
+          <a href={page?.impact?.ctaHref} class="btn bg-white text-charcoal hover:bg-white/90">
+            {page?.impact?.ctaText}
+          </a>
+        </AnimatedSection>
+
+        <!-- Map placeholder -->
+        <AnimatedSection client:visible direction="left" delay={0.2}>
+          <ParallaxImage client:visible speed={0.1} className="w-full">
+            <WireframePlaceholder
+              variant="map"
+              aspect="1:1"
+              label="Interactive Globe"
+              dark={true}
+              className="border border-white/10"
+            />
+          </ParallaxImage>
+        </AnimatedSection>
+      </div>
+
+      <!-- Metrics strip -->
+      <div class="mt-24 pt-8 border-t border-white/10">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+          {page?.impact?.metrics?.map((m: any) => (
+            <div>
+              <p class="text-3xl font-medium text-white mb-1">
+                {m.prefix}<NumberTicker client:visible value={m.value} format={m.format === 'compact' ? 'compact' : undefined} />{m.suffix}
+              </p>
+              <p class="text-sm text-white/70">{m.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="py-24 bg-paper overflow-hidden">
+    <div class="max-w-7xl mx-auto px-6 mb-12">
+      <AnimatedSection client:visible direction="up">
+        <p class="text-caption text-muted mb-6">{page?.testimonials?.eyebrow}</p>
+        <h2 class="text-display-md mb-4">{page?.testimonials?.headline}</h2>
+      </AnimatedSection>
+    </div>
+
+    <AnimatedSection client:visible direction="up" delay={0.2}>
+      <TestimonialMarquee
+        client:visible
+        items={sampleTestimonials}
+        speed="slow"
+        pauseOnHover={true}
+      />
+    </AnimatedSection>
+  </section>
+
+  <!-- CTA -->
+  <section class="py-32 bg-cream">
+    <div class="max-w-3xl mx-auto px-6 text-center">
+      <AnimatedSection client:visible direction="up">
+        <h2 class="text-display-md mb-6">
+          {page?.cta?.headline}
+        </h2>
+        <p class="text-body-lg text-muted mb-10">
+          {page?.cta?.description}
+        </p>
+
+        <div class="flex flex-wrap items-center justify-center gap-4 mb-8">
+          <a href={page?.cta?.primaryCta?.href} class="btn btn-primary">
+            {page?.cta?.primaryCta?.text}
+          </a>
+          <a href={page?.cta?.secondaryCta?.href} class="btn btn-secondary">
+            {page?.cta?.secondaryCta?.text}
+          </a>
+        </div>
+
+        <p class="text-sm text-muted">
+          Or email <a href={`mailto:${page?.cta?.contactEmail}`} class="text-primary hover:underline">{page?.cta?.contactEmail}</a>
+        </p>
+      </AnimatedSection>
+    </div>
+  </section>
+</Page>

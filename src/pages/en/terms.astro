@@ -1,7 +1,10 @@
 ---
+export const prerender = true;
 import Page from '../../layouts/Page.astro';
+import { reader } from '../../lib/keystatic';
+
 const lang = 'en';
-const lastUpdated = 'January 15, 2026';
+const page = await reader.singletons['terms-page'].read();
 ---
 
 <Page title="Terms of Service" lang={lang}>
@@ -10,9 +13,9 @@ const lastUpdated = 'January 15, 2026';
     <div class="absolute inset-0 grid-lines opacity-40"></div>
     <div class="max-w-4xl mx-auto px-6 relative z-10">
       <span class="text-caption text-muted mb-4 block">Legal</span>
-      <h1 class="text-display-lg text-charcoal mb-6">Terms of Service</h1>
+      <h1 class="text-display-lg text-charcoal mb-6">{page?.title}</h1>
       <p class="text-body-lg text-muted">
-        Last updated: {lastUpdated}
+        Last updated: {page?.lastUpdated}
       </p>
     </div>
   </section>

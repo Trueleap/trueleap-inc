@@ -1,0 +1,25 @@
+{
+  "hero": {
+    "eyebrow": "Resources",
+    "headline": "News &",
+    "headlineAccent": "Press",
+    "description": "The latest news, press releases, and updates from TrueLeap."
+  },
+  "mediaContact": {
+    "name": "Sarah Chen",
+    "role": "Head of Communications",
+    "email": "press@trueleapinc.com"
+  },
+  "pressKitItems": [
+    { "title": "Press Kit", "description": "Company overview, fact sheet, and key messages" },
+    { "title": "Executive Photos", "description": "High-resolution photos of leadership team" },
+    { "title": "Product Screenshots", "description": "Screenshots and product imagery" },
+    { "title": "Brand Guidelines", "description": "Logo, colors, and usage guidelines" }
+  ],
+  "cta": {
+    "headline": "Media inquiries?",
+    "description": "For press inquiries, interview requests, or media resources, please contact our communications team.",
+    "ctaText": "Contact Press Team",
+    "ctaHref": "mailto:press@trueleapinc.com"
+  }
+}

@@ -1,103 +1,10 @@
 ---
+export const prerender = true;
 import Page from '../../../layouts/Page.astro';
+import { reader } from '../../../lib/keystatic';
 
 const lang = 'en';
-
-const products = [
-  {
-    name: 'TrueLeap Node X1',
-    tagline: 'Community Edge Node',
-    description: 'Our flagship edge computing unit, designed for community-scale deployments. Serves up to 500 concurrent users within a 5km radius.',
-    specs: [
-      { label: 'Processor', value: 'ARM Cortex-A78 (8-core)' },
-      { label: 'Memory', value: '16GB LPDDR5' },
-      { label: 'Storage', value: '512GB NVMe SSD' },
-      { label: 'Connectivity', value: 'WiFi 6E, 5G, LoRa' },
-      { label: 'Power', value: '< 15W typical' },
-      { label: 'Solar Panel', value: '100W integrated' },
-      { label: 'Battery', value: '72hr backup' },
-      { label: 'Coverage', value: '5km radius' },
-    ],
-  },
-  {
-    name: 'TrueLeap Node S1',
-    tagline: 'Satellite Backhaul Node',
-    description: 'Gateway node with multi-constellation satellite connectivity. Bridges local mesh networks to global internet.',
-    specs: [
-      { label: 'Processor', value: 'ARM Cortex-A78 (8-core)' },
-      { label: 'Memory', value: '32GB LPDDR5' },
-      { label: 'Storage', value: '1TB NVMe SSD' },
-      { label: 'Satellite', value: 'LEO multi-constellation' },
-      { label: 'Throughput', value: '100+ Mbps' },
-      { label: 'Power', value: '< 45W typical' },
-      { label: 'Solar Panel', value: '200W integrated' },
-      { label: 'Coverage', value: '10km radius' },
-    ],
-  },
-  {
-    name: 'TrueLeap Node M1',
-    tagline: 'Mobile Deployment Kit',
-    description: 'Rapid-deployment unit for emergency response and temporary installations. Operational within 30 minutes of arrival.',
-    specs: [
-      { label: 'Processor', value: 'ARM Cortex-A76 (4-core)' },
-      { label: 'Memory', value: '8GB LPDDR5' },
-      { label: 'Storage', value: '256GB NVMe SSD' },
-      { label: 'Connectivity', value: 'WiFi 6, LTE, LoRa' },
-      { label: 'Power', value: '< 10W typical' },
-      { label: 'Weight', value: '< 5kg total' },
-      { label: 'Battery', value: '48hr backup' },
-      { label: 'Coverage', value: '2km radius' },
-    ],
-  },
-];
-
-const features = [
-  {
-    title: 'Weather-Sealed Enclosure',
-    description: 'IP67-rated enclosures withstand extreme temperatures (-40°C to +60°C), humidity, dust, and rain.',
-    icon: 'shield'
-  },
-  {
-    title: 'Self-Healing Mesh',
-    description: 'Nodes automatically discover neighbors and form resilient mesh networks that route around failures.',
-    icon: 'network'
-  },
-  {
-    title: 'Remote Management',
-    description: 'Full remote monitoring, configuration, and software updates via our Digital Twin platform.',
-    icon: 'monitor'
-  },
-  {
-    title: 'Modular Design',
-    description: 'Hot-swappable components for field servicing. Replace batteries, radios, or compute modules without tools.',
-    icon: 'modular'
-  },
-];
-
-const deploymentModels = [
-  {
-    name: 'Cluster Deployment',
-    description: 'Multiple X1 nodes covering a village or campus, connected via mesh networking to a single S1 gateway.',
-    ideal: 'Rural communities, schools, health clinics',
-  },
-  {
-    name: 'Linear Deployment',
-    description: 'Nodes deployed along roads, rivers, or transit corridors to provide continuous coverage.',
-    ideal: 'Agricultural areas, supply chains, transit routes',
-  },
-  {
-    name: 'Hub-and-Spoke',
-    description: 'Central S1 node with multiple X1 nodes extending coverage in all directions.',
-    ideal: 'District-level government services, regional offices',
-  },
-];
-
-const stats = [
-  { value: '2,400+', label: 'Nodes Deployed' },
-  { value: '99.7%', label: 'Uptime' },
-  { value: '< 2W', label: 'Idle Power' },
-  { value: '5+ yr', label: 'Lifespan' },
-];
+const page = await reader.singletons['infrastructure-page'].read();
 ---
 
 <Page title="Physical Infrastructure" lang={lang}>
@@ -105,21 +12,19 @@ const stats = [
   <section class="pt-32 pb-20 bg-cream relative overflow-hidden">
     <div class="absolute inset-0 grid-lines opacity-40"></div>
     <div class="max-w-7xl mx-auto px-6 relative z-10">
-      <span class="text-caption text-primary mb-4 block">Platform / Infrastructure</span>
+      <span class="text-caption text-primary mb-4 block">{page?.hero?.eyebrow}</span>
       <h1 class="text-display-xl text-charcoal mb-8">
-        Physical <span class="display-serif">Infrastructure</span>
+        {page?.hero?.headline} <span class="display-serif">{page?.hero?.headlineAccent}</span>
       </h1>
       <p class="text-body-lg text-muted max-w-3xl mb-8">
-        Ruggedized, solar-powered edge nodes designed for deployment in the most 
-        challenging environments. Built to operate autonomously for years without 
-        grid power or maintenance.
+        {page?.hero?.description}
       </p>
       <div class="flex flex-wrap gap-4">
-        <a href="mailto:sales@trueleapinc.com" class="btn btn-primary">
-          Request Quote
+        <a href={page?.hero?.ctaPrimary?.href} class="btn btn-primary">
+          {page?.hero?.ctaPrimary?.text}
         </a>
-        <a href="/en/resources/docs" class="btn btn-secondary">
-          Technical Specs
+        <a href={page?.hero?.ctaSecondary?.href} class="btn btn-secondary">
+          {page?.hero?.ctaSecondary?.text}
         </a>
       </div>
     </div>
@@ -129,7 +34,7 @@ const stats = [
   <section class="py-16 bg-charcoal">
     <div class="max-w-7xl mx-auto px-6">
       <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-        {stats.map((stat) => (
+        {page?.stats?.map((stat: any) => (
           <div class="text-center">
             <p class="text-3xl md:text-4xl font-medium text-white mb-1">{stat.value}</p>
             <p class="text-sm text-white/60">{stat.label}</p>
@@ -146,13 +51,13 @@ const stats = [
         <span class="text-caption text-primary mb-4 block">Hardware</span>
         <h2 class="text-display-lg text-charcoal mb-6">Edge Node Family</h2>
         <p class="text-body-lg text-muted">
-          Three node types designed to work together, covering every deployment scenario 
+          Three node types designed to work together, covering every deployment scenario
           from emergency response to permanent community infrastructure.
         </p>
       </div>
-      
+
       <div class="space-y-12">
-        {products.map((product, index) => (
+        {page?.nodes?.map((product: any, index: number) => (
           <div class={`grid lg:grid-cols-2 gap-12 items-center ${index % 2 === 1 ? 'lg:grid-flow-dense' : ''}`}>
             <div class={index % 2 === 1 ? 'lg:col-start-2' : ''}>
               <span class="inline-block px-3 py-1 rounded-full bg-indigo-light text-primary text-xs font-medium mb-4">
@@ -160,9 +65,9 @@ const stats = [
               </span>
               <h3 class="text-display-md text-charcoal mb-4">{product.name}</h3>
               <p class="text-body-lg text-muted mb-6">{product.description}</p>
-              
+
               <div class="grid grid-cols-2 gap-4">
-                {product.specs.map((spec) => (
+                {product.specs?.map((spec: any) => (
                   <div class="py-2 border-b border-border">
                     <p class="text-xs text-muted uppercase tracking-wider">{spec.label}</p>
                     <p class="text-sm font-medium text-charcoal">{spec.value}</p>
@@ -170,7 +75,7 @@ const stats = [
                 ))}
               </div>
             </div>
-            
+
             <div class={`aspect-square bg-cream border border-border flex items-center justify-center ${index % 2 === 1 ? 'lg:col-start-1' : ''}`}>
               <div class="text-center p-8">
                 <div class="w-24 h-24 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-primary-lighter to-cream flex items-center justify-center">
@@ -195,13 +100,13 @@ const stats = [
         <span class="text-caption text-primary mb-4 block">Engineering</span>
         <h2 class="text-display-lg text-charcoal mb-6">Built for the Real World</h2>
         <p class="text-body-lg text-muted">
-          Every component is designed for reliability in challenging environments. 
+          Every component is designed for reliability in challenging environments.
           No moving parts. No maintenance required. Just deploy and forget.
         </p>
       </div>
-      
+
       <div class="grid md:grid-cols-2 gap-8">
-        {features.map((feature) => (
+        {page?.features?.map((feature: any) => (
           <div class="card">
             <div class="w-12 h-12 rounded-xl bg-primary-lighter/50 flex items-center justify-center mb-4">
               <svg class="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -226,9 +131,9 @@ const stats = [
           Mix and match node types to create the perfect deployment for your environment.
         </p>
       </div>
-      
+
       <div class="grid md:grid-cols-3 gap-8">
-        {deploymentModels.map((model) => (
+        {page?.deploymentModels?.map((model: any) => (
           <div class="card text-center">
             <div class="w-16 h-16 mx-auto mb-6 rounded-2xl bg-cream border border-border flex items-center justify-center">
               <svg class="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -247,17 +152,16 @@ const stats = [
   <!-- CTA -->
   <section class="py-24 bg-charcoal text-white">
     <div class="max-w-3xl mx-auto px-6 text-center">
-      <h2 class="text-display-md text-white mb-6">Ready to deploy?</h2>
+      <h2 class="text-display-md text-white mb-6">{page?.cta?.headline}</h2>
       <p class="text-body-lg text-white/70 mb-8">
-        Our solutions engineering team can help you design the optimal deployment 
-        for your specific requirements and environment.
+        {page?.cta?.description}
       </p>
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-        <a href="mailto:sales@trueleapinc.com" class="btn bg-white text-charcoal hover:bg-white/90">
-          Request Quote
+        <a href={page?.cta?.primaryCta?.href} class="btn bg-white text-charcoal hover:bg-white/90">
+          {page?.cta?.primaryCta?.text}
         </a>
-        <a href="/en/platform/stack" class="btn border border-white/20 text-white hover:bg-white/10">
-          Full Stack Overview
+        <a href={page?.cta?.secondaryCta?.href} class="btn border border-white/20 text-white hover:bg-white/10">
+          {page?.cta?.secondaryCta?.text}
         </a>
       </div>
     </div>

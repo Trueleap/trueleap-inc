@@ -1,132 +1,22 @@
 ---
+export const prerender = true;
 import Page from '../../../layouts/Page.astro';
+import { reader } from '../../../lib/keystatic';
 
 const lang = 'en';
+const page = await reader.singletons['case-studies-page'].read();
 
-const caseStudies = [
-  {
-    id: 'rwanda-digital-schools',
-    category: 'Education',
-    region: 'East Africa',
-    country: 'Rwanda',
-    title: 'Rwanda Digital Schools Initiative',
-    subtitle: 'Connecting 2,500 rural schools to digital learning',
-    description: 'In partnership with Rwanda\'s Ministry of Education, TrueLeap deployed infrastructure to 2,500 rural schools across the country, enabling digital curriculum delivery, teacher training, and student assessment - all working offline.',
-    metrics: [
-      { value: '2,500+', label: 'Schools Connected' },
-      { value: '1.2M', label: 'Students Reached' },
-      { value: '95%', label: 'Curriculum Completion' },
-    ],
-    quote: {
-      text: 'TrueLeap has transformed education in rural Rwanda. Students who never had access to computers now have access to the same digital curriculum as students in Kigali.',
-      author: 'Dr. Valentine Uwamariya',
-      role: 'Minister of Education, Rwanda',
-    },
-    featured: true,
-  },
-  {
-    id: 'pacific-cyclone-response',
-    category: 'Humanitarian',
-    region: 'Pacific Islands',
-    country: 'Fiji, Vanuatu, Tonga',
-    title: 'Pacific Cyclone Emergency Network',
-    subtitle: 'Rapid deployment for disaster response',
-    description: 'When Cyclone Maia devastated the Pacific islands, TrueLeap partnered with IRC to deploy emergency communication infrastructure across 12 affected islands within 72 hours, enabling coordination of relief efforts.',
-    metrics: [
-      { value: '12', label: 'Islands Connected' },
-      { value: '72hr', label: 'Time to Deploy' },
-      { value: '45K', label: 'People Served' },
-    ],
-    quote: {
-      text: 'In disaster response, communication is everything. TrueLeap gave us the ability to coordinate across islands that had no other way to communicate with the outside world.',
-      author: 'Maria Santos',
-      role: 'Regional Director, IRC Pacific',
-    },
-    featured: true,
-  },
-  {
-    id: 'indonesia-islands',
-    category: 'Government',
-    region: 'Southeast Asia',
-    country: 'Indonesia',
-    title: 'Thousand Islands Connectivity',
-    subtitle: 'Connecting remote fishing communities',
-    description: 'TrueLeap deployed infrastructure across 127 remote islands in Eastern Indonesia, connecting fishing communities to weather data, market prices, and financial services for the first time.',
-    metrics: [
-      { value: '127', label: 'Islands Connected' },
-      { value: '340K', label: 'People Reached' },
-      { value: '45%', label: 'Income Increase' },
-    ],
-    quote: {
-      text: 'Before TrueLeap, we had no way to know fish prices before sailing to market. Now we can sell our catch for fair prices and keep our families safe with weather warnings.',
-      author: 'Pak Hasan',
-      role: 'Fisherman, Maluku Province',
-    },
-    featured: false,
-  },
-  {
-    id: 'ghana-agriculture',
-    category: 'Enterprise',
-    region: 'West Africa',
-    country: 'Ghana',
-    title: 'Ghana Agricultural Extension',
-    subtitle: 'AI-powered farming advice at scale',
-    description: 'TrueLeap\'s edge AI capabilities deliver personalized farming recommendations to 50,000 smallholder farmers through local edge nodes, including crop disease identification, planting advice, and market connections.',
-    metrics: [
-      { value: '50K', label: 'Farmers Served' },
-      { value: '340%', label: 'Yield Increase' },
-      { value: '60%', label: 'Input Cost Reduction' },
-    ],
-    quote: {
-      text: 'The AI can identify crop diseases from a photo faster than any expert. Farmers who used to lose entire harvests now catch problems early.',
-      author: 'Dr. Kofi Mensah',
-      role: 'Director, Ghana Agricultural Extension',
-    },
-    featured: false,
-  },
-  {
-    id: 'colombia-health',
-    category: 'Healthcare',
-    region: 'Latin America',
-    country: 'Colombia',
-    title: 'Rural Health Network Colombia',
-    subtitle: 'Digital health records for remote clinics',
-    description: 'TrueLeap connected 340 rural health clinics to the national health system, enabling digital patient records, telemedicine consultations, and medication tracking - all functioning without reliable internet.',
-    metrics: [
-      { value: '340', label: 'Clinics Connected' },
-      { value: '850K', label: 'Patient Records' },
-      { value: '12K', label: 'Teleconsultations' },
-    ],
-    quote: {
-      text: 'We can now access patient history, consult with specialists, and order medications - things that were impossible before TrueLeap.',
-      author: 'Dr. Carolina Restrepo',
-      role: 'Rural Health Coordinator, Ministry of Health',
-    },
-    featured: false,
-  },
-  {
-    id: 'newmont-mining',
-    category: 'Enterprise',
-    region: 'West Africa',
-    country: 'Ghana, Mali',
-    title: 'Newmont Connected Mine Operations',
-    subtitle: 'Edge computing for remote mining sites',
-    description: 'Newmont deployed TrueLeap infrastructure across 6 remote mining sites, enabling real-time equipment monitoring, worker safety tracking, and autonomous vehicle coordination without satellite connectivity.',
-    metrics: [
-      { value: '6', label: 'Sites Connected' },
-      { value: '23%', label: 'Efficiency Gain' },
-      { value: '$4.2M', label: 'Annual Savings' },
-    ],
-    quote: {
-      text: 'TrueLeap replaced our expensive satellite links with local edge infrastructure. We get better performance at a fraction of the cost.',
-      author: 'James Wright',
-      role: 'VP Technology, Newmont Africa',
-    },
-    featured: false,
-  },
-];
+const slugs = await reader.collections['case-studies'].list();
+const caseStudies = await Promise.all(
+  slugs.map(async (slug) => {
+    const entry = await reader.collections['case-studies'].read(slug);
+    return entry ? { slug, ...entry } : null;
+  })
+);
+const allStudies = caseStudies.filter(Boolean) as NonNullable<(typeof caseStudies)[number]>[];
 
-const categories = ['All', 'Education', 'Government', 'Healthcare', 'Humanitarian', 'Enterprise'];
+const categories = page?.categoryFilters ?? [];
+const featuredStudies = allStudies.filter((c) => c.featured);
 ---
 
 <Page title="Case Studies" lang={lang}>
@@ -134,13 +24,12 @@ const categories = ['All', 'Education', 'Government', 'Healthcare', 'Humanitaria
   <section class="pt-32 pb-20 bg-cream relative overflow-hidden">
     <div class="absolute inset-0 grid-lines opacity-40"></div>
     <div class="max-w-7xl mx-auto px-6 relative z-10">
-      <span class="text-caption text-muted mb-4 block">Impact</span>
+      <span class="text-caption text-muted mb-4 block">{page?.hero?.eyebrow}</span>
       <h1 class="text-display-xl text-charcoal mb-8">
-        Case <span class="display-serif">Studies</span>
+        {page?.hero?.headline} <span class="display-serif">{page?.hero?.headlineAccent}</span>
       </h1>
       <p class="text-body-lg text-muted max-w-3xl">
-        Deep dives into our most impactful deployments. Real results from real 
-        communities around the world.
+        {page?.hero?.description}
       </p>
     </div>
   </section>
@@ -161,32 +50,32 @@ const categories = ['All', 'Education', 'Government', 'Healthcare', 'Humanitaria
   <!-- Featured Case Studies -->
   <section class="py-16 bg-charcoal">
     <div class="max-w-7xl mx-auto px-6">
-      <span class="text-caption text-primary-light mb-8 block">Featured</span>
+      <span class="text-caption text-primary-light mb-8 block">{page?.featuredTitle}</span>
       <div class="grid md:grid-cols-2 gap-8">
-        {caseStudies.filter(c => c.featured).map((study) => (
+        {featuredStudies.map((study) => (
           <div class="p-8 rounded-2xl bg-charcoal-light border border-border-dark">
             <div class="flex items-center gap-2 mb-4">
               <span class="px-3 py-1 rounded-full bg-primary text-white text-xs font-medium">
-                {study.category}
+                {study?.industry}
               </span>
-              <span class="text-sm text-white/50">{study.country}</span>
+              <span class="text-sm text-white/50">{study?.country}</span>
             </div>
-            <h3 class="text-xl font-medium text-white mb-2">{study.title}</h3>
-            <p class="text-white/70 text-sm mb-6">{study.subtitle}</p>
-            
+            <h3 class="text-xl font-medium text-white mb-2">{study?.title}</h3>
+            <p class="text-white/70 text-sm mb-6">{study?.subtitle}</p>
+
             <div class="grid grid-cols-3 gap-4 mb-6">
-              {study.metrics.map((metric) => (
+              {(study?.metrics ?? []).map((metric) => (
                 <div>
-                  <p class="text-2xl font-medium text-white">{metric.value}</p>
-                  <p class="text-xs text-white/50">{metric.label}</p>
+                  <p class="text-2xl font-medium text-white">{metric?.value}</p>
+                  <p class="text-xs text-white/50">{metric?.label}</p>
                 </div>
               ))}
             </div>
-            
+
             <blockquote class="pt-4 border-t border-border-dark">
-              <p class="text-sm text-white/70 italic mb-2">"{study.quote.text}"</p>
+              <p class="text-sm text-white/70 italic mb-2">"{study?.quote?.text}"</p>
               <cite class="text-xs text-white/50 not-italic">
-                — {study.quote.author}, {study.quote.role}
+                — {study?.quote?.attribution}, {study?.quote?.role}
               </cite>
             </blockquote>
           </div>
@@ -198,35 +87,34 @@ const categories = ['All', 'Education', 'Government', 'Healthcare', 'Humanitaria
   <!-- All Case Studies -->
   <section class="py-24 bg-white">
     <div class="max-w-7xl mx-auto px-6">
-      <span class="text-caption text-primary mb-8 block">All Case Studies</span>
-      
+      <span class="text-caption text-primary mb-8 block">{page?.allTitle}</span>
+
       <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {caseStudies.map((study) => (
+        {allStudies.map((study) => (
           <div class="card group">
             <div class="aspect-video bg-gradient-to-br from-primary-lighter/30 to-cream mb-6 flex items-center justify-center">
               <div class="text-center">
-                <span class="text-3xl mb-2 block">{study.country === 'Rwanda' ? '🇷🇼' : study.country === 'Indonesia' ? '🇮🇩' : study.country === 'Ghana' ? '🇬🇭' : study.country === 'Colombia' ? '🇨🇴' : '🌍'}</span>
-                <p class="text-xs text-muted">{study.region}</p>
+                <p class="text-xs text-muted">{study?.region}</p>
               </div>
             </div>
-            
+
             <div class="flex items-center gap-2 mb-3">
               <span class="px-2 py-1 rounded-full bg-primary-lighter text-primary text-xs font-medium">
-                {study.category}
+                {study?.industry}
               </span>
-              <span class="text-xs text-muted">{study.country}</span>
+              <span class="text-xs text-muted">{study?.country}</span>
             </div>
-            
+
             <h3 class="text-lg font-medium text-charcoal mb-2 group-hover:text-primary transition-colors" style="transition-duration: var(--duration-normal);">
-              {study.title}
+              {study?.title}
             </h3>
-            <p class="text-sm text-muted mb-4">{study.subtitle}</p>
-            
+            <p class="text-sm text-muted mb-4">{study?.subtitle}</p>
+
             <div class="grid grid-cols-3 gap-2 pt-4 border-t border-border">
-              {study.metrics.slice(0, 3).map((metric) => (
+              {(study?.metrics ?? []).slice(0, 3).map((metric) => (
                 <div class="text-center">
-                  <p class="text-sm font-medium text-charcoal">{metric.value}</p>
-                  <p class="text-xs text-muted">{metric.label}</p>
+                  <p class="text-sm font-medium text-charcoal">{metric?.value}</p>
+                  <p class="text-xs text-muted">{metric?.label}</p>
                 </div>
               ))}
             </div>
@@ -243,7 +131,7 @@ const categories = ['All', 'Education', 'Government', 'Healthcare', 'Humanitaria
         Ready to create your own success story?
       </h2>
       <p class="text-body-lg text-muted mb-8">
-        Whether you're a government, NGO, or enterprise, we can help you design 
+        Whether you're a government, NGO, or enterprise, we can help you design
         a deployment that achieves real impact for your community.
       </p>
       <div class="flex flex-wrap items-center justify-center gap-4">

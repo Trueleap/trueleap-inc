@@ -1,74 +1,27 @@
 ---
+export const prerender = true;
 import Page from '../../../layouts/Page.astro';
+import { reader } from '../../../lib/keystatic';
 
 const lang = 'en';
+const page = await reader.singletons['newsroom-page'].read();
 
-const news = [
-  {
-    type: 'Press Release',
-    date: 'January 15, 2026',
-    title: 'TrueLeap Closes $127M Series B to Accelerate Global Expansion',
-    excerpt: 'Funding led by Andreessen Horowitz with participation from Development Finance Corporation. Proceeds will fund expansion to 15 new countries and R&D on next-generation edge computing hardware.',
-    featured: true,
-  },
-  {
-    type: 'Announcement',
-    date: 'December 8, 2025',
-    title: 'Partnership with African Union for Digital Transformation Initiative',
-    excerpt: 'TrueLeap selected as technology partner for the AU\'s Digital Transformation Strategy 2020-2030, targeting 100 million new connections across member states.',
-    featured: true,
-  },
-  {
-    type: 'Product Update',
-    date: 'November 20, 2025',
-    title: 'Edge AI Engine 3.0: On-Device Large Language Models',
-    excerpt: 'New capabilities enable deployment of compressed LLMs on TrueLeap edge nodes, bringing advanced AI capabilities to offline environments for the first time.',
-    featured: false,
-  },
-  {
-    type: 'Press Release',
-    date: 'October 5, 2025',
-    title: 'TrueLeap Expands to Southeast Asia with Indonesia Partnership',
-    excerpt: 'Ministry of Communications partnership will connect 127 islands in Eastern Indonesia, bringing digital services to 340,000 people in remote fishing communities.',
-    featured: false,
-  },
-  {
-    type: 'Recognition',
-    date: 'September 18, 2025',
-    title: 'TrueLeap Named to Fast Company\'s Most Innovative Companies',
-    excerpt: 'Recognized in the Social Good category for pioneering offline-first infrastructure that operates independently of traditional connectivity.',
-    featured: false,
-  },
-  {
-    type: 'Announcement',
-    date: 'August 1, 2025',
-    title: 'Rwanda Digital Schools Initiative Reaches 2,500 Schools',
-    excerpt: 'Three years after launch, the partnership with Rwanda\'s Ministry of Education has connected 2,500 rural schools, reaching 1.2 million students.',
-    featured: false,
-  },
-  {
-    type: 'Product Update',
-    date: 'July 12, 2025',
-    title: 'Leapspace 2.0: Real-Time Collaboration Without Internet',
-    excerpt: 'Major update to our flagship collaboration platform adds video conferencing, whiteboarding, and real-time document editing - all working offline.',
-    featured: false,
-  },
-  {
-    type: 'Press Release',
-    date: 'June 3, 2025',
-    title: 'TrueLeap Partners with World Food Programme for Emergency Response',
-    excerpt: 'New partnership establishes rapid-deployment protocol for humanitarian crises, with pre-positioned equipment in regional hubs worldwide.',
-    featured: false,
-  },
-];
-
-const mediaContacts = {
-  primary: {
-    name: 'Sarah Chen',
-    title: 'Head of Communications',
-    email: 'press@trueleapinc.com',
-  },
-};
+// Read news collection
+const newsSlugs = await reader.collections.news.list();
+const newsEntries = await Promise.all(
+  newsSlugs.map(async (slug) => {
+    const entry = await reader.collections.news.read(slug);
+    return { slug, ...entry };
+  })
+);
+// Sort by publishedAt descending
+const news = newsEntries
+  .filter((n) => n.title)
+  .sort((a, b) => {
+    const dateA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
+    const dateB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
+    return dateB - dateA;
+  });
 ---
 
 <Page title="Newsroom" lang={lang}>
@@ -76,13 +29,12 @@ const mediaContacts = {
   <section class="pt-32 pb-20 bg-cream relative overflow-hidden">
     <div class="absolute inset-0 grid-lines opacity-40"></div>
     <div class="max-w-7xl mx-auto px-6 relative z-10">
-      <span class="text-caption text-muted mb-4 block">Resources</span>
+      <span class="text-caption text-muted mb-4 block">{page?.hero?.eyebrow}</span>
       <h1 class="text-display-xl text-charcoal mb-8">
-        <span class="display-serif">Newsroom</span>
+        {page?.hero?.headline} <span class="display-serif">{page?.hero?.headlineAccent}</span>
       </h1>
       <p class="text-body-lg text-muted max-w-3xl">
-        Press releases, company announcements, and media resources. For press 
-        inquiries, contact <a href="mailto:press@trueleapinc.com" class="text-primary hover:underline">press@trueleapinc.com</a>.
+        {page?.hero?.description}
       </p>
     </div>
   </section>
@@ -91,14 +43,14 @@ const mediaContacts = {
   <section class="py-16 bg-charcoal">
     <div class="max-w-7xl mx-auto px-6">
       <div class="grid md:grid-cols-2 gap-8">
-        {news.filter(n => n.featured).map((item) => (
+        {news.filter((n: any) => n.featured).map((item: any) => (
           <div class="p-8 rounded-2xl bg-charcoal-light border border-border-dark">
             <span class="inline-block px-3 py-1 rounded-full bg-primary text-white text-xs font-medium mb-4">
-              {item.type}
+              {item.category}
             </span>
-            <p class="text-sm text-white/50 mb-2">{item.date}</p>
+            <p class="text-sm text-white/50 mb-2">{item.publishedAt ? new Date(item.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : ''}</p>
             <h3 class="text-xl font-medium text-white mb-3">{item.title}</h3>
-            <p class="text-white/70 text-sm">{item.excerpt}</p>
+            <p class="text-white/70 text-sm">{item.description}</p>
           </div>
         ))}
       </div>
@@ -112,16 +64,16 @@ const mediaContacts = {
       <h2 class="text-display-md text-charcoal mb-12">Latest Updates</h2>
       
       <div class="space-y-0">
-        {news.map((item, index) => (
+        {news.map((item: any, index: number) => (
           <article class={`py-8 ${index < news.length - 1 ? 'border-b border-border' : ''}`}>
             <div class="flex flex-col md:flex-row md:items-start gap-4">
               <div class="md:w-32 flex-shrink-0">
-                <span class="text-xs text-primary font-medium">{item.type}</span>
-                <p class="text-sm text-muted">{item.date}</p>
+                <span class="text-xs text-primary font-medium">{item.category}</span>
+                <p class="text-sm text-muted">{item.publishedAt ? new Date(item.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : ''}</p>
               </div>
               <div class="flex-1">
                 <h3 class="text-xl font-medium text-charcoal mb-2">{item.title}</h3>
-                <p class="text-muted">{item.excerpt}</p>
+                <p class="text-muted">{item.description}</p>
               </div>
             </div>
           </article>
@@ -143,34 +95,15 @@ const mediaContacts = {
           </p>
           
           <div class="space-y-4">
-            <a href="#" class="card group flex items-center justify-between hover:border-primary/30 transition-all" style="transition-duration: var(--duration-normal);">
-              <div>
-                <h3 class="font-medium text-charcoal group-hover:text-primary transition-colors" style="transition-duration: var(--duration-normal);">Logo Package</h3>
-                <p class="text-sm text-muted">SVG, PNG, and EPS formats</p>
-              </div>
-              <span class="text-primary">↓</span>
-            </a>
-            <a href="#" class="card group flex items-center justify-between hover:border-primary/30 transition-all" style="transition-duration: var(--duration-normal);">
-              <div>
-                <h3 class="font-medium text-charcoal group-hover:text-primary transition-colors" style="transition-duration: var(--duration-normal);">Executive Photos</h3>
-                <p class="text-sm text-muted">High-resolution headshots</p>
-              </div>
-              <span class="text-primary">↓</span>
-            </a>
-            <a href="#" class="card group flex items-center justify-between hover:border-primary/30 transition-all" style="transition-duration: var(--duration-normal);">
-              <div>
-                <h3 class="font-medium text-charcoal group-hover:text-primary transition-colors" style="transition-duration: var(--duration-normal);">Product Screenshots</h3>
-                <p class="text-sm text-muted">Leapspace, Digital Twin, Leapcast</p>
-              </div>
-              <span class="text-primary">↓</span>
-            </a>
-            <a href="#" class="card group flex items-center justify-between hover:border-primary/30 transition-all" style="transition-duration: var(--duration-normal);">
-              <div>
-                <h3 class="font-medium text-charcoal group-hover:text-primary transition-colors" style="transition-duration: var(--duration-normal);">Brand Guidelines</h3>
-                <p class="text-sm text-muted">Colors, typography, usage rules</p>
-              </div>
-              <span class="text-primary">↓</span>
-            </a>
+            {page?.pressKitItems?.map((item: any) => (
+              <a href="#" class="card group flex items-center justify-between hover:border-primary/30 transition-all" style="transition-duration: var(--duration-normal);">
+                <div>
+                  <h3 class="font-medium text-charcoal group-hover:text-primary transition-colors" style="transition-duration: var(--duration-normal);">{item.title}</h3>
+                  <p class="text-sm text-muted">{item.description}</p>
+                </div>
+                <span class="text-primary">↓</span>
+              </a>
+            ))}
           </div>
         </div>
         
@@ -185,14 +118,14 @@ const mediaContacts = {
           <div class="card">
             <div class="flex items-center gap-4 mb-4">
               <div class="w-16 h-16 rounded-full bg-gradient-to-br from-primary-lighter to-cream flex items-center justify-center">
-                <span class="text-xl font-display text-primary">SC</span>
+                <span class="text-xl font-display text-primary">{page?.mediaContact?.name?.split(' ').map((n: string) => n[0]).join('')}</span>
               </div>
               <div>
-                <h3 class="font-medium text-charcoal">{mediaContacts.primary.name}</h3>
-                <p class="text-sm text-muted">{mediaContacts.primary.title}</p>
+                <h3 class="font-medium text-charcoal">{page?.mediaContact?.name}</h3>
+                <p class="text-sm text-muted">{page?.mediaContact?.role}</p>
               </div>
             </div>
-            <a href={`mailto:${mediaContacts.primary.email}`} class="btn btn-primary w-full justify-center">
+            <a href={`mailto:${page?.mediaContact?.email}`} class="btn btn-primary w-full justify-center">
               Contact Press Team
             </a>
           </div>

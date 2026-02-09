@@ -1,0 +1,37 @@
+name: Create PR from content branch
+
+on:
+  push:
+    branches:
+      - 'content/**'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for existing PR
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          existing=$(gh pr list --repo "${{ github.repository }}" --head "${{ github.ref_name }}" --state open --json number --jq '.[0].number')
+          echo "pr_number=${existing}" >> "$GITHUB_OUTPUT"
+
+      - name: Create PR
+        if: steps.check.outputs.pr_number == ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          branch="${{ github.ref_name }}"
+          title="${branch#content/}"
+          title="Content: ${title}"
+          gh pr create \
+            --repo "${{ github.repository }}" \
+            --head "$branch" \
+            --base main \
+            --title "$title" \
+            --body "Automated PR from CMS content edit on branch \`$branch\`."

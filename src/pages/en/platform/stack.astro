@@ -1,81 +1,33 @@
 ---
+export const prerender = true;
 import Page from '../../../layouts/Page.astro';
 import StackDiagramToggle from '../../../components/stack/StackDiagramToggle';
+import { reader } from '../../../lib/keystatic';
 
 const lang = 'en';
+const page = await reader.singletons['stack-page'].read();
 
-const layers = [
-  {
-    number: '04',
-    name: 'Applications',
-    tagline: 'User-facing software',
-    description: 'Three integrated applications that provide the user interface to the TrueLeap platform. Built offline-first, they sync when connectivity is available.',
-    products: [
-      { name: 'Leapspace', desc: 'Collaboration workspace with documents, messaging, and video' },
-      { name: 'Digital Twin', desc: 'Real-time monitoring and visualization of infrastructure' },
-      { name: 'Leapcast', desc: 'One-to-many content broadcasting and streaming' },
-    ],
-    icon: 'M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z'
-  },
-  {
-    number: '03',
-    name: 'Edge AI Engine',
-    tagline: 'On-device intelligence',
-    description: 'Machine learning models that run locally on edge nodes. Process data, make decisions, and learn patterns without cloud connectivity.',
-    products: [
-      { name: 'Local Inference', desc: 'Run ML models on-device with sub-100ms latency' },
-      { name: 'Federated Learning', desc: 'Train models across nodes without sharing raw data' },
-      { name: 'Custom Models', desc: 'Deploy organization-specific AI capabilities' },
-    ],
-    icon: 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z'
-  },
-  {
-    number: '02',
-    name: 'Network Layer',
-    tagline: 'Connectivity fabric',
-    description: 'Self-healing mesh networks that route data efficiently between nodes. Integrate with satellite backhaul for global connectivity when needed.',
-    products: [
-      { name: 'Mesh Protocol', desc: 'Dynamic routing that adapts to network conditions' },
-      { name: 'Satellite Backhaul', desc: 'LEO satellite integration for global reach' },
-      { name: 'Hybrid Connectivity', desc: 'Seamless failover between connection types' },
-    ],
-    icon: 'M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0'
-  },
-  {
-    number: '01',
-    name: 'Physical Infrastructure',
-    tagline: 'Hardware foundation',
-    description: 'Ruggedized edge nodes powered by solar energy. Designed to operate in extreme temperatures, humidity, and dust conditions.',
-    products: [
-      { name: 'Edge Node', desc: 'ARM-based compute with 1TB storage, < 2W power draw' },
-      { name: 'Solar Kit', desc: '50W panel with 72hr battery backup' },
-      { name: 'Weatherproofing', desc: 'IP67 enclosure rated for -20°C to 60°C' },
-    ],
-    icon: 'M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z'
-  },
+const layerIcons = [
+  'M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z',
+  'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+  'M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0',
+  'M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z',
 ];
 
-const principles = [
-  {
-    title: 'Offline-First',
-    description: 'Every component is designed to work without internet connectivity. Sync when available, function always.',
-    icon: 'M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.167-9.238m7.824 2.167a1 1 0 111.414 1.414m-1.414-1.414L3 3m8.293 8.293l1.414 1.414'
-  },
-  {
-    title: 'Sovereign by Default',
-    description: 'Data stays local unless explicitly shared. No cloud dependencies, no external data flows.',
-    icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z'
-  },
-  {
-    title: 'Solar-Powered',
-    description: 'Designed for < 2W average power consumption. Run indefinitely on small solar panels.',
-    icon: 'M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z'
-  },
-  {
-    title: 'Self-Healing',
-    description: 'Mesh networks automatically route around failures. No single point of failure.',
-    icon: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15'
-  },
+const principleIcons = [
+  'M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.167-9.238m7.824 2.167a1 1 0 111.414 1.414m-1.414-1.414L3 3m8.293 8.293l1.414 1.414',
+  'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
+  'M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z',
+  'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15',
+];
+
+const stepColors = ['bg-primary', 'bg-violet', 'bg-primary-light', 'bg-violet'];
+
+const diagramItems = [
+  { label: 'L4: Applications', sublabel: 'User Interface', color: 'bg-violet' },
+  { label: 'L3: Edge AI', sublabel: 'Intelligence', color: 'bg-primary-light' },
+  { label: 'L2: Network', sublabel: 'Connectivity', color: 'bg-violet' },
+  { label: 'L1: Physical', sublabel: 'Hardware', color: 'bg-primary' },
 ];
 ---
 
@@ -84,37 +36,29 @@ const principles = [
   <section class="pt-32 pb-20 bg-cream relative overflow-hidden">
     <!-- Grid pattern -->
     <div class="absolute inset-0 grid-lines opacity-40"></div>
-    
+
     <div class="max-w-7xl mx-auto px-6 relative z-10">
       <div class="grid lg:grid-cols-2 gap-16 items-center">
         <div>
-          <span class="text-caption text-primary mb-4 block">Platform / Stack</span>
+          <span class="text-caption text-primary mb-4 block">{page?.hero?.eyebrow}</span>
           <h1 class="text-display-xl text-charcoal mb-8">
-            The Complete <span class="display-serif text-gradient">Stack</span>
+            {page?.hero?.headline} <span class="display-serif text-gradient">{page?.hero?.headlineAccent}</span>
           </h1>
           <p class="text-body-lg text-muted max-w-xl">
-            Four integrated layers that work together to create a complete, 
-            sovereign digital infrastructure. Each layer builds on the one 
-            below, creating a unified platform that works anywhere.
+            {page?.hero?.description}
           </p>
-          
+
           <!-- Quick stats -->
           <div class="mt-10 flex flex-wrap gap-8">
-            <div>
-              <p class="text-3xl font-semibold text-charcoal">4</p>
-              <p class="text-sm text-muted">Integrated Layers</p>
-            </div>
-            <div>
-              <p class="text-3xl font-semibold text-charcoal">&lt;2W</p>
-              <p class="text-sm text-muted">Power Draw</p>
-            </div>
-            <div>
-              <p class="text-3xl font-semibold text-charcoal">100%</p>
-              <p class="text-sm text-muted">Offline Capable</p>
-            </div>
+            {page?.quickStats?.map((stat: any) => (
+              <div>
+                <p class="text-3xl font-semibold text-charcoal">{stat.value}</p>
+                <p class="text-sm text-muted">{stat.label}</p>
+              </div>
+            ))}
           </div>
         </div>
-        
+
         <!-- Diagram with toggle -->
         <div class="relative">
           <StackDiagramToggle client:visible />
@@ -130,13 +74,13 @@ const principles = [
         <span class="text-caption text-primary mb-4 block">Architecture</span>
         <h2 class="text-display-md text-charcoal mb-6">Four Layers, One Platform</h2>
         <p class="text-body-lg text-muted">
-          From physical hardware to user-facing applications, every layer 
+          From physical hardware to user-facing applications, every layer
           is designed to work independently and together.
         </p>
       </div>
-      
+
       <div class="space-y-6">
-        {layers.map((layer, index) => (
+        {page?.layers?.map((layer: any, index: number) => (
           <div class="group">
             <div class="grid lg:grid-cols-12 gap-8 items-start p-8 rounded-2xl bg-cream border border-border hover:border-primary/50 hover:shadow-lg transition-all duration-300">
               <!-- Layer number & icon -->
@@ -146,22 +90,22 @@ const principles = [
                 </span>
                 <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center lg:mt-2">
                   <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d={layer.icon} />
+                    <path stroke-linecap="round" stroke-linejoin="round" d={layerIcons[index]} />
                   </svg>
                 </div>
               </div>
-              
+
               <!-- Layer info -->
               <div class="lg:col-span-4">
                 <p class="text-xs uppercase tracking-wider text-primary font-medium mb-2">{layer.tagline}</p>
                 <h3 class="text-2xl font-medium text-charcoal mb-3">{layer.name}</h3>
                 <p class="text-muted leading-relaxed">{layer.description}</p>
               </div>
-              
+
               <!-- Components -->
               <div class="lg:col-span-7">
                 <div class="grid md:grid-cols-3 gap-4">
-                  {layer.products.map((product) => (
+                  {layer.products?.map((product: any) => (
                     <div class="p-4 rounded-xl bg-white border border-border group-hover:border-primary/20 transition-colors">
                       <h4 class="font-medium text-charcoal mb-1.5">{product.name}</h4>
                       <p class="text-sm text-muted leading-relaxed">{product.desc}</p>
@@ -170,9 +114,9 @@ const principles = [
                 </div>
               </div>
             </div>
-            
+
             {/* Connection line between layers */}
-            {index < layers.length - 1 && (
+            {index < (page?.layers?.length ?? 0) - 1 && (
               <div class="flex justify-center py-2">
                 <div class="w-px h-8 bg-gradient-to-b from-primary/30 to-transparent"></div>
               </div>
@@ -190,17 +134,17 @@ const principles = [
         <span class="text-caption text-primary mb-4 block">Philosophy</span>
         <h2 class="text-display-md text-charcoal mb-6">Design Principles</h2>
         <p class="text-body-lg text-muted">
-          Every architectural decision is guided by four core principles 
+          Every architectural decision is guided by four core principles
           that ensure the stack works in the most challenging environments.
         </p>
       </div>
-      
+
       <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {principles.map((principle) => (
+        {page?.designPrinciples?.map((principle: any, i: number) => (
           <div class="group p-6 rounded-xl bg-white border border-border hover:border-primary/50 hover:shadow-lg transition-all duration-300 text-center">
             <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/10 to-violet/10 flex items-center justify-center mx-auto mb-5 group-hover:scale-110 transition-transform">
               <svg class="w-7 h-7 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d={principle.icon} />
+                <path stroke-linecap="round" stroke-linejoin="round" d={principleIcons[i]} />
               </svg>
             </div>
             <h3 class="text-lg font-medium text-charcoal mb-3">{principle.title}</h3>
@@ -218,53 +162,26 @@ const principles = [
         <div>
           <span class="text-caption text-primary mb-4 block">Integration</span>
           <h2 class="text-display-md text-charcoal mb-8">How the Layers Work Together</h2>
-          
+
           <div class="space-y-6">
-            <div class="flex gap-4">
-              <div class="shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-sm font-semibold">1</div>
-              <div>
-                <p class="font-medium text-charcoal mb-1">Physical Foundation</p>
-                <p class="text-muted">Ruggedized hardware that operates on minimal power in extreme conditions.</p>
+            {page?.layerIntegration?.map((item: any, i: number) => (
+              <div class="flex gap-4">
+                <div class={`shrink-0 w-8 h-8 rounded-full ${stepColors[i]} flex items-center justify-center text-white text-sm font-semibold`}>{item.step}</div>
+                <div>
+                  <p class="font-medium text-charcoal mb-1">{item.title}</p>
+                  <p class="text-muted">{item.description}</p>
+                </div>
               </div>
-            </div>
-            
-            <div class="flex gap-4">
-              <div class="shrink-0 w-8 h-8 rounded-full bg-violet flex items-center justify-center text-white text-sm font-semibold">2</div>
-              <div>
-                <p class="font-medium text-charcoal mb-1">Connectivity Fabric</p>
-                <p class="text-muted">Mesh networking and satellite backhaul enable nodes to communicate.</p>
-              </div>
-            </div>
-            
-            <div class="flex gap-4">
-              <div class="shrink-0 w-8 h-8 rounded-full bg-primary-light flex items-center justify-center text-white text-sm font-semibold">3</div>
-              <div>
-                <p class="font-medium text-charcoal mb-1">Local Intelligence</p>
-                <p class="text-muted">ML models run locally and learn across the network via federated learning.</p>
-              </div>
-            </div>
-            
-            <div class="flex gap-4">
-              <div class="shrink-0 w-8 h-8 rounded-full bg-violet flex items-center justify-center text-white text-sm font-semibold">4</div>
-              <div>
-                <p class="font-medium text-charcoal mb-1">User Experience</p>
-                <p class="text-muted">Three integrated applications designed for offline-first operation.</p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
-        
+
         <!-- Simple visual representation -->
         <div class="relative">
           <div class="aspect-square rounded-2xl bg-cream border border-border overflow-hidden p-8">
             <div class="h-full flex flex-col">
               {/* Vertical stack with connecting arrows */}
-              {[
-                { label: 'L4: Applications', sublabel: 'User Interface', color: 'bg-violet' },
-                { label: 'L3: Edge AI', sublabel: 'Intelligence', color: 'bg-primary-light' },
-                { label: 'L2: Network', sublabel: 'Connectivity', color: 'bg-violet' },
-                { label: 'L1: Physical', sublabel: 'Hardware', color: 'bg-primary' },
-              ].map((item, i) => (
+              {diagramItems.map((item, i) => (
                 <div class="flex-1 flex flex-col justify-center" key={i}>
                   <div class="flex items-center gap-4">
                     <div class={`w-3 h-3 rounded-full ${item.color}`}></div>
@@ -287,7 +204,7 @@ const principles = [
               ))}
             </div>
           </div>
-          
+
           {/* Decorative elements */}
           <div class="absolute -top-4 -right-4 w-24 h-24 bg-primary/5 rounded-full blur-2xl"></div>
           <div class="absolute -bottom-4 -left-4 w-32 h-32 bg-violet/5 rounded-full blur-2xl"></div>
@@ -300,18 +217,17 @@ const principles = [
   <section class="py-24 bg-cream border-t border-border">
     <div class="max-w-3xl mx-auto px-6 text-center">
       <h2 class="text-display-md text-charcoal mb-6">
-        Dive deeper into each layer
+        {page?.cta?.headline}
       </h2>
       <p class="text-body-lg text-muted mb-10">
-        Explore the technical details of each component in our documentation, 
-        or contact our team for a detailed architecture discussion.
+        {page?.cta?.description}
       </p>
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-        <a href="/en/resources/docs" class="btn btn-primary">
-          Technical Documentation
+        <a href={page?.cta?.primaryCta?.href} class="btn btn-primary">
+          {page?.cta?.primaryCta?.text}
         </a>
-        <a href="/en/platform/infrastructure" class="btn btn-secondary">
-          Start with Layer 1
+        <a href={page?.cta?.secondaryCta?.href} class="btn btn-secondary">
+          {page?.cta?.secondaryCta?.text}
         </a>
       </div>
     </div>

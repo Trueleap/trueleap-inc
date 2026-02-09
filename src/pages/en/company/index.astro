@@ -1,40 +1,10 @@
 ---
+export const prerender = true;
 import Page from '../../../layouts/Page.astro';
+import { reader } from '../../../lib/keystatic';
+
 const lang = 'en';
-
-const sections = [
-  {
-    title: 'Mission & Vision',
-    description: 'Our founding principles and where we\'re headed',
-    href: '/en/company/mission',
-    icon: 'compass',
-  },
-  {
-    title: 'Leadership',
-    description: 'Meet the team building TrueLeap',
-    href: '/en/company/leadership',
-    icon: 'users',
-  },
-  {
-    title: 'Partners',
-    description: 'Our global ecosystem of collaborators',
-    href: '/en/company/partners',
-    icon: 'handshake',
-  },
-  {
-    title: 'Careers',
-    description: 'Join us in bridging the digital divide',
-    href: '/en/company/careers',
-    icon: 'briefcase',
-  },
-];
-
-const facts = [
-  { value: '2019', label: 'Founded' },
-  { value: '180+', label: 'Team Members' },
-  { value: '12', label: 'Global Offices' },
-  { value: '$127M', label: 'Series B' },
-];
+const page = await reader.singletons['company-overview'].read();
 ---
 
 <Page title="Company" lang={lang}>
@@ -42,14 +12,12 @@ const facts = [
   <section class="pt-32 pb-20 bg-cream relative overflow-hidden">
     <div class="absolute inset-0 grid-lines opacity-40"></div>
     <div class="max-w-7xl mx-auto px-6 relative z-10">
-      <span class="text-caption text-muted mb-4 block">Company</span>
+      <span class="text-caption text-muted mb-4 block">{page?.hero?.eyebrow}</span>
       <h1 class="text-display-xl text-charcoal mb-8">
-        About <span class="display-serif">TrueLeap</span>
+        {page?.hero?.headline} <span class="display-serif">{page?.hero?.headlineAccent}</span>
       </h1>
       <p class="text-body-lg text-muted max-w-3xl">
-        We're building the infrastructure for digital equity. Founded in 2019, 
-        TrueLeap is on a mission to connect the 3.7 billion people who lack 
-        reliable internet access to the global digital economy.
+        {page?.hero?.description}
       </p>
     </div>
   </section>
@@ -58,10 +26,10 @@ const facts = [
   <section class="py-12 bg-charcoal">
     <div class="max-w-7xl mx-auto px-6">
       <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-        {facts.map((fact) => (
+        {page?.facts?.map((fact) => (
           <div class="text-center">
-            <p class="text-3xl md:text-4xl font-medium text-white mb-1">{fact.value}</p>
-            <p class="text-sm text-white/60">{fact.label}</p>
+            <p class="text-3xl md:text-4xl font-medium text-white mb-1">{fact?.value}</p>
+            <p class="text-sm text-white/60">{fact?.label}</p>
           </div>
         ))}
       </div>
@@ -73,42 +41,31 @@ const facts = [
     <div class="max-w-7xl mx-auto px-6">
       <div class="grid lg:grid-cols-2 gap-16 items-center">
         <div>
-          <span class="text-caption text-primary mb-4 block">Our Story</span>
+          <span class="text-caption text-primary mb-4 block">{page?.story?.eyebrow}</span>
           <h2 class="text-display-md text-charcoal mb-6">
-            Born from a simple observation
+            {page?.story?.headline}
           </h2>
-          <p class="text-body-lg text-muted mb-6">
-            In 2018, our founders were working on digital identity systems for a 
-            government in East Africa. They kept running into the same problem: 
-            their cloud-based solutions failed the moment users left urban areas.
-          </p>
-          <p class="text-body text-muted mb-6">
-            The realization was clear: you can't build digital services for people 
-            who don't have reliable connectivity. The cloud-first approach that 
-            works in San Francisco doesn't work in rural Rwanda.
-          </p>
-          <p class="text-body text-muted mb-8">
-            So they built something different. A complete technology stack designed 
-            from the ground up for low-connectivity environments. Solar-powered. 
-            Offline-first. Locally owned.
-          </p>
-          <a href="/en/company/mission" class="link-arrow text-charcoal font-medium">
-            Read our full story
+          {page?.story?.paragraphs?.map((paragraph, i) => (
+            <p class={`${i === 0 ? 'text-body-lg' : 'text-body'} text-muted mb-6`}>
+              {paragraph}
+            </p>
+          ))}
+          <a href={page?.story?.linkHref} class="link-arrow text-charcoal font-medium">
+            {page?.story?.linkText}
           </a>
         </div>
-        
+
         <div class="bg-cream border border-border p-8">
           <blockquote class="text-xl font-display italic text-charcoal leading-relaxed mb-6">
-            "Geography should not determine destiny. Every person deserves access 
-            to the tools and opportunities of the digital age."
+            "{page?.story?.quote?.text}"
           </blockquote>
           <div class="flex items-center gap-4">
             <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary-lighter to-cream flex items-center justify-center">
-              <span class="text-lg font-display text-primary">AO</span>
+              <span class="text-lg font-display text-primary">{page?.story?.quote?.initials}</span>
             </div>
             <div>
-              <p class="font-medium text-charcoal">Amara Okonkwo</p>
-              <p class="text-sm text-muted">CEO & Co-Founder</p>
+              <p class="font-medium text-charcoal">{page?.story?.quote?.name}</p>
+              <p class="text-sm text-muted">{page?.story?.quote?.role}</p>
             </div>
           </div>
         </div>
@@ -121,19 +78,19 @@ const facts = [
     <div class="max-w-7xl mx-auto px-6">
       <span class="text-caption text-primary mb-4 block">Explore</span>
       <h2 class="text-display-md text-charcoal mb-12">Learn more about TrueLeap</h2>
-      
+
       <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {sections.map((section) => (
-          <a href={section.href} class="card group hover:border-primary/30 transition-all" style="transition-duration: var(--duration-normal);">
+        {page?.navCards?.map((section) => (
+          <a href={section?.href} class="card group hover:border-primary/30 transition-all" style="transition-duration: var(--duration-normal);">
             <div class="w-12 h-12 rounded-xl bg-primary-lighter/50 flex items-center justify-center mb-4 group-hover:bg-primary-lighter transition-colors" style="transition-duration: var(--duration-normal);">
               <svg class="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
             </div>
             <h3 class="text-xl font-medium text-charcoal mb-2 group-hover:text-primary transition-colors" style="transition-duration: var(--duration-normal);">
-              {section.title}
+              {section?.title}
             </h3>
-            <p class="text-sm text-muted">{section.description}</p>
+            <p class="text-sm text-muted">{section?.description}</p>
           </a>
         ))}
       </div>
@@ -150,21 +107,12 @@ const facts = [
           With teams across four continents, we're close to the communities we serve.
         </p>
       </div>
-      
+
       <div class="grid md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {[
-          { city: 'San Francisco', role: 'HQ' },
-          { city: 'Kigali', role: 'Africa HQ' },
-          { city: 'Singapore', role: 'Asia-Pacific' },
-          { city: 'London', role: 'EMEA' },
-          { city: 'Nairobi', role: 'East Africa' },
-          { city: 'Lagos', role: 'West Africa' },
-          { city: 'Delhi', role: 'South Asia' },
-          { city: 'São Paulo', role: 'Latin America' },
-        ].map((office) => (
+        {page?.offices?.map((office) => (
           <div class="p-4 rounded-xl bg-charcoal-light border border-border-dark">
-            <p class="font-medium text-white">{office.city}</p>
-            <p class="text-sm text-white/50">{office.role}</p>
+            <p class="font-medium text-white">{office?.city}</p>
+            <p class="text-sm text-white/50">{office?.role}</p>
           </div>
         ))}
       </div>
@@ -174,17 +122,16 @@ const facts = [
   <!-- CTA -->
   <section class="py-24 bg-white border-t border-border">
     <div class="max-w-3xl mx-auto px-6 text-center">
-      <h2 class="text-display-md text-charcoal mb-6">Want to work with us?</h2>
+      <h2 class="text-display-md text-charcoal mb-6">{page?.cta?.headline}</h2>
       <p class="text-body-lg text-muted mb-8">
-        Whether you're a potential partner, customer, or future team member, 
-        we'd love to hear from you.
+        {page?.cta?.description}
       </p>
       <div class="flex flex-wrap items-center justify-center gap-4">
-        <a href="mailto:hello@trueleapinc.com" class="btn btn-primary">
-          Get in Touch
+        <a href={page?.cta?.primaryCta?.href} class="btn btn-primary">
+          {page?.cta?.primaryCta?.text}
         </a>
-        <a href="/en/company/careers" class="btn btn-secondary">
-          View Careers
+        <a href={page?.cta?.secondaryCta?.href} class="btn btn-secondary">
+          {page?.cta?.secondaryCta?.text}
         </a>
       </div>
     </div>

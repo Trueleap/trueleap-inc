@@ -1,107 +1,31 @@
 ---
+export const prerender = true;
 import Page from '../../../layouts/Page.astro';
+import { reader } from '../../../lib/keystatic';
 
 const lang = 'en';
 
-const benefits = [
-  {
-    title: 'Mission-Driven Work',
-    description: 'Build technology that directly impacts the lives of millions of people in underserved communities.',
-    icon: 'heart'
-  },
-  {
-    title: 'Global Team',
-    description: 'Work with colleagues across 12 offices on four continents, bringing diverse perspectives.',
-    icon: 'globe'
-  },
-  {
-    title: 'Competitive Compensation',
-    description: 'Salary benchmarked to top tech companies plus equity participation in our growth.',
-    icon: 'currency'
-  },
-  {
-    title: 'Flexible Work',
-    description: 'Remote-first culture with optional offices. Work from where you\'re most productive.',
-    icon: 'home'
-  },
-  {
-    title: 'Learning Budget',
-    description: '$3,000 annual budget for conferences, courses, and professional development.',
-    icon: 'book'
-  },
-  {
-    title: 'Impact Leave',
-    description: 'Two weeks paid leave annually to volunteer with organizations aligned with our mission.',
-    icon: 'calendar'
-  },
-];
+const page = await reader.singletons['careers-page'].read();
 
-const departments = [
-  { name: 'Engineering', count: 8 },
-  { name: 'Product', count: 3 },
-  { name: 'Operations', count: 4 },
-  { name: 'Sales & Partnerships', count: 5 },
-  { name: 'People & Finance', count: 2 },
-];
+const jobSlugs = await reader.collections.jobs.list();
+const jobEntries = await Promise.all(
+  jobSlugs.map(async (slug) => {
+    const job = await reader.collections.jobs.read(slug);
+    return job ? { ...job, slug } : null;
+  })
+);
+const jobs = jobEntries
+  .filter(Boolean)
+  .filter((job) => job?.active === true)
+  .sort((a, b) => (a?.order ?? 0) - (b?.order ?? 0));
 
-const jobs = [
-  {
-    title: 'Senior Infrastructure Engineer',
-    department: 'Engineering',
-    location: 'Remote (Global)',
-    type: 'Full-time',
-    description: 'Design and build the core systems powering our edge computing platform. You\'ll work on distributed systems, mesh networking, and offline-first architectures.',
-  },
-  {
-    title: 'Staff Machine Learning Engineer',
-    department: 'Engineering',
-    location: 'San Francisco or Remote',
-    type: 'Full-time',
-    description: 'Lead development of our Edge AI engine, optimizing models for low-power, offline deployment. Experience with model compression and edge inference required.',
-  },
-  {
-    title: 'Product Manager - Edge Platform',
-    department: 'Product',
-    location: 'Remote (Americas/EMEA)',
-    type: 'Full-time',
-    description: 'Own the roadmap for our core platform products. Work closely with engineering and field teams to build products that work in the world\'s most challenging environments.',
-  },
-  {
-    title: 'Field Operations Lead - East Africa',
-    department: 'Operations',
-    location: 'Nairobi, Kenya',
-    type: 'Full-time',
-    description: 'Lead deployment and support operations across East Africa. Manage local teams, coordinate with partners, and ensure successful implementations.',
-  },
-  {
-    title: 'Field Operations Lead - West Africa',
-    department: 'Operations',
-    location: 'Lagos, Nigeria',
-    type: 'Full-time',
-    description: 'Build and lead our West Africa operations team. Drive deployments, establish partnerships, and develop regional go-to-market strategy.',
-  },
-  {
-    title: 'Solutions Architect',
-    department: 'Sales & Partnerships',
-    location: 'Remote (Global)',
-    type: 'Full-time',
-    description: 'Work with governments and large organizations to design TrueLeap deployments. Technical pre-sales, architecture design, and deployment planning.',
-  },
-  {
-    title: 'Government Sales Director - APAC',
-    department: 'Sales & Partnerships',
-    location: 'Singapore',
-    type: 'Full-time',
-    description: 'Lead government sales efforts across Asia-Pacific. Build relationships with ministries, manage complex procurement processes, and close large deals.',
-  },
-  {
-    title: 'Frontend Engineer',
-    department: 'Engineering',
-    location: 'Remote (Global)',
-    type: 'Full-time',
-    description: 'Build the user interfaces for our Digital Twin and Leapspace products. React, TypeScript, and offline-first patterns. Experience with complex data visualization a plus.',
-  },
-];
+// Build department counts from active jobs
+const departmentCounts: Record<string, number> = {};
+jobs.forEach((job) => {
+  const dept = job?.department || 'Other';
+  departmentCounts[dept] = (departmentCounts[dept] || 0) + 1;
+});
+const departments = Object.entries(departmentCounts).map(([name, count]) => ({ name, count }));
 ---
 
 <Page title="Careers" lang={lang}>
@@ -109,21 +33,19 @@ const jobs = [
   <section class="pt-32 pb-20 bg-cream relative overflow-hidden">
     <div class="absolute inset-0 grid-lines opacity-40"></div>
     <div class="max-w-7xl mx-auto px-6 relative z-10">
-      <span class="text-caption text-muted mb-4 block">Careers</span>
+      <span class="text-caption text-muted mb-4 block">{page?.hero?.eyebrow}</span>
       <h1 class="text-display-xl text-charcoal mb-8">
-        Join Our <span class="display-serif">Mission</span>
+        {page?.hero?.headline} <span class="display-serif">{page?.hero?.headlineAccent}</span>
       </h1>
       <p class="text-body-lg text-muted max-w-3xl mb-8">
-        Build technology that matters. We're connecting the next billion people 
-        to the digital economy, and we need talented people who want their work 
-        to have real-world impact.
+        {page?.hero?.description}
       </p>
       <div class="flex flex-wrap gap-4">
-        <a href="#open-positions" class="btn btn-primary">
-          View Open Positions
+        <a href={page?.hero?.ctaPrimary?.href} class="btn btn-primary">
+          {page?.hero?.ctaPrimary?.text}
         </a>
-        <a href="/en/company" class="btn btn-secondary">
-          Learn About Us
+        <a href={page?.hero?.ctaSecondary?.href} class="btn btn-secondary">
+          {page?.hero?.ctaSecondary?.text}
         </a>
       </div>
     </div>
@@ -133,22 +55,12 @@ const jobs = [
   <section class="py-12 bg-charcoal">
     <div class="max-w-7xl mx-auto px-6">
       <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-        <div class="text-center">
-          <p class="text-3xl md:text-4xl font-medium text-white mb-1">180+</p>
-          <p class="text-sm text-white/60">Team Members</p>
-        </div>
-        <div class="text-center">
-          <p class="text-3xl md:text-4xl font-medium text-white mb-1">12</p>
-          <p class="text-sm text-white/60">Global Offices</p>
-        </div>
-        <div class="text-center">
-          <p class="text-3xl md:text-4xl font-medium text-white mb-1">35+</p>
-          <p class="text-sm text-white/60">Nationalities</p>
-        </div>
-        <div class="text-center">
-          <p class="text-3xl md:text-4xl font-medium text-white mb-1">12M+</p>
-          <p class="text-sm text-white/60">People Impacted</p>
-        </div>
+        {page?.stats?.map((stat) => (
+          <div class="text-center">
+            <p class="text-3xl md:text-4xl font-medium text-white mb-1">{stat?.value}</p>
+            <p class="text-sm text-white/60">{stat?.label}</p>
+          </div>
+        ))}
       </div>
     </div>
   </section>
@@ -160,21 +72,21 @@ const jobs = [
         <span class="text-caption text-primary mb-4 block">Benefits</span>
         <h2 class="text-display-lg text-charcoal mb-6">Why TrueLeap</h2>
         <p class="text-body-lg text-muted">
-          We offer competitive compensation and benefits, but what makes us different 
+          We offer competitive compensation and benefits, but what makes us different
           is the opportunity to do meaningful work with a global impact.
         </p>
       </div>
-      
+
       <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {benefits.map((benefit) => (
+        {page?.benefits?.map((benefit) => (
           <div class="card">
             <div class="w-12 h-12 rounded-xl bg-primary-lighter/50 flex items-center justify-center mb-4">
               <svg class="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
             </div>
-            <h3 class="text-lg font-medium text-charcoal mb-2">{benefit.title}</h3>
-            <p class="text-sm text-muted">{benefit.description}</p>
+            <h3 class="text-lg font-medium text-charcoal mb-2">{benefit?.title}</h3>
+            <p class="text-sm text-muted">{benefit?.description}</p>
           </div>
         ))}
       </div>
@@ -197,11 +109,11 @@ const jobs = [
           ))}
         </div>
       </div>
-      
+
       <div class="space-y-4">
         {jobs.map((job) => (
-          <a 
-            href={`mailto:careers@trueleapinc.com?subject=Application: ${job.title}`}
+          <a
+            href={`mailto:careers@trueleapinc.com?subject=Application: ${job?.title}`}
             class="block card group hover:border-primary/30 transition-all"
             style="transition-duration: var(--duration-normal);"
           >
@@ -209,20 +121,20 @@ const jobs = [
               <div class="flex-1">
                 <div class="flex items-center gap-3 mb-2">
                   <h3 class="text-lg font-medium text-charcoal group-hover:text-primary transition-colors" style="transition-duration: var(--duration-normal);">
-                    {job.title}
+                    {job?.title}
                   </h3>
                 </div>
-                <p class="text-sm text-muted mb-2">{job.description}</p>
+                <p class="text-sm text-muted mb-2">{job?.description}</p>
                 <div class="flex flex-wrap gap-2">
-                  <span class="px-2 py-1 text-xs bg-cream text-muted">{job.department}</span>
-                  <span class="px-2 py-1 text-xs bg-cream text-muted">{job.location}</span>
-                  <span class="px-2 py-1 text-xs bg-cream text-muted">{job.type}</span>
+                  <span class="px-2 py-1 text-xs bg-cream text-muted">{job?.department}</span>
+                  <span class="px-2 py-1 text-xs bg-cream text-muted">{job?.location}</span>
+                  <span class="px-2 py-1 text-xs bg-cream text-muted">{job?.type}</span>
                 </div>
               </div>
               <div class="flex-shrink-0">
                 <span class="inline-flex items-center gap-2 text-primary font-medium group-hover:gap-3 transition-all" style="transition-duration: var(--duration-normal);">
                   Apply
-                  <span>→</span>
+                  <span>&rarr;</span>
                 </span>
               </div>
             </div>
@@ -239,20 +151,15 @@ const jobs = [
         <span class="text-caption text-primary mb-4 block">Process</span>
         <h2 class="text-display-md text-charcoal mb-6">How We Hire</h2>
       </div>
-      
+
       <div class="grid md:grid-cols-4 gap-8">
-        {[
-          { step: '01', title: 'Apply', description: 'Submit your application with resume and cover letter.' },
-          { step: '02', title: 'Screen', description: 'Quick call with our recruiting team to learn more about you.' },
-          { step: '03', title: 'Interview', description: 'Technical or role-specific interviews with the team.' },
-          { step: '04', title: 'Offer', description: 'We move fast. Expect a decision within two weeks.' },
-        ].map((phase) => (
+        {page?.hiringProcess?.map((phase) => (
           <div class="text-center">
             <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-primary-lighter flex items-center justify-center">
-              <span class="text-sm font-medium text-primary">{phase.step}</span>
+              <span class="text-sm font-medium text-primary">{phase?.step}</span>
             </div>
-            <h3 class="text-lg font-medium text-charcoal mb-2">{phase.title}</h3>
-            <p class="text-sm text-muted">{phase.description}</p>
+            <h3 class="text-lg font-medium text-charcoal mb-2">{phase?.title}</h3>
+            <p class="text-sm text-muted">{phase?.description}</p>
           </div>
         ))}
       </div>
@@ -262,13 +169,12 @@ const jobs = [
   <!-- CTA -->
   <section class="py-24 bg-charcoal text-white">
     <div class="max-w-3xl mx-auto px-6 text-center">
-      <h2 class="text-display-md text-white mb-6">Don't see the right role?</h2>
+      <h2 class="text-display-md text-white mb-6">{page?.cta?.headline}</h2>
       <p class="text-body-lg text-white/70 mb-8">
-        We're always looking for talented people who share our mission. Send us 
-        your resume and tell us how you'd like to contribute.
+        {page?.cta?.description}
       </p>
-      <a href="mailto:careers@trueleapinc.com" class="btn bg-white text-charcoal hover:bg-white/90">
-        Get in Touch
+      <a href={page?.cta?.ctaHref} class="btn bg-white text-charcoal hover:bg-white/90">
+        {page?.cta?.ctaText}
       </a>
     </div>
   </section>

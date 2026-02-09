@@ -6,7 +6,14 @@ interface NavItem {
   children?: NavItem[];
 }
 
-const navigation: NavItem[] = [
+interface HeaderCta {
+  secondaryText?: string;
+  secondaryHref?: string;
+  primaryText?: string;
+  primaryHref?: string;
+}
+
+const defaultNavigation: NavItem[] = [
   {
     label: 'Platform',
     href: '/platform',
@@ -61,12 +68,23 @@ const navigation: NavItem[] = [
   },
 ];
 
+const defaultHeaderCta: HeaderCta = {
+  secondaryText: 'Careers',
+  secondaryHref: '/company/careers',
+  primaryText: 'Contact Us',
+  primaryHref: '/company/contact',
+};
+
 interface HeaderProps {
   lang?: string;
   variant?: 'light' | 'dark' | 'transparent';
+  navigationData?: NavItem[];
+  headerCta?: HeaderCta;
 }
 
-export function Header({ lang = 'en', variant = 'transparent' }: HeaderProps) {
+export function Header({ lang = 'en', variant = 'transparent', navigationData, headerCta }: HeaderProps) {
+  const navigation = navigationData ?? defaultNavigation;
+  const cta = headerCta ?? defaultHeaderCta;
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -201,14 +219,14 @@ export function Header({ lang = 'en', variant = 'transparent' }: HeaderProps) {
         {/* CTA */}
         <div className="hidden lg:flex items-center gap-4">
           <a
-            href={`/${lang}/company/careers`}
+            href={`/${lang}${cta.secondaryHref}`}
             className={`text-[0.9375rem] font-medium ${textColor} hover:text-primary transition-colors`}
             style={{ transitionDuration: 'var(--duration-normal)' }}
           >
-            Careers
+            {cta.secondaryText}
           </a>
           <a
-            href={`/${lang}/company/contact`}
+            href={`/${lang}${cta.primaryHref}`}
             className="
               inline-flex items-center gap-2 px-5 py-2.5 rounded-lg
               text-[0.9375rem] font-medium text-white
@@ -218,7 +236,7 @@ export function Header({ lang = 'en', variant = 'transparent' }: HeaderProps) {
             "
             style={{ transitionDuration: 'var(--duration-normal)', transitionTimingFunction: 'var(--ease-premium)' }}
           >
-            Contact Us
+            {cta.primaryText}
           </a>
         </div>
 
@@ -312,14 +330,14 @@ export function Header({ lang = 'en', variant = 'transparent' }: HeaderProps) {
           }}
         >
           <a
-            href={`/${lang}/company/contact`}
+            href={`/${lang}${cta.primaryHref}`}
             className="
               w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-lg
               text-lg font-medium text-white
               bg-primary border border-primary shadow-sm
             "
           >
-            Contact Us
+            {cta.primaryText}
           </a>
         </div>
       </div>

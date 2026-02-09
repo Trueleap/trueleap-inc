@@ -1,72 +1,14 @@
 ---
+export const prerender = true;
 import Page from '../../../layouts/Page.astro';
+import { reader } from '../../../lib/keystatic';
 
 const lang = 'en';
+const page = await reader.singletons['impact-overview'].read();
 
-const stats = [
-  { value: '12M+', label: 'People Connected' },
-  { value: '47', label: 'Countries' },
-  { value: '2,400+', label: 'Edge Nodes' },
-  { value: '99.7%', label: 'Network Uptime' },
-];
-
-const sections = [
-  {
-    title: 'Live Network Map',
-    description: 'Interactive 3D globe showing real-time status of every TrueLeap node worldwide. Track connectivity, usage patterns, and deployment growth.',
-    href: '/en/impact/network-map',
-    icon: 'globe',
-    cta: 'View Live Map',
-  },
-  {
-    title: 'Impact Metrics',
-    description: 'Comprehensive data on people reached, services delivered, and outcomes achieved. Updated in real-time from our global network.',
-    href: '/en/impact/metrics',
-    icon: 'chart',
-    cta: 'Explore Data',
-  },
-  {
-    title: 'Case Studies',
-    description: 'Deep dives into specific deployments, from government digital ID programs to emergency disaster response.',
-    href: '/en/impact/case-studies',
-    icon: 'document',
-    cta: 'Read Stories',
-  },
-  {
-    title: 'The Last Mile',
-    description: 'Thought leadership on digital inclusion, connectivity economics, and the future of infrastructure in underserved regions.',
-    href: '/en/impact/last-mile',
-    icon: 'lightbulb',
-    cta: 'Read Essays',
-  },
-];
-
-const highlights = [
-  {
-    region: 'Sub-Saharan Africa',
-    nodes: '1,200+',
-    people: '5.2M',
-    highlight: 'Rwanda Digital Schools Initiative connecting 2,500+ schools',
-  },
-  {
-    region: 'South Asia',
-    nodes: '450+',
-    people: '2.8M',
-    highlight: 'India agricultural extension program reaching 50,000 farmers',
-  },
-  {
-    region: 'Southeast Asia',
-    nodes: '380+',
-    people: '2.1M',
-    highlight: 'Indonesia island connectivity across 127 remote islands',
-  },
-  {
-    region: 'Latin America',
-    nodes: '270+',
-    people: '1.4M',
-    highlight: 'Colombia rural health program with 340 clinics connected',
-  },
-];
+const stats = page?.stats ?? [];
+const navCards = page?.navCards ?? [];
+const regionalHighlights = page?.regionalHighlights ?? [];
 ---
 
 <Page title="Global Impact" lang={lang}>
@@ -74,13 +16,12 @@ const highlights = [
   <section class="pt-32 pb-20 bg-cream relative overflow-hidden">
     <div class="absolute inset-0 grid-lines opacity-40"></div>
     <div class="max-w-7xl mx-auto px-6 relative z-10">
-      <span class="text-caption text-muted mb-4 block">Impact</span>
+      <span class="text-caption text-muted mb-4 block">{page?.hero?.eyebrow}</span>
       <h1 class="text-display-xl text-charcoal mb-8">
-        Global <span class="display-serif">Impact</span>
+        {page?.hero?.headline} <span class="display-serif">{page?.hero?.headlineAccent}</span>
       </h1>
       <p class="text-body-lg text-muted max-w-3xl">
-        Real results from deployments around the world. We measure success not by 
-        nodes deployed, but by lives transformed through digital access.
+        {page?.hero?.description}
       </p>
     </div>
   </section>
@@ -91,8 +32,8 @@ const highlights = [
       <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
         {stats.map((stat) => (
           <div class="text-center">
-            <p class="text-3xl md:text-4xl font-medium text-white mb-1">{stat.value}</p>
-            <p class="text-sm text-white/60">{stat.label}</p>
+            <p class="text-3xl md:text-4xl font-medium text-white mb-1">{stat?.value}</p>
+            <p class="text-sm text-white/60">{stat?.label}</p>
           </div>
         ))}
       </div>
@@ -103,20 +44,17 @@ const highlights = [
   <section class="py-24 bg-white">
     <div class="max-w-7xl mx-auto px-6">
       <div class="grid md:grid-cols-2 gap-8">
-        {sections.map((section) => (
-          <a href={section.href} class="card group hover:border-primary/30 transition-all flex flex-col" style="transition-duration: var(--duration-normal);">
+        {navCards.map((section) => (
+          <a href={section?.href} class="card group hover:border-primary/30 transition-all flex flex-col" style="transition-duration: var(--duration-normal);">
             <div class="w-12 h-12 rounded-xl bg-primary-lighter/50 flex items-center justify-center mb-4 group-hover:bg-primary-lighter transition-colors" style="transition-duration: var(--duration-normal);">
               <svg class="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <h3 class="text-xl font-medium text-charcoal mb-2 group-hover:text-primary transition-colors" style="transition-duration: var(--duration-normal);">
-              {section.title}
+              {section?.title}
             </h3>
-            <p class="text-muted mb-4 flex-1">{section.description}</p>
-            <span class="link-arrow text-charcoal font-medium group-hover:text-primary transition-colors" style="transition-duration: var(--duration-normal);">
-              {section.cta}
-            </span>
+            <p class="text-muted mb-4 flex-1">{section?.description}</p>
           </a>
         ))}
       </div>
@@ -130,28 +68,19 @@ const highlights = [
         <span class="text-caption text-primary mb-4 block">Regional Presence</span>
         <h2 class="text-display-lg text-charcoal mb-6">Impact by Region</h2>
         <p class="text-body-lg text-muted">
-          TrueLeap operates across four continents, with deployments tailored to 
+          TrueLeap operates across four continents, with deployments tailored to
           the unique needs and contexts of each region.
         </p>
       </div>
-      
+
       <div class="grid md:grid-cols-2 gap-6">
-        {highlights.map((region) => (
+        {regionalHighlights.map((region) => (
           <div class="card">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-medium text-charcoal">{region.region}</h3>
-              <div class="flex gap-4">
-                <div class="text-right">
-                  <p class="text-sm font-medium text-charcoal">{region.nodes}</p>
-                  <p class="text-xs text-muted">nodes</p>
-                </div>
-                <div class="text-right">
-                  <p class="text-sm font-medium text-charcoal">{region.people}</p>
-                  <p class="text-xs text-muted">people</p>
-                </div>
-              </div>
+              <h3 class="text-lg font-medium text-charcoal">{region?.region}</h3>
             </div>
-            <p class="text-sm text-muted">{region.highlight}</p>
+            <p class="text-sm text-muted mb-2">{region?.description}</p>
+            <p class="text-sm text-muted italic">{region?.story}</p>
           </div>
         ))}
       </div>
@@ -162,17 +91,15 @@ const highlights = [
   <section class="py-24 bg-charcoal text-white">
     <div class="max-w-4xl mx-auto px-6 text-center">
       <blockquote class="text-2xl md:text-3xl font-display italic text-white leading-relaxed mb-8">
-        "TrueLeap has fundamentally changed how we deliver government services to 
-        rural communities. What used to require a two-day journey to the district 
-        office can now be done from the village center."
+        "{page?.testimonialQuote?.text}"
       </blockquote>
       <div class="flex items-center justify-center gap-4">
         <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary-lighter to-primary flex items-center justify-center">
-          <span class="text-lg font-display text-white">JN</span>
+          <span class="text-lg font-display text-white">{page?.testimonialQuote?.attribution?.split(' ').map((n: string) => n[0]).join('')}</span>
         </div>
         <div class="text-left">
-          <p class="font-medium text-white">Jean Ndayisaba</p>
-          <p class="text-sm text-white/60">Director of Digital Services, Rwanda</p>
+          <p class="font-medium text-white">{page?.testimonialQuote?.attribution}</p>
+          <p class="text-sm text-white/60">{page?.testimonialQuote?.role}</p>
         </div>
       </div>
     </div>
@@ -181,14 +108,18 @@ const highlights = [
   <!-- CTA -->
   <section class="py-24 bg-white border-t border-border">
     <div class="max-w-3xl mx-auto px-6 text-center">
-      <h2 class="text-display-md text-charcoal mb-6">See the network in action</h2>
+      <h2 class="text-display-md text-charcoal mb-6">{page?.cta?.headline}</h2>
       <p class="text-body-lg text-muted mb-8">
-        Explore our live network map to see real-time data from TrueLeap deployments 
-        around the world.
+        {page?.cta?.description}
       </p>
-      <a href="/en/impact/network-map" class="btn btn-primary">
-        View Live Network Map
-      </a>
+      <div class="flex flex-wrap items-center justify-center gap-4">
+        <a href={page?.cta?.primaryCta?.href} class="btn btn-primary">
+          {page?.cta?.primaryCta?.text}
+        </a>
+        <a href={page?.cta?.secondaryCta?.href} class="btn btn-secondary">
+          {page?.cta?.secondaryCta?.text}
+        </a>
+      </div>
     </div>
   </section>
 </Page>

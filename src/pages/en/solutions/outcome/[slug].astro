@@ -1,0 +1,129 @@
+---
+export const prerender = true;
+import Page from '../../../../layouts/Page.astro';
+import { reader } from '../../../../lib/keystatic';
+
+const lang = 'en';
+
+export async function getStaticPaths() {
+  const slugs = await reader.collections['outcome-solutions'].list();
+  return slugs.map((slug) => ({ params: { slug } }));
+}
+
+const { slug } = Astro.params;
+const entry = await reader.collections['outcome-solutions'].read(slug!);
+
+const stats = entry?.stats ?? [];
+const pillars = entry?.pillars ?? [];
+const useCases = entry?.useCases ?? [];
+const ctaSection = entry?.ctaSection;
+---
+
+<Page title={entry?.title ?? slug} lang={lang}>
+  <!-- Hero -->
+  <section class="pt-32 pb-20 bg-cream relative overflow-hidden">
+    <div class="absolute inset-0 grid-lines opacity-40"></div>
+    <div class="max-w-7xl mx-auto px-6 relative z-10">
+      <span class="text-caption text-primary mb-4 block">Solutions / Outcome</span>
+      <h1 class="text-display-xl text-charcoal mb-8">
+        {entry?.headline} <span class="display-serif">{entry?.headlineAccent}</span>
+      </h1>
+      <p class="text-body-lg text-muted max-w-3xl mb-8">
+        {entry?.description}
+      </p>
+      <div class="flex flex-wrap gap-4">
+        <a href={entry?.ctaPrimary?.href} class="btn btn-primary">
+          {entry?.ctaPrimary?.text}
+        </a>
+        <a href={entry?.ctaSecondary?.href} class="btn btn-secondary">
+          {entry?.ctaSecondary?.text}
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  {stats.length > 0 && (
+    <section class="py-16 bg-charcoal">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+          {stats.map((stat) => (
+            <div class="text-center">
+              <p class="text-3xl md:text-4xl font-medium text-white mb-1">{stat.value}</p>
+              <p class="text-sm text-white/60">{stat.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- Pillars / Approaches -->
+  {pillars.length > 0 && (
+    <section class="py-24 bg-white">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <span class="text-caption text-primary mb-4 block">Framework</span>
+          <h2 class="text-display-lg text-charcoal mb-6">Our Approach</h2>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8">
+          {pillars.map((pillar) => (
+            <div class="card">
+              <div class="w-12 h-12 rounded-xl bg-primary-lighter/50 flex items-center justify-center mb-4">
+                <svg class="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <h3 class="text-xl font-medium text-charcoal mb-2">{pillar.title}</h3>
+              <p class="text-muted">{pillar.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- Use Cases -->
+  {useCases.length > 0 && (
+    <section class="py-24 bg-cream">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <span class="text-caption text-primary mb-4 block">Applications</span>
+          <h2 class="text-display-lg text-charcoal mb-6">Use Cases</h2>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8">
+          {useCases.map((useCase) => (
+            <div class="card">
+              <h3 class="text-xl font-medium text-charcoal mb-2">{useCase.title}</h3>
+              <p class="text-muted">{useCase.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- CTA -->
+  {ctaSection && (
+    <section class="py-24 bg-white border-t border-border">
+      <div class="max-w-3xl mx-auto px-6 text-center">
+        <h2 class="text-display-md text-charcoal mb-6">
+          {ctaSection.headline}
+        </h2>
+        <p class="text-body-lg text-muted mb-8">
+          {ctaSection.description}
+        </p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a href={ctaSection.primaryCta?.href} class="btn btn-primary">
+            {ctaSection.primaryCta?.text}
+          </a>
+          <a href={ctaSection.secondaryCta?.href} class="btn btn-secondary">
+            {ctaSection.secondaryCta?.text}
+          </a>
+        </div>
+      </div>
+    </section>
+  )}
+</Page>

@@ -33,7 +33,7 @@ Core content works without JS. Interactivity enhances, never gates. The globe is
 All user-facing strings externalized. Route structure supports `/[lang]/` prefix. RTL consideration in layouts.
 
 ### 4. CMS Agnostic Content
-Content schemas define structure. Tina is the current adapter. Switching CMSs should require only adapter changes.
+Content schemas define structure. Keystatic is the CMS with GitHub storage in production and local storage in dev.
 
 ### 5. Component Composition
 Prefer composition over configuration. Components should be combinable, not configurable with boolean props.

@@ -1,39 +1,42 @@
 ---
+export const prerender = true;
 import Page from '../../../layouts/Page.astro';
+import { reader } from '../../../lib/keystatic';
+
 const lang = 'en';
 
-const partnerCategories = [
-  {
+const partnerSlugs = await reader.collections.partners.list();
+const partnerEntries = await Promise.all(
+  partnerSlugs.map(async (slug) => {
+    const partner = await reader.collections.partners.read(slug);
+    return partner ? { ...partner, slug } : null;
+  })
+);
+const allPartners = partnerEntries.filter(Boolean).sort((a, b) => (a?.order ?? 0) - (b?.order ?? 0));
+
+const tierLabels: Record<string, { name: string; description: string }> = {
+  technology: {
     name: 'Technology Partners',
     description: 'Hardware and software providers that integrate with the TrueLeap stack.',
-    partners: [
-      { name: 'ARM Holdings', type: 'Chip Architecture', description: 'Custom silicon design for ultra-low-power edge computing' },
-      { name: 'SunPower', type: 'Solar Technology', description: 'High-efficiency solar panels optimized for tropical deployments' },
-      { name: 'Qualcomm', type: 'Connectivity', description: 'Next-gen mesh networking and 5G integration' },
-      { name: 'NVIDIA', type: 'AI Compute', description: 'Edge AI inference optimization and model compression' },
-    ]
   },
-  {
+  implementation: {
     name: 'Implementation Partners',
     description: 'Regional experts who deploy and maintain TrueLeap infrastructure.',
-    partners: [
-      { name: 'Andela', type: 'Africa', description: 'Technical deployment and developer training across Sub-Saharan Africa' },
-      { name: 'Ayala Foundation', type: 'Southeast Asia', description: 'Community engagement and implementation in the Philippines and Indonesia' },
-      { name: 'Digital Green', type: 'South Asia', description: 'Agricultural extension and rural deployment in India and Bangladesh' },
-      { name: 'Fundación Telefónica', type: 'Latin America', description: 'Education technology deployment across Central and South America' },
-    ]
   },
-  {
+  institutional: {
     name: 'Institutional Partners',
     description: 'Governments, multilaterals, and foundations advancing digital inclusion.',
-    partners: [
-      { name: 'World Bank', type: 'Multilateral', description: 'Digital Development Partnership and financing mechanisms' },
-      { name: 'USAID', type: 'Development', description: 'Digital Strategy implementation partner' },
-      { name: 'Gates Foundation', type: 'Foundation', description: 'Health systems digitization and agricultural data' },
-      { name: 'African Union', type: 'Regional Body', description: 'Digital Transformation Strategy for Africa 2020-2030' },
-    ]
   },
-];
+};
+
+const tiers = ['technology', 'implementation', 'institutional'];
+const groupedPartners = tiers
+  .map((tier) => ({
+    tier,
+    label: tierLabels[tier],
+    partners: allPartners.filter((p) => p?.tier === tier),
+  }))
+  .filter((group) => group.partners.length > 0);
 
 const stats = [
   { value: '47', label: 'Countries' },
@@ -53,7 +56,7 @@ const stats = [
         Our <span class="display-serif">Partners</span>
       </h1>
       <p class="text-body-lg text-muted max-w-3xl">
-        TrueLeap's impact is made possible through partnerships with leading technology 
+        TrueLeap's impact is made possible through partnerships with leading technology
         companies, implementation experts, and institutions committed to digital inclusion.
       </p>
     </div>
@@ -74,25 +77,25 @@ const stats = [
   </section>
 
   <!-- Partner Categories -->
-  {partnerCategories.map((category, categoryIndex) => (
+  {groupedPartners.map((category, categoryIndex) => (
     <section class={`py-24 ${categoryIndex % 2 === 0 ? 'bg-white' : 'bg-cream'}`}>
       <div class="max-w-7xl mx-auto px-6">
         <div class="max-w-3xl mb-12">
-          <span class="text-caption text-primary mb-4 block">{category.name}</span>
-          <p class="text-body-lg text-muted">{category.description}</p>
+          <span class="text-caption text-primary mb-4 block">{category?.label?.name}</span>
+          <p class="text-body-lg text-muted">{category?.label?.description}</p>
         </div>
-        
+
         <div class="grid md:grid-cols-2 gap-6">
           {category.partners.map((partner) => (
             <div class="card group hover:border-primary/20 transition-colors" style="transition-duration: var(--duration-normal);">
               <div class="flex items-start gap-4">
                 <div class="w-16 h-16 flex-shrink-0 bg-gradient-to-br from-cream to-paper border border-border flex items-center justify-center">
-                  <span class="text-lg font-medium text-charcoal/40">{partner.name.split(' ').map(w => w[0]).join('').slice(0, 2)}</span>
+                  <span class="text-lg font-medium text-charcoal/40">{partner?.name?.split(' ').map(w => w[0]).join('').slice(0, 2)}</span>
                 </div>
                 <div class="flex-1">
-                  <h3 class="text-lg font-medium text-charcoal mb-1 group-hover:text-primary transition-colors" style="transition-duration: var(--duration-normal);">{partner.name}</h3>
-                  <p class="text-xs text-primary mb-2">{partner.type}</p>
-                  <p class="text-sm text-muted">{partner.description}</p>
+                  <h3 class="text-lg font-medium text-charcoal mb-1 group-hover:text-primary transition-colors" style="transition-duration: var(--duration-normal);">{partner?.name}</h3>
+                  <p class="text-xs text-primary mb-2">{partner?.type}</p>
+                  <p class="text-sm text-muted">{partner?.description}</p>
                 </div>
               </div>
             </div>
@@ -110,11 +113,11 @@ const stats = [
           <span class="text-caption text-primary-light mb-4 block">Join Our Network</span>
           <h2 class="text-display-md text-white mb-6">Become a Partner</h2>
           <p class="text-body-lg text-white/70 mb-8">
-            We're always looking for organizations that share our commitment to 
-            digital inclusion. Whether you're a technology provider, implementation 
+            We're always looking for organizations that share our commitment to
+            digital inclusion. Whether you're a technology provider, implementation
             expert, or institutional partner, we'd love to explore how we can work together.
           </p>
-          
+
           <div class="space-y-4 mb-8">
             <div class="flex items-start gap-3">
               <div class="w-6 h-6 rounded-full bg-primary-lighter/20 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -141,12 +144,12 @@ const stats = [
               <p class="text-white/80">Revenue sharing on joint deployments</p>
             </div>
           </div>
-          
+
           <a href="mailto:partners@trueleapinc.com" class="btn bg-white text-charcoal hover:bg-white/90">
             Contact Partnership Team
           </a>
         </div>
-        
+
         <div class="grid grid-cols-2 gap-4">
           <div class="p-6 rounded-2xl bg-charcoal-light border border-border-dark">
             <p class="text-3xl font-medium text-white mb-2">Technology</p>

@@ -1,38 +1,11 @@
 ---
+export const prerender = true;
 import Page from '../../../layouts/Page.astro';
 import { AnimatedSection } from '../../../components/ui/AnimatedSection';
+import { reader } from '../../../lib/keystatic';
 
 const lang = 'en';
-
-const securityItems = [
-  { title: 'SOC 2 Type II certified', description: 'Annual audit by independent third party' },
-  { title: 'ISO 27001 compliant', description: 'Information security management certified' },
-  { title: 'End-to-end encryption', description: 'AES-256 encryption at rest and in transit' },
-  { title: 'Regular penetration testing', description: 'Quarterly tests by security researchers' },
-];
-
-const complianceItems = [
-  { title: 'GDPR compliant', description: 'Full data protection regulation compliance' },
-  { title: 'Data residency options', description: 'Choose where your data is processed' },
-  { title: 'Government security clearances', description: 'Cleared for sensitive deployments' },
-  { title: 'Custom compliance frameworks', description: 'Adapt to your regulatory requirements' },
-];
-
-const certifications = [
-  { name: 'SOC 2 Type II', issuer: 'AICPA', date: '2025' },
-  { name: 'ISO 27001', issuer: 'ISO', date: '2024' },
-  { name: 'GDPR', issuer: 'EU', date: 'Ongoing' },
-  { name: 'FedRAMP', issuer: 'GSA', date: 'In Progress' },
-];
-
-const documents = [
-  { title: 'SOC 2 Report', description: 'Latest audit report with controls assessment', access: 'NDA Required' },
-  { title: 'Penetration Test Summary', description: 'Executive summary of latest security test', access: 'NDA Required' },
-  { title: 'Security Whitepaper', description: 'Technical overview of our security architecture', access: 'Public' },
-  { title: 'Data Processing Agreement', description: 'Standard DPA for enterprise customers', access: 'Public' },
-  { title: 'Privacy Policy', description: 'How we handle and protect your data', access: 'Public' },
-  { title: 'Incident Response Plan', description: 'Our procedures for security incidents', access: 'NDA Required' },
-];
+const page = await reader.singletons['trust-center-page'].read();
 ---
 
 <Page title="Trust Center" lang={lang}>
@@ -41,19 +14,18 @@ const documents = [
     <div class="absolute inset-0 grid-lines opacity-40"></div>
     <div class="max-w-7xl mx-auto px-6 relative z-10">
       <AnimatedSection client:visible direction="up">
-        <p class="text-caption text-muted mb-4">Resources / Trust</p>
+        <p class="text-caption text-muted mb-4">{page?.hero?.eyebrow}</p>
       </AnimatedSection>
-      
+
       <AnimatedSection client:visible direction="up" delay={0.1}>
         <h1 class="text-display-xl text-charcoal mb-8">
-          Trust <em class="display-serif">Center</em>
+          {page?.hero?.headline} <em class="display-serif">{page?.hero?.headlineAccent}</em>
         </h1>
       </AnimatedSection>
-      
+
       <AnimatedSection client:visible direction="up" delay={0.2}>
         <p class="text-body-lg text-muted max-w-3xl mb-8">
-          Security, compliance, and governance for enterprise and government customers. 
-          We know trust is earned, and we're committed to transparency.
+          {page?.hero?.description}
         </p>
       </AnimatedSection>
 
@@ -79,7 +51,7 @@ const documents = [
             <p class="text-caption text-primary mb-4">Protection</p>
             <h2 class="text-display-sm text-charcoal mb-8">Security</h2>
             <div class="space-y-6">
-              {securityItems.map((item) => (
+              {page?.securityItems?.map((item: any) => (
                 <div class="flex items-start gap-4">
                   <span class="w-6 h-6 bg-success-light text-success rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -101,7 +73,7 @@ const documents = [
             <p class="text-caption text-primary mb-4">Regulations</p>
             <h2 class="text-display-sm text-charcoal mb-8">Compliance</h2>
             <div class="space-y-6">
-              {complianceItems.map((item) => (
+              {page?.complianceItems?.map((item: any) => (
                 <div class="flex items-start gap-4">
                   <span class="w-6 h-6 bg-success-light text-success rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -127,14 +99,13 @@ const documents = [
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-8">
         <span class="text-sm text-white/60">Certifications:</span>
         <div class="flex flex-wrap gap-6">
-          {certifications.map((cert) => (
+          {page?.certifications?.map((cert: string) => (
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 bg-white/10 rounded flex items-center justify-center">
-                <span class="text-xs font-medium text-white">{cert.name.slice(0, 3)}</span>
+                <span class="text-xs font-medium text-white">{cert.slice(0, 3)}</span>
               </div>
               <div>
-                <p class="text-sm font-medium text-white">{cert.name}</p>
-                <p class="text-xs text-white/60">{cert.date}</p>
+                <p class="text-sm font-medium text-white">{cert}</p>
               </div>
             </div>
           ))}
@@ -160,7 +131,7 @@ const documents = [
       </div>
       
       <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {documents.map((doc, i) => (
+        {page?.documents?.map((doc: any, i: number) => (
           <AnimatedSection client:visible direction="up" delay={0.05 * i}>
             <div class="card h-full flex flex-col hover:border-border-hover transition-colors">
               <div class="flex items-start justify-between gap-4 mb-4">
@@ -240,25 +211,25 @@ const documents = [
       <div class="grid md:grid-cols-4 gap-6">
         <AnimatedSection client:visible direction="up" delay={0}>
           <div class="text-center p-6">
-            <p class="text-3xl font-medium text-white mb-2">&lt;15min</p>
+            <p class="text-3xl font-medium text-white mb-2">{page?.incidentResponse?.responseTime}</p>
             <p class="text-sm text-white/60">Initial response time</p>
           </div>
         </AnimatedSection>
-        
+
         <AnimatedSection client:visible direction="up" delay={0.1}>
           <div class="text-center p-6">
-            <p class="text-3xl font-medium text-white mb-2">24/7</p>
+            <p class="text-3xl font-medium text-white mb-2">{page?.incidentResponse?.monitoring}</p>
             <p class="text-sm text-white/60">Security monitoring</p>
           </div>
         </AnimatedSection>
-        
+
         <AnimatedSection client:visible direction="up" delay={0.2}>
           <div class="text-center p-6">
-            <p class="text-3xl font-medium text-white mb-2">&lt;1hr</p>
+            <p class="text-3xl font-medium text-white mb-2">{page?.incidentResponse?.notification}</p>
             <p class="text-sm text-white/60">Customer notification</p>
           </div>
         </AnimatedSection>
-        
+
         <AnimatedSection client:visible direction="up" delay={0.3}>
           <div class="text-center p-6">
             <p class="text-3xl font-medium text-white mb-2">100%</p>
@@ -274,15 +245,14 @@ const documents = [
     <div class="max-w-3xl mx-auto px-6 text-center">
       <AnimatedSection client:visible direction="up">
         <h2 class="text-display-md text-charcoal mb-6">
-          Questions about security?
+          {page?.cta?.headline}
         </h2>
         <p class="text-body-lg text-muted mb-8">
-          Our security team is available to answer questions, participate in 
-          vendor assessments, and support your due diligence process.
+          {page?.cta?.description}
         </p>
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <a href="mailto:security@trueleapinc.com" class="btn btn-primary">
-            Contact Security Team
+          <a href={page?.cta?.primaryCta?.href} class="btn btn-primary">
+            {page?.cta?.primaryCta?.text}
           </a>
           <a href="/en/resources" class="btn btn-secondary">
             Explore Resources

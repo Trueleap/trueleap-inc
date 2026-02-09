@@ -1,56 +1,11 @@
 ---
+export const prerender = true;
 import Page from '../../../layouts/Page.astro';
 import { AnimatedSection } from '../../../components/ui/AnimatedSection';
+import { reader } from '../../../lib/keystatic';
 
 const lang = 'en';
-
-const capabilities = [
-  {
-    title: 'Local Processing',
-    description: 'Data never leaves the device unless explicitly authorized. Full GDPR and data sovereignty compliance by design.',
-    icon: 'shield',
-  },
-  {
-    title: 'Offline Intelligence',
-    description: 'AI models that work without connectivity. Translation, document analysis, and decision support anywhere.',
-    icon: 'wifi-off',
-  },
-  {
-    title: 'Federated Learning',
-    description: 'Models improve across the network while keeping data local. Collective intelligence without data centralization.',
-    icon: 'network',
-  },
-];
-
-const useCases = [
-  {
-    category: 'Language',
-    title: 'Real-time Translation',
-    description: 'Translate between 40+ languages instantly, even offline. Perfect for government services and education.',
-  },
-  {
-    category: 'Documents',
-    title: 'Intelligent Document Processing',
-    description: 'Extract, classify, and process documents locally. Forms, IDs, and official documents handled with privacy.',
-  },
-  {
-    category: 'Agriculture',
-    title: 'Crop Analysis',
-    description: 'Analyze plant health, soil conditions, and weather patterns to provide actionable farming insights.',
-  },
-  {
-    category: 'Healthcare',
-    title: 'Diagnostic Support',
-    description: 'AI-assisted medical image analysis and symptom checking, supporting healthcare workers in remote areas.',
-  },
-];
-
-const specs = [
-  { label: 'Models Supported', value: '50+' },
-  { label: 'Languages', value: '40+' },
-  { label: 'Power Consumption', value: '<2W' },
-  { label: 'Processing Latency', value: '<50ms' },
-];
+const page = await reader.singletons['edge-ai-page'].read();
 ---
 
 <Page title="Edge AI Engine" lang={lang}>
@@ -59,30 +14,28 @@ const specs = [
     <div class="absolute inset-0 grid-lines opacity-40"></div>
     <div class="max-w-7xl mx-auto px-6 relative z-10">
       <AnimatedSection client:visible direction="up">
-        <p class="text-caption text-muted mb-4">Platform / Edge AI</p>
+        <p class="text-caption text-muted mb-4">{page?.hero?.eyebrow}</p>
       </AnimatedSection>
-      
+
       <AnimatedSection client:visible direction="up" delay={0.1}>
         <h1 class="text-display-xl text-charcoal mb-8">
-          Edge AI <em class="display-serif">Engine</em>
+          {page?.hero?.headline} <em class="display-serif">{page?.hero?.headlineAccent}</em>
         </h1>
       </AnimatedSection>
-      
+
       <AnimatedSection client:visible direction="up" delay={0.2}>
         <p class="text-body-lg text-muted max-w-3xl mb-8">
-          On-device intelligence that processes data locally, ensuring privacy and enabling 
-          offline-first applications. AI that works where your users are, not just where 
-          the cloud can reach.
+          {page?.hero?.description}
         </p>
       </AnimatedSection>
 
       <AnimatedSection client:visible direction="up" delay={0.3}>
         <div class="flex flex-wrap gap-4">
-          <a href="/en/company" class="btn btn-primary">
-            Request Access
+          <a href={page?.hero?.ctaPrimary?.href} class="btn btn-primary">
+            {page?.hero?.ctaPrimary?.text}
           </a>
-          <a href="/en/resources/docs" class="btn btn-secondary">
-            API Documentation
+          <a href={page?.hero?.ctaSecondary?.href} class="btn btn-secondary">
+            {page?.hero?.ctaSecondary?.text}
           </a>
         </div>
       </AnimatedSection>
@@ -97,14 +50,14 @@ const specs = [
           <p class="text-caption text-primary mb-4">Core Capabilities</p>
           <h2 class="text-display-md text-charcoal mb-4">Intelligence at the Edge</h2>
           <p class="text-muted">
-            Our Edge AI Engine brings machine learning capabilities directly to the device, 
+            Our Edge AI Engine brings machine learning capabilities directly to the device,
             eliminating the need for constant cloud connectivity.
           </p>
         </AnimatedSection>
       </div>
-      
+
       <div class="grid md:grid-cols-3 gap-8">
-        {capabilities.map((cap, i) => (
+        {page?.capabilities?.map((cap: any, i: number) => (
           <AnimatedSection client:visible direction="up" delay={0.1 * i}>
             <div class="p-8 border border-border rounded-2xl hover:border-border-hover transition-colors">
               <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-6">
@@ -123,7 +76,7 @@ const specs = [
   <section class="py-12 bg-charcoal">
     <div class="max-w-7xl mx-auto px-6">
       <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-        {specs.map((spec) => (
+        {page?.specs?.map((spec: any) => (
           <div class="text-center">
             <p class="text-3xl md:text-4xl font-medium text-white mb-1">{spec.value}</p>
             <p class="text-sm text-white/60">{spec.label}</p>
@@ -143,14 +96,14 @@ const specs = [
         </AnimatedSection>
         <AnimatedSection client:visible direction="up" delay={0.1}>
           <p class="text-muted max-w-md">
-            From translation to diagnostics, the Edge AI Engine powers applications 
+            From translation to diagnostics, the Edge AI Engine powers applications
             that were previously impossible without cloud connectivity.
           </p>
         </AnimatedSection>
       </div>
-      
+
       <div class="grid md:grid-cols-2 gap-6">
-        {useCases.map((useCase, i) => (
+        {page?.useCases?.map((useCase: any, i: number) => (
           <AnimatedSection client:visible direction="up" delay={0.1 * i}>
             <div class="card hover:border-border-hover transition-colors">
               <p class="text-caption text-primary mb-2">{useCase.category}</p>
@@ -172,31 +125,18 @@ const specs = [
             <p class="text-caption text-primary mb-4">Architecture</p>
             <h2 class="text-display-md text-charcoal mb-6">How It Works</h2>
             <div class="space-y-6">
-              <div>
-                <h3 class="text-lg font-medium text-charcoal mb-2">1. Model Optimization</h3>
-                <p class="text-muted">
-                  We compress and optimize state-of-the-art models to run efficiently on 
-                  low-power hardware, without sacrificing accuracy.
-                </p>
-              </div>
-              <div>
-                <h3 class="text-lg font-medium text-charcoal mb-2">2. Local Inference</h3>
-                <p class="text-muted">
-                  All processing happens on the device. Data never leaves unless the user 
-                  explicitly chooses to share insights for model improvement.
-                </p>
-              </div>
-              <div>
-                <h3 class="text-lg font-medium text-charcoal mb-2">3. Federated Updates</h3>
-                <p class="text-muted">
-                  Models improve over time through federated learning—sharing learnings, 
-                  not data, across the network when connectivity is available.
-                </p>
-              </div>
+              {page?.howItWorks?.map((step: any, i: number) => (
+                <div>
+                  <h3 class="text-lg font-medium text-charcoal mb-2">{i + 1}. {step.title}</h3>
+                  <p class="text-muted">
+                    {step.description}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         </AnimatedSection>
-        
+
         <AnimatedSection client:visible direction="right" delay={0.1}>
           <div class="aspect-square bg-cream rounded-2xl border border-border"></div>
         </AnimatedSection>
@@ -212,42 +152,23 @@ const specs = [
           <p class="text-caption text-primary-light mb-4">Privacy First</p>
           <h2 class="text-display-md text-white mb-4">Your Data, Your Control</h2>
           <p class="text-white/60">
-            Edge AI isn't just about performance—it's about sovereignty. Your data 
+            Edge AI isn't just about performance—it's about sovereignty. Your data
             stays on your devices, under your control, always.
           </p>
         </AnimatedSection>
       </div>
-      
+
       <div class="grid md:grid-cols-3 gap-8">
-        <AnimatedSection client:visible direction="up" delay={0}>
-          <div class="p-8 bg-charcoal-light border border-white/10 rounded-lg">
-            <h3 class="text-xl font-medium text-white mb-3">GDPR Compliant</h3>
-            <p class="text-white/60 text-sm">
-              Data processing happens locally, making compliance straightforward. 
-              No cross-border data transfers required.
-            </p>
-          </div>
-        </AnimatedSection>
-        
-        <AnimatedSection client:visible direction="up" delay={0.1}>
-          <div class="p-8 bg-charcoal-light border border-white/10 rounded-lg">
-            <h3 class="text-xl font-medium text-white mb-3">Data Sovereignty</h3>
-            <p class="text-white/60 text-sm">
-              Governments and enterprises maintain full control over their data. 
-              Perfect for sensitive applications.
-            </p>
-          </div>
-        </AnimatedSection>
-        
-        <AnimatedSection client:visible direction="up" delay={0.2}>
-          <div class="p-8 bg-charcoal-light border border-white/10 rounded-lg">
-            <h3 class="text-xl font-medium text-white mb-3">Auditable</h3>
-            <p class="text-white/60 text-sm">
-              Full transparency into what models do and how they make decisions. 
-              No black boxes.
-            </p>
-          </div>
-        </AnimatedSection>
+        {page?.privacyFeatures?.map((feature: any, i: number) => (
+          <AnimatedSection client:visible direction="up" delay={0.1 * i}>
+            <div class="p-8 bg-charcoal-light border border-white/10 rounded-lg">
+              <h3 class="text-xl font-medium text-white mb-3">{feature.title}</h3>
+              <p class="text-white/60 text-sm">
+                {feature.description}
+              </p>
+            </div>
+          </AnimatedSection>
+        ))}
       </div>
     </div>
   </section>
@@ -257,18 +178,17 @@ const specs = [
     <div class="max-w-3xl mx-auto px-6 text-center">
       <AnimatedSection client:visible direction="up">
         <h2 class="text-display-md text-charcoal mb-6">
-          Ready to bring AI to the edge?
+          {page?.cta?.headline}
         </h2>
         <p class="text-body-lg text-muted mb-8">
-          Our team can help you identify the right AI capabilities for your use case 
-          and deploy them across your network of edge devices.
+          {page?.cta?.description}
         </p>
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <a href="mailto:hello@trueleapinc.com" class="btn btn-primary">
-            Talk to Our Team
+          <a href={page?.cta?.primaryCta?.href} class="btn btn-primary">
+            {page?.cta?.primaryCta?.text}
           </a>
-          <a href="/en/platform" class="btn btn-secondary">
-            Explore Platform
+          <a href={page?.cta?.secondaryCta?.href} class="btn btn-secondary">
+            {page?.cta?.secondaryCta?.text}
           </a>
         </div>
       </AnimatedSection>

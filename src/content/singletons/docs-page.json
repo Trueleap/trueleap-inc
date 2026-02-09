@@ -1,0 +1,33 @@
+{
+  "hero": {
+    "eyebrow": "Resources",
+    "headline": "Developer",
+    "headlineAccent": "Documentation",
+    "description": "Everything you need to build on the TrueLeap platform. Guides, API references, and SDKs."
+  },
+  "docCategories": [
+    { "title": "Getting Started", "description": "Quick start guides and tutorials", "items": ["Platform Overview", "Quick Start Guide", "Authentication", "First Deployment"] },
+    { "title": "API Reference", "description": "Complete API documentation", "items": ["REST API", "WebSocket API", "GraphQL API", "Webhooks"] },
+    { "title": "Edge SDK", "description": "Build applications for edge nodes", "items": ["SDK Overview", "Device APIs", "Storage APIs", "Networking"] },
+    { "title": "Deployment Guides", "description": "Production deployment documentation", "items": ["Node Setup", "Mesh Configuration", "Monitoring", "Troubleshooting"] },
+    { "title": "Integration Patterns", "description": "Common integration patterns", "items": ["Offline Sync", "Data Federation", "Event Streaming", "Custom Models"] },
+    { "title": "Release Notes", "description": "Platform changelog", "items": ["v3.2 - Edge AI", "v3.1 - Mesh Protocol", "v3.0 - Platform", "Archive"] }
+  ],
+  "sdks": [
+    { "language": "JavaScript", "installCommand": "npm install @trueleap/sdk", "badge": "v3.2.0" },
+    { "language": "Python", "installCommand": "pip install trueleap", "badge": "v3.2.0" },
+    { "language": "Go", "installCommand": "go get github.com/trueleap/sdk-go", "badge": "v3.2.0" },
+    { "language": "Rust", "installCommand": "cargo add trueleap", "badge": "v3.2.0" }
+  ],
+  "supportChannels": [
+    { "title": "Community Forum", "description": "Ask questions and share knowledge with other developers", "href": "#" },
+    { "title": "GitHub Issues", "description": "Report bugs and request features", "href": "#" },
+    { "title": "Developer Slack", "description": "Real-time help from the TrueLeap team", "href": "#" }
+  ],
+  "cta": {
+    "headline": "Ready to start building?",
+    "description": "Create a free developer account to access sandbox environments, API keys, and all documentation resources.",
+    "primaryCta": { "text": "Create Developer Account", "href": "#" },
+    "secondaryCta": { "text": "Explore Resources", "href": "/en/resources" }
+  }
+}

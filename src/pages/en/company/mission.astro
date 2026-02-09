@@ -1,46 +1,11 @@
 ---
+export const prerender = true;
 import Page from '../../../layouts/Page.astro';
 import { AnimatedSection } from '../../../components/ui/AnimatedSection';
+import { reader } from '../../../lib/keystatic';
 
 const lang = 'en';
-
-const values = [
-  {
-    title: 'Sovereignty',
-    description: 'Communities and nations should control their own digital infrastructure. We build technology that enables ownership, not dependency.',
-    icon: 'flag'
-  },
-  {
-    title: 'Sustainability',
-    description: 'Technology must work within environmental and economic constraints. Our platform runs on solar power and costs less than traditional alternatives.',
-    icon: 'leaf'
-  },
-  {
-    title: 'Accessibility',
-    description: 'Digital services should be available to everyone, regardless of location or connectivity. We design for the last mile first.',
-    icon: 'globe'
-  },
-  {
-    title: 'Impact',
-    description: 'We measure success by the real-world outcomes we enable — jobs created, students educated, services delivered.',
-    icon: 'chart'
-  },
-];
-
-const milestones = [
-  { year: '2019', title: 'Founded', description: 'TrueLeap founded with the mission to bridge the digital divide through sovereign infrastructure.' },
-  { year: '2020', title: 'First Deployment', description: 'Pilot deployment in rural Rwanda connects 50 schools to digital learning resources.' },
-  { year: '2021', title: 'Series Seed', description: '$4M seed round led by development-focused impact investors.' },
-  { year: '2022', title: 'Scale', description: 'Expanded to 15 countries, deployed 500+ edge nodes, connected 2M people.' },
-  { year: '2023', title: 'Product Launch', description: 'Launched Leapspace, Digital Twin, and Leapcast as integrated platform.' },
-  { year: '2024', title: 'Series A', description: '$18M Series A to accelerate deployment across Africa and Southeast Asia.' },
-];
-
-const team = [
-  { name: 'Dr. Amara Osei', role: 'CEO & Co-founder', bio: 'Former infrastructure lead at Google X, PhD in distributed systems from MIT.' },
-  { name: 'James Chen', role: 'CTO & Co-founder', bio: 'Built mesh networking protocols at Cisco, 15 years in edge computing.' },
-  { name: 'Sarah Mwangi', role: 'COO', bio: 'Former UNICEF innovation director, 20 years in development technology.' },
-];
+const page = await reader.singletons['mission-page'].read();
 
 // Icon components
 const icons: Record<string, string> = {
@@ -59,15 +24,13 @@ const icons: Record<string, string> = {
       <AnimatedSection client:visible direction="up">
         <span class="inline-flex items-center gap-2 text-muted font-mono text-xs tracking-widest uppercase mb-6">
           <span class="w-8 h-px bg-primary"></span>
-          Company / Mission
+          {page?.hero?.eyebrow}
         </span>
         <h1 class="text-display-xl text-charcoal mb-6">
-          Mission & <span class="display-serif text-primary">Vision</span>
+          {page?.hero?.headline} <span class="display-serif text-primary">{page?.hero?.headlineAccent}</span>
         </h1>
         <p class="text-body-lg text-muted max-w-3xl leading-relaxed">
-          We believe connectivity is not a luxury — it's infrastructure. Like roads, 
-          electricity, and clean water, digital access is fundamental to human 
-          opportunity in the 21st century.
+          {page?.hero?.description}
         </p>
       </AnimatedSection>
     </div>
@@ -89,23 +52,20 @@ const icons: Record<string, string> = {
               <span class="text-primary font-mono text-xs tracking-widest uppercase">Our Mission</span>
             </div>
             <h2 class="text-2xl lg:text-3xl font-medium text-charcoal mb-4 leading-snug">
-              Bridge the digital divide through sovereign, sustainable infrastructure
+              {page?.mission?.title}
             </h2>
             <p class="text-muted leading-relaxed">
-              3.7 billion people lack reliable internet access. Traditional approaches fail 
-              because they assume connectivity, depend on external cloud services, and 
-              require infrastructure that doesn't exist. We build a different way — 
-              offline-first, solar-powered, and locally owned.
+              {page?.mission?.description}
             </p>
           </div>
         </AnimatedSection>
-        
+
         <!-- Vision Card -->
         <AnimatedSection client:visible direction="up" delay={0.2}>
           <div class="group h-full p-8 lg:p-10 rounded-2xl bg-charcoal text-white relative overflow-hidden">
             <!-- Decorative gradient -->
             <div class="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2"></div>
-            
+
             <div class="relative z-10">
               <div class="flex items-center gap-3 mb-6">
                 <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
@@ -117,13 +77,10 @@ const icons: Record<string, string> = {
                 <span class="text-primary-light font-mono text-xs tracking-widest uppercase">Our Vision</span>
               </div>
               <h2 class="text-2xl lg:text-3xl font-medium text-white mb-4 leading-snug">
-                A world where geography is no longer destiny
+                {page?.vision?.title}
               </h2>
               <p class="text-white/70 leading-relaxed">
-                We envision a world where every community has access to the digital tools 
-                that can transform their lives. Where a student in rural Rwanda has the 
-                same learning resources as one in San Francisco. Where local economies can 
-                participate in the global digital economy.
+                {page?.vision?.description}
               </p>
             </div>
           </div>
@@ -137,15 +94,14 @@ const icons: Record<string, string> = {
     <!-- Decorative elements -->
     <div class="absolute left-0 top-1/2 -translate-y-1/2 w-px h-32 bg-gradient-to-b from-transparent via-primary/30 to-transparent"></div>
     <div class="absolute right-0 top-1/2 -translate-y-1/2 w-px h-32 bg-gradient-to-b from-transparent via-primary/30 to-transparent"></div>
-    
+
     <AnimatedSection client:visible direction="up">
       <div class="max-w-4xl mx-auto px-6 text-center">
         <svg class="w-12 h-12 text-primary/20 mx-auto mb-8" fill="currentColor" viewBox="0 0 24 24">
           <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
         </svg>
         <blockquote class="text-display-md text-charcoal mb-8 display-serif leading-tight">
-          "The digital divide is not a technology problem. It's an infrastructure problem. 
-          And infrastructure problems require infrastructure solutions."
+          "{page?.manifestoQuote}"
         </blockquote>
         <div class="flex items-center justify-center gap-3">
           <div class="w-12 h-px bg-primary/30"></div>
@@ -165,18 +121,18 @@ const icons: Record<string, string> = {
           <h2 class="text-display-lg text-charcoal">What We Stand For</h2>
         </div>
       </AnimatedSection>
-      
+
       <div class="grid md:grid-cols-2 gap-6">
-        {values.map((value, i) => (
+        {page?.values?.map((value, i) => (
           <AnimatedSection client:visible direction="up" delay={0.1 * i}>
             <div class="group h-full p-8 rounded-xl bg-white border border-border shadow-sm hover:shadow-md hover:border-primary/20 transition-all duration-300">
               <div class="flex items-start gap-5">
                 <div class="flex-shrink-0 w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors duration-300">
-                  <svg class="w-7 h-7 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" set:html={icons[value.icon]} />
+                  <svg class="w-7 h-7 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" set:html={icons[value?.icon || ''] || icons.flag} />
                 </div>
                 <div class="flex-1 min-w-0">
-                  <h3 class="text-xl font-medium text-charcoal mb-2 group-hover:text-primary transition-colors duration-300">{value.title}</h3>
-                  <p class="text-muted leading-relaxed">{value.description}</p>
+                  <h3 class="text-xl font-medium text-charcoal mb-2 group-hover:text-primary transition-colors duration-300">{value?.title}</h3>
+                  <p class="text-muted leading-relaxed">{value?.description}</p>
                 </div>
               </div>
             </div>
@@ -195,25 +151,25 @@ const icons: Record<string, string> = {
           <h2 class="text-display-lg text-charcoal">Building the Future</h2>
         </div>
       </AnimatedSection>
-      
+
       <div class="relative">
         <!-- Timeline line -->
         <div class="absolute left-6 md:left-1/2 md:-translate-x-px top-0 bottom-0 w-0.5 bg-border"></div>
-        
+
         <div class="space-y-12">
-          {milestones.map((milestone, i) => (
+          {page?.milestones?.map((milestone, i) => (
             <AnimatedSection client:visible direction="up" delay={0.05 * i}>
               <div class={`relative flex items-start ${i % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}>
                 <!-- Content -->
                 <div class={`pl-16 md:pl-0 md:w-1/2 ${i % 2 === 0 ? 'md:pr-12 md:text-right' : 'md:pl-12'}`}>
-                  <span class="text-2xl font-display font-semibold text-primary">{milestone.year}</span>
-                  <h3 class="text-lg font-medium text-charcoal mt-1 mb-2">{milestone.title}</h3>
-                  <p class="text-muted text-sm leading-relaxed">{milestone.description}</p>
+                  <span class="text-2xl font-display font-semibold text-primary">{milestone?.year}</span>
+                  <h3 class="text-lg font-medium text-charcoal mt-1 mb-2">{milestone?.title}</h3>
+                  <p class="text-muted text-sm leading-relaxed">{milestone?.description}</p>
                 </div>
-                
+
                 <!-- Timeline dot -->
                 <div class="absolute left-6 md:left-1/2 top-1 w-3 h-3 -translate-x-1/2 rounded-full bg-primary ring-4 ring-white z-10"></div>
-                
+
                 <!-- Spacer for alternating layout -->
                 <div class="hidden md:block md:w-1/2"></div>
               </div>
@@ -241,19 +197,19 @@ const icons: Record<string, string> = {
           </a>
         </div>
       </AnimatedSection>
-      
+
       <div class="grid md:grid-cols-3 gap-6">
-        {team.map((member, i) => (
+        {page?.teamPreview?.map((member, i) => (
           <AnimatedSection client:visible direction="up" delay={0.1 * i}>
             <div class="group p-8 rounded-xl bg-white border border-border shadow-sm hover:shadow-md hover:border-primary/20 transition-all duration-300 text-center">
               <div class="w-20 h-20 rounded-full bg-primary/10 mx-auto mb-5 flex items-center justify-center ring-4 ring-white shadow-sm group-hover:bg-primary/15 transition-colors duration-300">
                 <span class="text-xl font-display font-semibold text-primary">
-                  {member.name.split(' ').map(n => n[0]).join('')}
+                  {member?.name?.split(' ').map(n => n[0]).join('')}
                 </span>
               </div>
-              <h3 class="text-lg font-medium text-charcoal group-hover:text-primary transition-colors">{member.name}</h3>
-              <p class="text-sm text-primary font-medium mb-3">{member.role}</p>
-              <p class="text-sm text-muted leading-relaxed">{member.bio}</p>
+              <h3 class="text-lg font-medium text-charcoal group-hover:text-primary transition-colors">{member?.name}</h3>
+              <p class="text-sm text-primary font-medium mb-3">{member?.role}</p>
+              <p class="text-sm text-muted leading-relaxed">{member?.bio}</p>
             </div>
           </AnimatedSection>
         ))}
@@ -266,22 +222,21 @@ const icons: Record<string, string> = {
     <!-- Decorative gradients -->
     <div class="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[150px]"></div>
     <div class="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-violet/15 rounded-full blur-[120px]"></div>
-    
+
     <AnimatedSection client:visible direction="up">
       <div class="max-w-3xl mx-auto px-6 text-center relative z-10">
         <h2 class="text-display-md text-white mb-6">
-          Join us in bridging the divide
+          {page?.cta?.headline}
         </h2>
         <p class="text-body-lg text-white/70 mb-10 leading-relaxed">
-          We're building a team of mission-driven engineers, designers, and operators. 
-          If you believe technology should serve everyone, we want to hear from you.
+          {page?.cta?.description}
         </p>
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <a href="/en/company/careers" class="btn bg-white text-charcoal hover:bg-white/90 shadow-lg hover:shadow-xl transition-all px-8 py-3 rounded-lg font-medium">
-            View Open Roles
+          <a href={page?.cta?.primaryCta?.href} class="btn bg-white text-charcoal hover:bg-white/90 shadow-lg hover:shadow-xl transition-all px-8 py-3 rounded-lg font-medium">
+            {page?.cta?.primaryCta?.text}
           </a>
-          <a href="/en/company/partners" class="btn bg-white/10 text-white border border-white/20 hover:bg-white/20 backdrop-blur-sm px-8 py-3 rounded-lg font-medium transition-all">
-            Become a Partner
+          <a href={page?.cta?.secondaryCta?.href} class="btn bg-white/10 text-white border border-white/20 hover:bg-white/20 backdrop-blur-sm px-8 py-3 rounded-lg font-medium transition-all">
+            {page?.cta?.secondaryCta?.text}
           </a>
         </div>
       </div>

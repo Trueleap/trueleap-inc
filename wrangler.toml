@@ -1,0 +1,14 @@
+name = "trueleap-inc"
+compatibility_date = "2026-02-04"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+binding = "ASSETS"
+directory = "./dist"
+
+[[r2_buckets]]
+binding = "IMAGES_BUCKET"
+bucket_name = "trueleap-images"
+
+[observability]
+enabled = true

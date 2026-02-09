@@ -1,0 +1,45 @@
+name: Post preview URL on content PR
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches:
+      - main
+
+permissions:
+  pull-requests: write
+
+jobs:
+  preview-comment:
+    if: startsWith(github.head_ref, 'content/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate preview URL
+        id: preview
+        run: |
+          branch="${{ github.head_ref }}"
+          slug=$(echo "$branch" | sed 's/[^a-zA-Z0-9]/-/g' | tr '[:upper:]' '[:lower:]')
+          echo "url=https://${slug}.trueleap-inc.pages.dev" >> "$GITHUB_OUTPUT"
+
+      - name: Delete previous bot comments
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          comments=$(gh api "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" --jq '.[] | select(.body | startswith("## Preview")) | .id')
+          for id in $comments; do
+            gh api -X DELETE "repos/${{ github.repository }}/issues/comments/$id"
+          done
+
+      - name: Post preview comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr comment "${{ github.event.pull_request.number }}" \
+            --repo "${{ github.repository }}" \
+            --body "## Preview
+
+          Cloudflare Pages is building a preview for this content change.
+
+          **Preview URL:** ${{ steps.preview.outputs.url }}
+
+          > The preview may take 1-2 minutes to become available after this comment is posted."

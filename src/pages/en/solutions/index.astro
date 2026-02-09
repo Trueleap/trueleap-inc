@@ -1,55 +1,15 @@
 ---
+export const prerender = true;
 import Page from '../../../layouts/Page.astro';
+import { reader } from '../../../lib/keystatic';
 
 const lang = 'en';
 
-const industries = [
-  {
-    title: 'Governments',
-    description: 'Digital sovereignty infrastructure for national transformation. Data stays within borders.',
-    href: '/en/solutions/industry/governments',
-    features: ['National ID systems', 'e-Government services', 'Emergency communications'],
-  },
-  {
-    title: 'Education',
-    description: 'Connected learning platforms that work without internet. World-class content, offline.',
-    href: '/en/solutions/industry/education',
-    features: ['Offline classrooms', 'Content libraries', 'Progress tracking'],
-  },
-  {
-    title: 'NGOs',
-    description: 'Humanitarian connectivity for crisis response and long-term development programs.',
-    href: '/en/solutions/industry/ngos',
-    features: ['Rapid deployment', 'Field coordination', 'Impact measurement'],
-  },
-  {
-    title: 'Enterprise',
-    description: 'Edge computing solutions for distributed operations in remote locations.',
-    href: '/en/solutions/industry/enterprise',
-    features: ['Remote operations', 'Asset tracking', 'Field services'],
-  },
-];
-
-const outcomes = [
-  {
-    title: 'Digital Sovereignty',
-    description: 'Complete control over your data and infrastructure. No external dependencies.',
-    href: '/en/solutions/outcome/digital-sovereignty',
-    icon: 'shield'
-  },
-  {
-    title: 'Rural Connectivity',
-    description: 'Reach the last mile where traditional infrastructure cannot go.',
-    href: '/en/solutions/outcome/rural-connectivity',
-    icon: 'signal'
-  },
-  {
-    title: 'Workforce Readiness',
-    description: 'Digital skills training that works without reliable internet.',
-    href: '/en/solutions/outcome/workforce-readiness',
-    icon: 'users'
-  },
-];
+const data = await reader.singletons['solutions-overview'].read();
+const hero = data?.hero;
+const industryCards = data?.industryCards ?? [];
+const outcomeCards = data?.outcomeCards ?? [];
+const cta = data?.cta;
 ---
 
 <Page title="Solutions" lang={lang}>
@@ -57,14 +17,12 @@ const outcomes = [
   <section class="pt-32 pb-20 bg-cream relative overflow-hidden">
     <div class="absolute inset-0 grid-lines opacity-40"></div>
     <div class="max-w-7xl mx-auto px-6 relative z-10">
-      <span class="text-caption text-primary mb-4 block">Solutions</span>
+      <span class="text-caption text-primary mb-4 block">{hero?.eyebrow}</span>
       <h1 class="text-display-xl text-charcoal mb-8">
-        Built for <span class="display-serif">Impact</span>
+        {hero?.headline} <span class="display-serif">{hero?.headlineAccent}</span>
       </h1>
       <p class="text-body-lg text-muted max-w-3xl">
-        Whether you're a government seeking digital sovereignty, an NGO responding 
-        to crisis, or an enterprise expanding into remote areas — TrueLeap provides 
-        the infrastructure you need.
+        {hero?.description}
       </p>
     </div>
   </section>
@@ -76,16 +34,16 @@ const outcomes = [
         <span class="text-caption text-primary mb-4 block">By Industry</span>
         <h2 class="text-display-lg text-charcoal">Solutions for Your Sector</h2>
       </div>
-      
+
       <div class="grid md:grid-cols-2 gap-8">
-        {industries.map((industry) => (
+        {industryCards.map((industry) => (
           <a href={industry.href} class="group">
             <div class="h-full p-8 rounded-2xl bg-cream border border-border hover:border-primary transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10">
               <h3 class="text-2xl font-medium text-charcoal mb-3 group-hover:text-primary transition-colors">
                 {industry.title}
               </h3>
               <p class="text-muted mb-6">{industry.description}</p>
-              
+
               <ul class="space-y-2 mb-6">
                 {industry.features.map((feature) => (
                   <li class="flex items-center gap-2 text-sm text-charcoal">
@@ -96,7 +54,7 @@ const outcomes = [
                   </li>
                 ))}
               </ul>
-              
+
               <span class="inline-flex items-center gap-2 text-primary font-medium group-hover:gap-3 transition-all">
                 Learn more
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -117,9 +75,9 @@ const outcomes = [
         <span class="text-caption text-primary-light mb-4 block">By Outcome</span>
         <h2 class="text-display-lg text-white">What You Want to Achieve</h2>
       </div>
-      
+
       <div class="grid md:grid-cols-3 gap-8">
-        {outcomes.map((outcome) => (
+        {outcomeCards.map((outcome) => (
           <a href={outcome.href} class="group">
             <div class="h-full p-8 rounded-2xl bg-charcoal-light border border-border-dark hover:border-primary transition-all">
               <div class="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center mb-4">
@@ -146,18 +104,17 @@ const outcomes = [
   <section class="py-24 bg-cream">
     <div class="max-w-3xl mx-auto px-6 text-center">
       <h2 class="text-display-md text-charcoal mb-6">
-        Not sure which solution fits?
+        {cta?.headline}
       </h2>
       <p class="text-body-lg text-muted mb-8">
-        Our team can help you identify the right approach for your specific 
-        needs, whether you're deploying across a nation or a single village.
+        {cta?.description}
       </p>
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-        <a href="mailto:hello@trueleapinc.com" class="btn btn-primary">
-          Talk to Our Team
+        <a href={cta?.primaryCta?.href} class="btn btn-primary">
+          {cta?.primaryCta?.text}
         </a>
-        <a href="/en/resources/docs" class="btn btn-secondary">
-          Read Documentation
+        <a href={cta?.secondaryCta?.href} class="btn btn-secondary">
+          {cta?.secondaryCta?.text}
         </a>
       </div>
     </div>

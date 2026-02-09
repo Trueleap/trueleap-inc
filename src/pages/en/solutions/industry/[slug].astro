@@ -1,0 +1,164 @@
+---
+export const prerender = true;
+import Page from '../../../../layouts/Page.astro';
+import { reader } from '../../../../lib/keystatic';
+
+const lang = 'en';
+
+export async function getStaticPaths() {
+  const slugs = await reader.collections['industry-solutions'].list();
+  return slugs.map((slug) => ({ params: { slug } }));
+}
+
+const { slug } = Astro.params;
+const entry = await reader.collections['industry-solutions'].read(slug!);
+
+const benefits = entry?.benefits ?? [];
+const useCases = entry?.useCases ?? [];
+const caseStudy = entry?.caseStudy;
+const whyCards = entry?.whyCards ?? [];
+const ctaSection = entry?.ctaSection;
+---
+
+<Page title={`Solutions for ${entry?.title ?? slug}`} lang={lang}>
+  <!-- Hero -->
+  <section class="pt-32 pb-20 bg-cream relative overflow-hidden">
+    <div class="absolute inset-0 grid-lines opacity-40"></div>
+    <div class="max-w-7xl mx-auto px-6 relative z-10">
+      <span class="text-caption text-primary mb-4 block">Solutions / Industry</span>
+      <h1 class="text-display-xl text-charcoal mb-8">
+        {entry?.headline} <span class="display-serif">{entry?.headlineAccent}</span>
+      </h1>
+      <p class="text-body-lg text-muted max-w-3xl mb-8">
+        {entry?.description}
+      </p>
+      <div class="flex flex-wrap gap-4">
+        <a href={entry?.ctaPrimary?.href} class="btn btn-primary">
+          {entry?.ctaPrimary?.text}
+        </a>
+        <a href={entry?.ctaSecondary?.href} class="btn btn-secondary">
+          {entry?.ctaSecondary?.text}
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Key Benefits -->
+  <section class="py-16 bg-charcoal">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid md:grid-cols-4 gap-8">
+        {benefits.map((benefit) => (
+          <div class="text-center">
+            <p class="text-3xl md:text-4xl font-medium text-white mb-1">{benefit.metric}</p>
+            <p class="text-sm text-white/80 font-medium mb-1">{benefit.label}</p>
+            <p class="text-xs text-white/50">{benefit.description}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Use Cases -->
+  <section class="py-24 bg-white">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <span class="text-caption text-primary mb-4 block">Use Cases</span>
+        <h2 class="text-display-lg text-charcoal mb-6">Applications</h2>
+        <p class="text-body-lg text-muted">
+          Explore how TrueLeap technology is applied across critical use cases.
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-8">
+        {useCases.map((useCase) => (
+          <div class="card">
+            <div class="w-12 h-12 rounded-xl bg-primary-lighter/50 flex items-center justify-center mb-4">
+              <svg class="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </div>
+            <h3 class="text-xl font-medium text-charcoal mb-2">{useCase.title}</h3>
+            <p class="text-muted">{useCase.description}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Case Study -->
+  {caseStudy && (
+    <section class="py-24 bg-cream">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="grid lg:grid-cols-2 gap-16 items-center">
+          <div>
+            <span class="inline-block px-3 py-1 rounded-full bg-indigo-light text-primary text-xs font-medium mb-4">
+              Case Study
+            </span>
+            <p class="text-sm text-muted mb-2">{caseStudy.country}</p>
+            <h2 class="text-display-md text-charcoal mb-6">{caseStudy.title}</h2>
+            <p class="text-body-lg text-muted mb-8">{caseStudy.description}</p>
+            <a href="/en/impact/case-studies" class="link-arrow font-medium text-charcoal">
+              Read full case study
+            </a>
+          </div>
+
+          <div>
+            <div class="grid grid-cols-3 gap-4">
+              {(caseStudy.results ?? []).map((result) => (
+                <div class="card text-center">
+                  <p class="text-2xl md:text-3xl font-medium text-charcoal mb-1">{result.metric}</p>
+                  <p class="text-xs text-muted">{result.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- Why TrueLeap -->
+  {whyCards.length > 0 && (
+    <section class="py-24 bg-charcoal text-white">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <span class="text-caption text-primary-light mb-4 block">Why TrueLeap</span>
+          <h2 class="text-display-lg text-white mb-6">Built for Your Requirements</h2>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8">
+          {whyCards.map((card) => (
+            <div class="p-8 rounded-2xl bg-charcoal-light border border-border-dark">
+              <h3 class="text-xl font-medium text-white mb-4">{card.title}</h3>
+              <p class="text-white/70">
+                {card.description}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- CTA -->
+  {ctaSection && (
+    <section class="py-24 bg-white border-t border-border">
+      <div class="max-w-3xl mx-auto px-6 text-center">
+        <h2 class="text-display-md text-charcoal mb-6">
+          {ctaSection.headline}
+        </h2>
+        <p class="text-body-lg text-muted mb-8">
+          {ctaSection.description}
+        </p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a href={ctaSection.primaryCta?.href} class="btn btn-primary">
+            {ctaSection.primaryCta?.text}
+          </a>
+          <a href={ctaSection.secondaryCta?.href} class="btn btn-secondary">
+            {ctaSection.secondaryCta?.text}
+          </a>
+        </div>
+      </div>
+    </section>
+  )}
+</Page>

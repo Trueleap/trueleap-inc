@@ -1,29 +1,11 @@
 ---
+export const prerender = true;
 import Page from '../../../layouts/Page.astro';
 import { AnimatedSection } from '../../../components/ui/AnimatedSection';
+import { reader } from '../../../lib/keystatic';
 
 const lang = 'en';
-
-const systems = [
-  {
-    eyebrow: 'Collaboration',
-    name: 'Leapspace',
-    description: 'A sovereign collaboration platform with offline-first architecture. Video conferencing, document sharing, and team communication that works anywhere.',
-    features: ['End-to-end encrypted messaging', 'Offline document editing with sync', 'Low-bandwidth video conferencing', 'Team channels and workspaces'],
-  },
-  {
-    eyebrow: 'Monitoring',
-    name: 'Digital Twin',
-    description: 'Real-time visualization and monitoring of your entire network. Predictive maintenance, capacity planning, and incident response in one view.',
-    features: ['Live network topology mapping', 'Predictive failure detection', 'Resource utilization dashboards', 'Automated incident response'],
-  },
-  {
-    eyebrow: 'Content',
-    name: 'Leapcast',
-    description: 'Content delivery and caching optimized for low-bandwidth environments. Educational content, government services, and media delivery.',
-    features: ['Intelligent edge caching', 'Adaptive bitrate streaming', 'Offline content packages', 'Usage analytics and insights'],
-  },
-];
+const page = await reader.singletons['digital-systems-page'].read();
 ---
 
 <Page title="Digital Systems" lang={lang}>
@@ -32,28 +14,28 @@ const systems = [
     <div class="absolute inset-0 grid-lines opacity-40"></div>
     <div class="max-w-7xl mx-auto px-6 relative z-10">
       <AnimatedSection client:visible direction="up">
-        <p class="text-caption text-muted mb-4">Platform / Digital Systems</p>
+        <p class="text-caption text-muted mb-4">{page?.hero?.eyebrow}</p>
       </AnimatedSection>
-      
+
       <AnimatedSection client:visible direction="up" delay={0.1}>
         <h1 class="text-display-xl text-charcoal mb-8">
-          Digital <em class="display-serif">Systems</em>
+          {page?.hero?.headline} <em class="display-serif">{page?.hero?.headlineAccent}</em>
         </h1>
       </AnimatedSection>
-      
+
       <AnimatedSection client:visible direction="up" delay={0.2}>
         <p class="text-body-lg text-muted max-w-3xl mb-8">
-          Three integrated platforms that work together to deliver comprehensive digital services—even in the most challenging connectivity environments.
+          {page?.hero?.description}
         </p>
       </AnimatedSection>
 
       <AnimatedSection client:visible direction="up" delay={0.3}>
         <div class="flex flex-wrap gap-4">
-          <a href="/en/company" class="btn btn-primary">
-            Talk to Our Team
+          <a href={page?.hero?.ctaPrimary?.href} class="btn btn-primary">
+            {page?.hero?.ctaPrimary?.text}
           </a>
-          <a href="/en/resources/docs" class="btn btn-secondary">
-            View Documentation
+          <a href={page?.hero?.ctaSecondary?.href} class="btn btn-secondary">
+            {page?.hero?.ctaSecondary?.text}
           </a>
         </div>
       </AnimatedSection>
@@ -63,7 +45,7 @@ const systems = [
   <!-- Systems Overview -->
   <section class="py-24 bg-white">
     <div class="max-w-7xl mx-auto px-6 space-y-24">
-      {systems.map((system, index) => (
+      {page?.systems?.map((system: any, index: number) => (
         <div class={`grid md:grid-cols-2 gap-12 items-center ${index % 2 === 1 ? 'md:[&>*:first-child]:order-2' : ''}`}>
           <AnimatedSection client:visible direction={index % 2 === 0 ? 'left' : 'right'} delay={0}>
             <div>
@@ -71,7 +53,7 @@ const systems = [
               <h2 class="text-display-md text-charcoal mb-4">{system.name}</h2>
               <p class="text-body text-muted mb-6">{system.description}</p>
               <ul class="space-y-3">
-                {system.features.map((feature) => (
+                {system.features?.map((feature: any) => (
                   <li class="flex items-start gap-3">
                     <span class="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0"></span>
                     <span class="text-charcoal/80">{feature}</span>
@@ -96,42 +78,23 @@ const systems = [
           <p class="text-caption text-primary-light mb-4">Unified Platform</p>
           <h2 class="text-display-md text-white mb-4">Better Together</h2>
           <p class="text-white/60">
-            While each system works independently, they're designed to integrate seamlessly—sharing 
+            While each system works independently, they're designed to integrate seamlessly—sharing
             authentication, data, and insights across the platform.
           </p>
         </AnimatedSection>
       </div>
-      
+
       <div class="grid md:grid-cols-3 gap-8">
-        <AnimatedSection client:visible direction="up" delay={0}>
-          <div class="p-8 bg-charcoal-light border border-white/10 rounded-lg">
-            <h3 class="text-xl font-medium text-white mb-3">Single Sign-On</h3>
-            <p class="text-white/60 text-sm">
-              One identity across all systems. Users authenticate once and access 
-              everything they need without friction.
-            </p>
-          </div>
-        </AnimatedSection>
-        
-        <AnimatedSection client:visible direction="up" delay={0.1}>
-          <div class="p-8 bg-charcoal-light border border-white/10 rounded-lg">
-            <h3 class="text-xl font-medium text-white mb-3">Shared Data Layer</h3>
-            <p class="text-white/60 text-sm">
-              Content created in Leapspace can be distributed via Leapcast. 
-              Digital Twin monitors both in real-time.
-            </p>
-          </div>
-        </AnimatedSection>
-        
-        <AnimatedSection client:visible direction="up" delay={0.2}>
-          <div class="p-8 bg-charcoal-light border border-white/10 rounded-lg">
-            <h3 class="text-xl font-medium text-white mb-3">Unified Analytics</h3>
-            <p class="text-white/60 text-sm">
-              Cross-platform insights help you understand how your organization 
-              uses digital tools and where to invest next.
-            </p>
-          </div>
-        </AnimatedSection>
+        {page?.integrationBenefits?.map((benefit: any, i: number) => (
+          <AnimatedSection client:visible direction="up" delay={0.1 * i}>
+            <div class="p-8 bg-charcoal-light border border-white/10 rounded-lg">
+              <h3 class="text-xl font-medium text-white mb-3">{benefit.title}</h3>
+              <p class="text-white/60 text-sm">
+                {benefit.description}
+              </p>
+            </div>
+          </AnimatedSection>
+        ))}
       </div>
     </div>
   </section>
@@ -150,40 +113,19 @@ const systems = [
           </a>
         </AnimatedSection>
       </div>
-      
+
       <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <AnimatedSection client:visible direction="up" delay={0}>
-          <div class="card">
-            <p class="text-caption text-primary mb-2">Education</p>
-            <h3 class="text-xl font-medium text-charcoal mb-2">Remote Learning</h3>
-            <p class="text-muted text-sm">
-              Schools use Leapspace for virtual classrooms and Leapcast for 
-              distributing educational content to students with limited connectivity.
-            </p>
-          </div>
-        </AnimatedSection>
-        
-        <AnimatedSection client:visible direction="up" delay={0.1}>
-          <div class="card">
-            <p class="text-caption text-primary mb-2">Government</p>
-            <h3 class="text-xl font-medium text-charcoal mb-2">Citizen Services</h3>
-            <p class="text-muted text-sm">
-              Digital Twin monitors service delivery while Leapcast distributes 
-              government information to remote communities.
-            </p>
-          </div>
-        </AnimatedSection>
-        
-        <AnimatedSection client:visible direction="up" delay={0.2}>
-          <div class="card">
-            <p class="text-caption text-primary mb-2">Healthcare</p>
-            <h3 class="text-xl font-medium text-charcoal mb-2">Telemedicine</h3>
-            <p class="text-muted text-sm">
-              Leapspace enables doctor-patient consultations while Leapcast 
-              delivers health education and training materials.
-            </p>
-          </div>
-        </AnimatedSection>
+        {page?.useCases?.map((useCase: any, i: number) => (
+          <AnimatedSection client:visible direction="up" delay={0.1 * i}>
+            <div class="card">
+              <p class="text-caption text-primary mb-2">{useCase.category}</p>
+              <h3 class="text-xl font-medium text-charcoal mb-2">{useCase.title}</h3>
+              <p class="text-muted text-sm">
+                {useCase.description}
+              </p>
+            </div>
+          </AnimatedSection>
+        ))}
       </div>
     </div>
   </section>
@@ -193,18 +135,17 @@ const systems = [
     <div class="max-w-3xl mx-auto px-6 text-center">
       <AnimatedSection client:visible direction="up">
         <h2 class="text-display-md text-charcoal mb-6">
-          Ready to transform your digital infrastructure?
+          {page?.cta?.headline}
         </h2>
         <p class="text-body-lg text-muted mb-8">
-          Our team can help you understand how Leapspace, Digital Twin, and Leapcast 
-          can work together to serve your organization's unique needs.
+          {page?.cta?.description}
         </p>
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <a href="mailto:hello@trueleapinc.com" class="btn btn-primary">
-            Schedule a Demo
+          <a href={page?.cta?.primaryCta?.href} class="btn btn-primary">
+            {page?.cta?.primaryCta?.text}
           </a>
-          <a href="/en/platform" class="btn btn-secondary">
-            Explore Platform
+          <a href={page?.cta?.secondaryCta?.href} class="btn btn-secondary">
+            {page?.cta?.secondaryCta?.text}
           </a>
         </div>
       </AnimatedSection>

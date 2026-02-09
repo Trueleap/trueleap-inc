@@ -1,7 +1,13 @@
 ---
+export const prerender = true;
 import Page from '../../../layouts/Page.astro';
+import { reader } from '../../../lib/keystatic';
 
 const lang = 'en';
+const page = await reader.singletons['last-mile-page'].read();
+
+const stats = page?.stats ?? [];
+const topics = page?.topicFilters ?? [];
 
 const articles = [
   {
@@ -85,8 +91,6 @@ const articles = [
     featured: false,
   },
 ];
-
-const topics = ['All', 'Digital Sovereignty', 'Rural Connectivity', 'Edge Computing', 'Impact Measurement', 'Product Design'];
 ---
 
 <Page title="The Last Mile" lang={lang}>
@@ -94,14 +98,12 @@ const topics = ['All', 'Digital Sovereignty', 'Rural Connectivity', 'Edge Comput
   <section class="pt-32 pb-20 bg-cream relative overflow-hidden">
     <div class="absolute inset-0 grid-lines opacity-40"></div>
     <div class="max-w-7xl mx-auto px-6 relative z-10">
-      <span class="text-caption text-muted mb-4 block">Impact / Thought Leadership</span>
+      <span class="text-caption text-muted mb-4 block">{page?.hero?.eyebrow}</span>
       <h1 class="text-display-xl text-charcoal mb-8">
-        The Last <span class="display-serif">Mile</span>
+        {page?.hero?.headline} <span class="display-serif">{page?.hero?.headlineAccent}</span>
       </h1>
       <p class="text-body-lg text-muted max-w-3xl">
-        Insights and perspectives on bridging the digital divide. Essays, research, 
-        and lessons learned from building infrastructure for the world's most 
-        underserved communities.
+        {page?.hero?.description}
       </p>
     </div>
   </section>
@@ -120,7 +122,7 @@ const topics = ['All', 'Digital Sovereignty', 'Rural Connectivity', 'Edge Comput
               {article.title}
             </h3>
             <p class="text-white/70 text-sm mb-6">{article.excerpt}</p>
-            
+
             <div class="flex items-center justify-between pt-4 border-t border-border-dark">
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary-light to-primary flex items-center justify-center">
@@ -157,7 +159,7 @@ const topics = ['All', 'Digital Sovereignty', 'Rural Connectivity', 'Edge Comput
     <div class="max-w-4xl mx-auto px-6">
       <div class="space-y-0">
         {articles.map((article, index) => (
-          <article 
+          <article
             class={`py-8 group cursor-pointer ${index < articles.length - 1 ? 'border-b border-border' : ''}`}
           >
             <div class="flex flex-col md:flex-row gap-6">
@@ -177,7 +179,7 @@ const topics = ['All', 'Digital Sovereignty', 'Rural Connectivity', 'Edge Comput
                     </div>
                     <p class="text-sm text-charcoal">{article.author}</p>
                   </div>
-                  <span class="text-sm text-muted">·</span>
+                  <span class="text-sm text-muted">&middot;</span>
                   <p class="text-sm text-muted">{article.readTime}</p>
                 </div>
               </div>
@@ -193,12 +195,12 @@ const topics = ['All', 'Digital Sovereignty', 'Rural Connectivity', 'Edge Comput
     <div class="max-w-3xl mx-auto px-6 text-center">
       <h2 class="text-display-md text-charcoal mb-6">Subscribe to The Last Mile</h2>
       <p class="text-body-lg text-muted mb-8">
-        Get our latest essays and research delivered to your inbox. 
+        Get our latest essays and research delivered to your inbox.
         We publish 2-3 times per month.
       </p>
       <form class="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-        <input 
-          type="email" 
+        <input
+          type="email"
           placeholder="Enter your email"
           class="flex-1 px-4 py-3 bg-white border border-border text-charcoal placeholder:text-muted focus:outline-none focus:border-primary"
         />
@@ -217,41 +219,25 @@ const topics = ['All', 'Digital Sovereignty', 'Rural Connectivity', 'Edge Comput
     <div class="max-w-7xl mx-auto px-6">
       <div class="grid lg:grid-cols-2 gap-16 items-center">
         <div>
-          <span class="text-caption text-primary-light mb-4 block">About The Last Mile</span>
+          <span class="text-caption text-primary-light mb-4 block">{page?.aboutSection?.headline}</span>
           <h2 class="text-display-md text-white mb-6">
             Why we share what we learn
           </h2>
           <p class="text-body-lg text-white/70 mb-6">
-            The challenge of bridging the digital divide is too big for any one 
-            organization. We share our research, frameworks, and lessons learned 
-            because we believe open knowledge accelerates progress for everyone.
-          </p>
-          <p class="text-body text-white/70 mb-8">
-            The Last Mile is our platform for thinking out loud about the hardest 
-            problems in digital inclusion—and inviting others to think with us.
+            {page?.aboutSection?.description}
           </p>
           <a href="/en/company/mission" class="btn bg-white text-charcoal hover:bg-white/90">
             Learn About Our Mission
           </a>
         </div>
-        
+
         <div class="grid grid-cols-2 gap-4">
-          <div class="p-6 rounded-2xl bg-charcoal-light border border-border-dark">
-            <p class="text-3xl font-medium text-white mb-2">50+</p>
-            <p class="text-sm text-white/60">Articles Published</p>
-          </div>
-          <div class="p-6 rounded-2xl bg-charcoal-light border border-border-dark">
-            <p class="text-3xl font-medium text-white mb-2">25K</p>
-            <p class="text-sm text-white/60">Newsletter Subscribers</p>
-          </div>
-          <div class="p-6 rounded-2xl bg-charcoal-light border border-border-dark">
-            <p class="text-3xl font-medium text-white mb-2">12</p>
-            <p class="text-sm text-white/60">Research Papers</p>
-          </div>
-          <div class="p-6 rounded-2xl bg-charcoal-light border border-border-dark">
-            <p class="text-3xl font-medium text-white mb-2">8</p>
-            <p class="text-sm text-white/60">Contributing Authors</p>
-          </div>
+          {stats.map((stat) => (
+            <div class="p-6 rounded-2xl bg-charcoal-light border border-border-dark">
+              <p class="text-3xl font-medium text-white mb-2">{stat?.value}</p>
+              <p class="text-sm text-white/60">{stat?.label}</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>

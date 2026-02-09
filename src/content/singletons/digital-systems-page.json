@@ -1,0 +1,46 @@
+{
+  "hero": {
+    "eyebrow": "Platform / Digital Systems",
+    "headline": "Digital",
+    "headlineAccent": "Systems",
+    "description": "Three integrated platforms that work together to deliver comprehensive digital services\u2014even in the most challenging connectivity environments.",
+    "ctaPrimary": { "text": "Talk to Our Team", "href": "/en/company" },
+    "ctaSecondary": { "text": "View Documentation", "href": "/en/resources/docs" }
+  },
+  "systems": [
+    {
+      "eyebrow": "Collaboration",
+      "name": "Leapspace",
+      "description": "A sovereign collaboration platform with offline-first architecture. Video conferencing, document sharing, and team communication that works anywhere.",
+      "features": ["End-to-end encrypted messaging", "Offline document editing with sync", "Low-bandwidth video conferencing", "Team channels and workspaces"]
+    },
+    {
+      "eyebrow": "Monitoring",
+      "name": "Digital Twin",
+      "description": "Real-time visualization and monitoring of your entire network. Predictive maintenance, capacity planning, and incident response in one view.",
+      "features": ["Live network topology mapping", "Predictive failure detection", "Resource utilization dashboards", "Automated incident response"]
+    },
+    {
+      "eyebrow": "Content",
+      "name": "Leapcast",
+      "description": "Content delivery and caching optimized for low-bandwidth environments. Educational content, government services, and media delivery.",
+      "features": ["Intelligent edge caching", "Adaptive bitrate streaming", "Offline content packages", "Usage analytics and insights"]
+    }
+  ],
+  "integrationBenefits": [
+    { "title": "Single Sign-On", "description": "One identity across all systems. Users authenticate once and access everything they need without friction." },
+    { "title": "Shared Data Layer", "description": "Content created in Leapspace can be distributed via Leapcast. Digital Twin monitors both in real-time." },
+    { "title": "Unified Analytics", "description": "Cross-platform insights help you understand how your organization uses digital tools and where to invest next." }
+  ],
+  "useCases": [
+    { "category": "Education", "title": "Remote Learning", "description": "Schools use Leapspace for virtual classrooms and Leapcast for distributing educational content to students with limited connectivity." },
+    { "category": "Government", "title": "Citizen Services", "description": "Digital Twin monitors service delivery while Leapcast distributes government information to remote communities." },
+    { "category": "Healthcare", "title": "Telemedicine", "description": "Leapspace enables doctor-patient consultations while Leapcast delivers health education and training materials." }
+  ],
+  "cta": {
+    "headline": "Ready to transform your digital infrastructure?",
+    "description": "Our team can help you understand how Leapspace, Digital Twin, and Leapcast can work together to serve your organization's unique needs.",
+    "primaryCta": { "text": "Schedule a Demo", "href": "mailto:hello@trueleapinc.com" },
+    "secondaryCta": { "text": "Explore Platform", "href": "/en/platform" }
+  }
+}

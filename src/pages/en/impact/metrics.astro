@@ -1,45 +1,16 @@
 ---
+export const prerender = true;
 import Page from '../../../layouts/Page.astro';
 import { AnimatedSection } from '../../../components/ui/AnimatedSection';
 import { NumberTicker } from '../../../components/ui/NumberTicker';
+import { reader } from '../../../lib/keystatic';
 
 const lang = 'en';
+const page = await reader.singletons['metrics-page'].read();
 
-const primaryMetrics = [
-  { value: 2.3, suffix: 'M', label: 'People with first-time internet access', category: 'Connectivity' },
-  { value: 450, suffix: 'K', label: 'Students using digital learning tools', category: 'Education' },
-  { value: 120, suffix: 'K', label: 'Telemedicine consultations enabled', category: 'Healthcare' },
-];
-
-const secondaryMetrics = [
-  { value: '$47M', label: 'Economic activity enabled', category: 'Economic' },
-  { value: '1,200', label: 'Edge nodes deployed', category: 'Infrastructure' },
-  { value: '100%', label: 'Solar-powered operations', category: 'Sustainability' },
-  { value: '47', label: 'Countries reached', category: 'Geographic' },
-  { value: '99.7%', label: 'Network uptime (30-day)', category: 'Reliability' },
-  { value: '<2W', label: 'Average power consumption', category: 'Efficiency' },
-];
-
-const impactStories = [
-  {
-    metric: '340%',
-    title: 'Increase in School Enrollment',
-    location: 'Rural Rwanda',
-    description: 'After deploying TrueLeap nodes in 12 villages, school enrollment increased dramatically as families gained access to digital learning resources.',
-  },
-  {
-    metric: '89%',
-    title: 'Reduction in Travel for Healthcare',
-    location: 'Bihar, India',
-    description: 'Telemedicine services reduced the need for expensive and time-consuming travel to urban healthcare facilities.',
-  },
-  {
-    metric: '$2.4M',
-    title: 'Annual Savings for Government',
-    location: 'Ghana',
-    description: 'Digital service delivery eliminated paper-based processes and reduced operational costs across 200+ service points.',
-  },
-];
+const primaryMetrics = page?.primaryMetrics ?? [];
+const secondaryMetrics = page?.secondaryMetrics ?? [];
+const impactStories = page?.impactStories ?? [];
 ---
 
 <Page title="Impact Metrics" lang={lang}>
@@ -48,19 +19,18 @@ const impactStories = [
     <div class="absolute inset-0 grid-lines opacity-40"></div>
     <div class="max-w-7xl mx-auto px-6 relative z-10">
       <AnimatedSection client:visible direction="up">
-        <p class="text-caption text-muted mb-4">Impact / Data</p>
+        <p class="text-caption text-muted mb-4">{page?.hero?.eyebrow}</p>
       </AnimatedSection>
-      
+
       <AnimatedSection client:visible direction="up" delay={0.1}>
         <h1 class="text-display-xl text-charcoal mb-8">
-          Impact <em class="display-serif">Data</em>
+          {page?.hero?.headline} <em class="display-serif">{page?.hero?.headlineAccent}</em>
         </h1>
       </AnimatedSection>
-      
+
       <AnimatedSection client:visible direction="up" delay={0.2}>
         <p class="text-body-lg text-muted max-w-3xl mb-8">
-          We measure what matters. These aren't vanity metrics—they're lives changed, 
-          opportunities created, and communities transformed.
+          {page?.hero?.description}
         </p>
       </AnimatedSection>
 
@@ -84,11 +54,11 @@ const impactStories = [
         {primaryMetrics.map((metric, i) => (
           <AnimatedSection client:visible direction="up" delay={0.1 * i}>
             <div class="p-10 bg-cream rounded-2xl text-center">
-              <p class="text-caption text-primary mb-4">{metric.category}</p>
               <p class="text-display-lg text-charcoal mb-3">
-                <NumberTicker client:visible value={metric.value} />{metric.suffix}
+                {metric?.value}
               </p>
-              <p class="text-muted">{metric.label}</p>
+              <p class="text-muted">{metric?.label}</p>
+              <p class="text-sm text-muted mt-2">{metric?.description}</p>
             </div>
           </AnimatedSection>
         ))}
@@ -108,14 +78,13 @@ const impactStories = [
           </p>
         </AnimatedSection>
       </div>
-      
+
       <div class="grid grid-cols-2 md:grid-cols-3 gap-8">
         {secondaryMetrics.map((metric, i) => (
           <AnimatedSection client:visible direction="up" delay={0.05 * i}>
             <div class="text-center p-6">
-              <p class="text-3xl md:text-4xl font-medium text-white mb-2">{metric.value}</p>
-              <p class="text-sm text-white/80 mb-1">{metric.label}</p>
-              <p class="text-xs text-white/40">{metric.category}</p>
+              <p class="text-3xl md:text-4xl font-medium text-white mb-2">{metric?.value}</p>
+              <p class="text-sm text-white/80 mb-1">{metric?.label}</p>
             </div>
           </AnimatedSection>
         ))}
@@ -133,20 +102,18 @@ const impactStories = [
         </AnimatedSection>
         <AnimatedSection client:visible direction="up" delay={0.1}>
           <p class="text-muted max-w-md">
-            Behind every metric is a story of transformation. Here are a few examples 
+            Behind every metric is a story of transformation. Here are a few examples
             of what the data represents in real communities.
           </p>
         </AnimatedSection>
       </div>
-      
+
       <div class="grid md:grid-cols-3 gap-6">
         {impactStories.map((story, i) => (
           <AnimatedSection client:visible direction="up" delay={0.1 * i}>
             <div class="card h-full flex flex-col">
-              <p class="text-3xl font-medium text-primary mb-2">{story.metric}</p>
-              <h3 class="text-xl font-medium text-charcoal mb-1">{story.title}</h3>
-              <p class="text-caption text-muted mb-4">{story.location}</p>
-              <p class="text-muted text-sm flex-1">{story.description}</p>
+              <h3 class="text-xl font-medium text-charcoal mb-1">{story?.title}</h3>
+              <p class="text-muted text-sm flex-1">{story?.description}</p>
             </div>
           </AnimatedSection>
         ))}
@@ -161,38 +128,18 @@ const impactStories = [
         <AnimatedSection client:visible direction="left">
           <div>
             <p class="text-caption text-primary mb-4">Transparency</p>
-            <h2 class="text-display-md text-charcoal mb-6">How We Measure</h2>
+            <h2 class="text-display-md text-charcoal mb-6">{page?.methodology?.headline}</h2>
             <p class="text-muted mb-6">
-              Our metrics are collected through a combination of automated telemetry 
-              from our edge nodes and third-party impact assessments. We're committed 
-              to transparent, verifiable data.
+              {page?.methodology?.description}
             </p>
-            <div class="space-y-4">
-              <div class="flex items-start gap-3">
-                <span class="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0"></span>
-                <span class="text-charcoal/80">Real-time network telemetry for usage data</span>
-              </div>
-              <div class="flex items-start gap-3">
-                <span class="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0"></span>
-                <span class="text-charcoal/80">Annual third-party impact assessments</span>
-              </div>
-              <div class="flex items-start gap-3">
-                <span class="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0"></span>
-                <span class="text-charcoal/80">Partner-reported outcomes and feedback</span>
-              </div>
-              <div class="flex items-start gap-3">
-                <span class="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0"></span>
-                <span class="text-charcoal/80">Government and academic research collaborations</span>
-              </div>
-            </div>
           </div>
         </AnimatedSection>
-        
+
         <AnimatedSection client:visible direction="right" delay={0.1}>
           <div class="p-8 bg-cream rounded-2xl border border-border">
             <h3 class="text-xl font-medium text-charcoal mb-4">Request Full Report</h3>
             <p class="text-muted mb-6">
-              Our annual impact report includes detailed methodology, data sources, 
+              Our annual impact report includes detailed methodology, data sources,
               and third-party verification. Available to partners and stakeholders.
             </p>
             <a href="/en/resources/trust-center" class="link-arrow font-medium text-charcoal">
@@ -209,18 +156,17 @@ const impactStories = [
     <div class="max-w-3xl mx-auto px-6 text-center">
       <AnimatedSection client:visible direction="up">
         <h2 class="text-display-md text-charcoal mb-6">
-          Want to add to these numbers?
+          {page?.cta?.headline}
         </h2>
         <p class="text-body-lg text-muted mb-8">
-          Partner with us to bring sovereign digital infrastructure to underserved 
-          communities. Every deployment extends our collective impact.
+          {page?.cta?.description}
         </p>
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <a href="mailto:hello@trueleapinc.com" class="btn btn-primary">
-            Become a Partner
+          <a href={page?.cta?.primaryCta?.href} class="btn btn-primary">
+            {page?.cta?.primaryCta?.text}
           </a>
-          <a href="/en/solutions" class="btn btn-secondary">
-            Explore Solutions
+          <a href={page?.cta?.secondaryCta?.href} class="btn btn-secondary">
+            {page?.cta?.secondaryCta?.text}
           </a>
         </div>
       </AnimatedSection>

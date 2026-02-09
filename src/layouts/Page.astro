@@ -2,6 +2,7 @@
 import Base from './Base.astro';
 import { Header } from '../components/layout/Header';
 import { Footer } from '../components/layout/Footer';
+import { reader } from '../lib/keystatic';
 import type { Language } from '../lib/i18n';
 
 interface Props {
@@ -11,10 +12,24 @@ interface Props {
 }
 
 const { title, description, lang = 'en' } = Astro.props;
+
+const navigation = await reader.singletons.navigation.read();
+const siteSettings = await reader.singletons['site-settings'].read();
 ---
 
-<Base title={title} description={description} lang={lang}>
-  <Header client:load lang={lang} />
+<Base title={title} description={description || siteSettings?.siteDescription} lang={lang}>
+  <Header
+    client:load
+    lang={lang}
+    navigationData={navigation?.headerGroups}
+    headerCta={navigation?.headerCta}
+  />
   <slot />
-  <Footer client:visible lang={lang} />
+  <Footer
+    client:visible
+    lang={lang}
+    footerGroups={navigation?.footerGroups}
+    footerQuote={siteSettings?.footerQuote}
+    copyright={siteSettings?.copyright}
+  />
 </Base>

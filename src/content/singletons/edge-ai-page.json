@@ -1,0 +1,43 @@
+{
+  "hero": {
+    "eyebrow": "Platform / Edge AI",
+    "headline": "Edge AI",
+    "headlineAccent": "Engine",
+    "description": "On-device intelligence that processes data locally, ensuring privacy and enabling offline-first applications. AI that works where your users are, not just where the cloud can reach.",
+    "ctaPrimary": { "text": "Request Access", "href": "/en/company" },
+    "ctaSecondary": { "text": "API Documentation", "href": "/en/resources/docs" }
+  },
+  "capabilities": [
+    { "title": "Local Processing", "description": "Data never leaves the device unless explicitly authorized. Full GDPR and data sovereignty compliance by design." },
+    { "title": "Offline Intelligence", "description": "AI models that work without connectivity. Translation, document analysis, and decision support anywhere." },
+    { "title": "Federated Learning", "description": "Models improve across the network while keeping data local. Collective intelligence without data centralization." }
+  ],
+  "useCases": [
+    { "category": "Language", "title": "Real-time Translation", "description": "Translate between 40+ languages instantly, even offline. Perfect for government services and education." },
+    { "category": "Documents", "title": "Intelligent Document Processing", "description": "Extract, classify, and process documents locally. Forms, IDs, and official documents handled with privacy." },
+    { "category": "Agriculture", "title": "Crop Analysis", "description": "Analyze plant health, soil conditions, and weather patterns to provide actionable farming insights." },
+    { "category": "Healthcare", "title": "Diagnostic Support", "description": "AI-assisted medical image analysis and symptom checking, supporting healthcare workers in remote areas." }
+  ],
+  "specs": [
+    { "label": "Models Supported", "value": "50+" },
+    { "label": "Languages", "value": "40+" },
+    { "label": "Power Consumption", "value": "<2W" },
+    { "label": "Processing Latency", "value": "<50ms" }
+  ],
+  "howItWorks": [
+    { "title": "Model Optimization", "description": "We compress and optimize state-of-the-art models to run efficiently on low-power hardware, without sacrificing accuracy." },
+    { "title": "Local Inference", "description": "All processing happens on the device. Data never leaves unless the user explicitly chooses to share insights for model improvement." },
+    { "title": "Federated Updates", "description": "Models improve over time through federated learning\u2014sharing learnings, not data, across the network when connectivity is available." }
+  ],
+  "privacyFeatures": [
+    { "title": "GDPR Compliant", "description": "Data processing happens locally, making compliance straightforward. No cross-border data transfers required." },
+    { "title": "Data Sovereignty", "description": "Governments and enterprises maintain full control over their data. Perfect for sensitive applications." },
+    { "title": "Auditable", "description": "Full transparency into what models do and how they make decisions. No black boxes." }
+  ],
+  "cta": {
+    "headline": "Ready to bring AI to the edge?",
+    "description": "Our team can help you identify the right AI capabilities for your use case and deploy them across your network of edge devices.",
+    "primaryCta": { "text": "Talk to Our Team", "href": "mailto:hello@trueleapinc.com" },
+    "secondaryCta": { "text": "Explore Platform", "href": "/en/platform" }
+  }
+}
