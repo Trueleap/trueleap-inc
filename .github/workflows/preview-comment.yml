@@ -18,7 +18,7 @@ jobs:
         id: cms
         run: |
           branch="${{ github.head_ref }}"
-          encoded=$(echo "$branch" | sed 's|/|~2F|g')
+          encoded=$(echo "$branch" | sed 's|/|%2F|g')
           echo "url=https://trueleapinc.com/keystatic/branch/${encoded}" >> "$GITHUB_OUTPUT"
 
       - name: Delete previous bot comments

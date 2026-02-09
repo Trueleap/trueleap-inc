@@ -73,7 +73,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
   }
 
-  const keystaticlUrl = `/keystatic/branch/${branch.replace(/\//g, '~2F')}`;
+  const keystaticlUrl = `/keystatic/branch/${branch.replace(/\//g, '%2F')}`;
 
   return new Response(JSON.stringify({ ok: true, branch, keystaticlUrl }), {
     status: 201,
