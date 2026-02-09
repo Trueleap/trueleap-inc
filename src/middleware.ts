@@ -110,12 +110,6 @@ const PDF_IMPORT_INJECTION = `
   .ks-pdf-status.loading { background: #eff6ff; color: #1d4ed8; }
   .ks-pdf-status.error { background: #fef2f2; color: #dc2626; }
   .ks-pdf-status.success { background: #f0fdf4; color: #15803d; }
-  .ks-pdf-body-fallback {
-    width: 100%; min-height: 120px; margin-top: 0.5rem;
-    font: 12px/1.5 'SF Mono', Monaco, monospace;
-    border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.5rem;
-    resize: vertical; box-sizing: border-box;
-  }
 </style>
 <script>
 (function() {
@@ -208,6 +202,37 @@ const PDF_IMPORT_INJECTION = `
     }, 200);
   }
 
+  // ── Fill the Slate MDX body editor ──
+  // Keystatic uses Slate.js with a contenteditable div.
+  // We simulate a paste event so Slate processes the markdown.
+  function fillBodyEditor(markdown) {
+    if (!markdown) return;
+    // Find the Slate editor's contenteditable div (has data-slate-editor attribute)
+    var editor = document.querySelector('[data-slate-editor="true"]')
+                 || document.querySelector('[contenteditable="true"]');
+    if (!editor) return;
+
+    // Focus the editor first
+    editor.focus();
+
+    // Select all existing content so paste replaces it
+    var sel = window.getSelection();
+    var range = document.createRange();
+    range.selectNodeContents(editor);
+    sel.removeAllRanges();
+    sel.addRange(range);
+
+    // Create a paste event with our markdown
+    var dt = new DataTransfer();
+    dt.setData('text/plain', markdown);
+    var pasteEvent = new ClipboardEvent('paste', {
+      bubbles: true,
+      cancelable: true,
+      clipboardData: dt
+    });
+    editor.dispatchEvent(pasteEvent);
+  }
+
   // ── Main setup ──
   function setup() {
     // Find the file field by its label
@@ -290,23 +315,11 @@ const PDF_IMPORT_INJECTION = `
               fillTextField('Location', f.location);
               fillTextField('Summary (for card listing)', f.summary);
 
-              // Handle body markdown
+              // Fill the body (Slate MDX editor via paste simulation)
               if (data.markdown) {
-                navigator.clipboard.writeText(data.markdown).then(function() {
-                  showStatus(status, 'success',
-                    'All fields filled from "' + file.name + '". Body markdown copied to clipboard \\u2014 paste (Ctrl+V) into the Full Description editor below.');
-                }).catch(function() {
-                  showStatus(status, 'success',
-                    'All fields filled from "' + file.name + '". Copy the body text below:');
-                  var ta = document.createElement('textarea');
-                  ta.className = 'ks-pdf-body-fallback';
-                  ta.value = data.markdown;
-                  ta.readOnly = true;
-                  status.after(ta);
-                });
-              } else {
-                showStatus(status, 'success', 'Fields filled from "' + file.name + '".');
+                fillBodyEditor(data.markdown);
               }
+              showStatus(status, 'success', 'All fields filled from "' + file.name + '".');
             });
           });
         })

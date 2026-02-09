@@ -19,6 +19,78 @@ const EXTRACT_PROMPT = `You are a structured data extractor. Given a job descrip
 
 If a field cannot be determined, use an empty string. For department, pick the closest match.`;
 
+/** Try Anthropic via AI Gateway, fall back to Workers AI */
+async function extractFields(
+  ai: any,
+  markdown: string,
+  accountId?: string,
+  gatewayId?: string,
+  anthropicKey?: string,
+): Promise<{ title: string; department: string; location: string; type: string; summary: string }> {
+  const empty = { title: '', department: '', location: '', type: '', summary: '' };
+  const content = markdown.slice(0, 6000);
+
+  // Try Anthropic via AI Gateway if configured
+  if (accountId && gatewayId && anthropicKey) {
+    try {
+      const url = `https://gateway.ai.cloudflare.com/v1/${accountId}/${gatewayId}/anthropic/v1/messages`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': anthropicKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 512,
+          system: EXTRACT_PROMPT,
+          messages: [{ role: 'user', content }],
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json() as any;
+        const text = data?.content?.[0]?.text || '';
+        return parseFields(text);
+      }
+    } catch (_) {
+      // Fall through to Workers AI
+    }
+  }
+
+  // Fallback: Workers AI
+  try {
+    const result = await ai.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
+      messages: [
+        { role: 'system', content: EXTRACT_PROMPT },
+        { role: 'user', content },
+      ],
+      max_tokens: 512,
+    });
+    return parseFields(result?.response || '');
+  } catch (_) {
+    return empty;
+  }
+}
+
+function parseFields(raw: string) {
+  const empty = { title: '', department: '', location: '', type: '', summary: '' };
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) return empty;
+  try {
+    const parsed = JSON.parse(jsonMatch[0]);
+    return {
+      title: String(parsed.title || '').trim(),
+      department: DEPARTMENTS.includes(parsed.department) ? parsed.department : '',
+      location: String(parsed.location || '').trim(),
+      type: JOB_TYPES.includes(parsed.type) ? parsed.type : '',
+      summary: String(parsed.summary || '').trim(),
+    };
+  } catch (_) {
+    return empty;
+  }
+}
+
 export const POST: APIRoute = async ({ locals, request }) => {
   const runtime = (locals as any).runtime;
   const ai = runtime?.env?.AI;
@@ -55,7 +127,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
 
   const arrayBuffer = await file.arrayBuffer();
 
-  // Extract markdown from PDF
+  // Extract markdown from PDF (Workers AI only)
   let markdown = '';
   try {
     const result = await ai.toMarkdown([{
@@ -77,29 +149,15 @@ export const POST: APIRoute = async ({ locals, request }) => {
     });
   }
 
-  // Extract structured fields using LLM
-  let fields = { title: '', department: '', location: '', type: '', summary: '' };
-  try {
-    const llmResult = await ai.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
-      messages: [
-        { role: 'system', content: EXTRACT_PROMPT },
-        { role: 'user', content: markdown.slice(0, 6000) },
-      ],
-      max_tokens: 512,
-    });
-    const raw = llmResult?.response || '';
-    const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[0]);
-      fields.title = String(parsed.title || '').trim();
-      fields.department = DEPARTMENTS.includes(parsed.department) ? parsed.department : '';
-      fields.location = String(parsed.location || '').trim();
-      fields.type = JOB_TYPES.includes(parsed.type) ? parsed.type : '';
-      fields.summary = String(parsed.summary || '').trim();
-    }
-  } catch (_) {
-    // Fields extraction is best-effort; fields stay empty
-  }
+  // Extract structured fields (AI Gateway → Workers AI fallback)
+  const env = runtime?.env || {};
+  const fields = await extractFields(
+    ai,
+    markdown,
+    env.CF_ACCOUNT_ID,
+    env.AI_GATEWAY_ID,
+    env.ANTHROPIC_API_KEY,
+  );
 
   return new Response(JSON.stringify({ ok: true, markdown, fields }), {
     status: 200,
