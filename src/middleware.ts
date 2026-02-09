@@ -90,196 +90,231 @@ const ADMIN_NAV_BUTTON = `
   </a>
 </div>`;
 
-const PDF_IMPORT_BUTTON = `
+const PDF_IMPORT_INJECTION = `
 <style>
-  .ks-pdf-import-btn {
-    position: fixed; bottom: 4rem; right: 1.25rem; z-index: 2147483640;
-    display: inline-flex; align-items: center; gap: 0.375rem;
-    padding: 0.5rem 1rem; border-radius: 0.5rem; border: none; cursor: pointer;
-    font: 500 13px/1.25 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #8b5cf6; color: #fff; transition: all 0.15s;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  .ks-pdf-zone {
+    border: 2px dashed #d1d5db; border-radius: 0.5rem; padding: 1.25rem;
+    text-align: center; cursor: pointer; transition: all 0.15s;
+    background: #faf5ff; margin-top: 0.5rem;
   }
-  .ks-pdf-import-btn:hover { background: #7c3aed; }
-  .ks-pdf-import-btn svg { width: 14px; height: 14px; }
-  .ks-pdf-modal-overlay {
-    display: none; position: fixed; inset: 0; z-index: 2147483646;
-    background: rgba(0,0,0,0.5); align-items: center; justify-content: center;
+  .ks-pdf-zone:hover, .ks-pdf-zone.dragover { border-color: #8b5cf6; background: #f3e8ff; }
+  .ks-pdf-zone input[type="file"] { display: none; }
+  .ks-pdf-zone p { margin: 0.25rem 0; }
+  .ks-pdf-zone .ks-pdf-icon { font-size: 24px; margin-bottom: 0.25rem; }
+  .ks-pdf-zone .ks-pdf-label {
+    font: 600 14px/1.4 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: #7c3aed;
   }
-  .ks-pdf-modal-overlay.active { display: flex; }
-  .ks-pdf-modal {
-    background: #fff; border-radius: 0.75rem; padding: 1.5rem; width: 90%; max-width: 640px;
-    max-height: 80vh; display: flex; flex-direction: column; gap: 1rem;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    font: 400 14px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  .ks-pdf-zone .ks-pdf-hint {
+    font: 400 12px/1.4 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: #9ca3af;
   }
-  .ks-pdf-modal h3 { margin: 0; font-size: 16px; font-weight: 600; }
-  .ks-pdf-modal-body { overflow-y: auto; flex: 1; }
-  .ks-pdf-drop-zone {
-    border: 2px dashed #d1d5db; border-radius: 0.5rem; padding: 2rem;
-    text-align: center; cursor: pointer; transition: border-color 0.15s;
+  .ks-pdf-status {
+    margin-top: 0.5rem; padding: 0.75rem; border-radius: 0.375rem;
+    font: 400 13px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    display: none;
   }
-  .ks-pdf-drop-zone:hover, .ks-pdf-drop-zone.dragover { border-color: #8b5cf6; }
-  .ks-pdf-drop-zone input { display: none; }
-  .ks-pdf-progress { display: none; text-align: center; padding: 1.5rem; color: #6b7280; }
-  .ks-pdf-progress.active { display: block; }
-  .ks-pdf-result { display: none; }
-  .ks-pdf-result.active { display: block; }
-  .ks-pdf-result textarea {
-    width: 100%; min-height: 200px; border: 1px solid #d1d5db; border-radius: 0.375rem;
-    padding: 0.75rem; font: 13px/1.5 'SF Mono', Monaco, monospace; resize: vertical;
-    box-sizing: border-box;
+  .ks-pdf-status.loading { display: block; background: #f0fdf4; color: #15803d; }
+  .ks-pdf-status.error { display: block; background: #fef2f2; color: #dc2626; }
+  .ks-pdf-status.success { display: block; background: #f0fdf4; color: #15803d; }
+  .ks-pdf-filled-badge {
+    display: inline-flex; align-items: center; gap: 0.25rem;
+    padding: 0.125rem 0.5rem; border-radius: 9999px;
+    font: 500 11px/1.4 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #dbeafe; color: #1d4ed8;
   }
-  .ks-pdf-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
-  .ks-pdf-actions button {
-    padding: 0.5rem 1rem; border-radius: 0.375rem; border: 1px solid #d1d5db;
-    font: 500 13px/1.25 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    cursor: pointer; transition: all 0.15s;
-  }
-  .ks-pdf-actions .ks-pdf-copy {
-    background: #8b5cf6; color: #fff; border-color: #8b5cf6;
-  }
-  .ks-pdf-actions .ks-pdf-copy:hover { background: #7c3aed; }
-  .ks-pdf-actions .ks-pdf-close { background: #fff; }
-  .ks-pdf-actions .ks-pdf-close:hover { background: #f3f4f6; }
-  .ks-pdf-error { color: #dc2626; padding: 0.75rem; display: none; }
-  .ks-pdf-error.active { display: block; }
 </style>
-<button class="ks-pdf-import-btn" id="ks-pdf-import-btn">
-  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 10v3a1 1 0 01-1 1H3a1 1 0 01-1-1v-3"/><path d="M4 7l4 4 4-4"/><path d="M8 11V2"/></svg>
-  Import from PDF
-</button>
-<div class="ks-pdf-modal-overlay" id="ks-pdf-modal-overlay">
-  <div class="ks-pdf-modal">
-    <h3>Import Job Description from PDF</h3>
-    <div class="ks-pdf-modal-body">
-      <div class="ks-pdf-drop-zone" id="ks-pdf-drop-zone">
-        <input type="file" accept=".pdf,application/pdf" id="ks-pdf-file-input" />
-        <p><strong>Click to select</strong> or drag &amp; drop a PDF file</p>
-        <p style="font-size:12px;color:#9ca3af;">Max 20 MB</p>
-      </div>
-      <div class="ks-pdf-progress" id="ks-pdf-progress">
-        <p>Uploading and extracting text...</p>
-      </div>
-      <div class="ks-pdf-error" id="ks-pdf-error"></div>
-      <div class="ks-pdf-result" id="ks-pdf-result">
-        <p style="font-size:12px;color:#6b7280;margin:0 0 0.5rem;">Extracted markdown — review and copy to the body field:</p>
-        <textarea id="ks-pdf-markdown" readonly></textarea>
-      </div>
-    </div>
-    <div class="ks-pdf-actions">
-      <button class="ks-pdf-close" id="ks-pdf-close">Close</button>
-      <button class="ks-pdf-copy" id="ks-pdf-copy" style="display:none;">Copy to Clipboard</button>
-    </div>
-  </div>
-</div>
 <script>
 (function() {
-  var btn = document.getElementById('ks-pdf-import-btn');
-  var overlay = document.getElementById('ks-pdf-modal-overlay');
-  var dropZone = document.getElementById('ks-pdf-drop-zone');
-  var fileInput = document.getElementById('ks-pdf-file-input');
-  var progress = document.getElementById('ks-pdf-progress');
-  var errorEl = document.getElementById('ks-pdf-error');
-  var result = document.getElementById('ks-pdf-result');
-  var textarea = document.getElementById('ks-pdf-markdown');
-  var copyBtn = document.getElementById('ks-pdf-copy');
-  var closeBtn = document.getElementById('ks-pdf-close');
+  var nativeSet = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+  var nativeTextSet = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
 
-  function reset() {
-    dropZone.style.display = '';
-    progress.classList.remove('active');
-    errorEl.classList.remove('active');
-    result.classList.remove('active');
-    copyBtn.style.display = 'none';
-    textarea.value = '';
-    fileInput.value = '';
+  function setInputValue(input, val) {
+    if (input.tagName === 'TEXTAREA') {
+      nativeTextSet.call(input, val);
+    } else {
+      nativeSet.call(input, val);
+    }
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
   }
 
-  btn.addEventListener('click', function() {
-    reset();
-    overlay.classList.add('active');
-  });
+  function findFieldByLabel(labelText) {
+    var labels = document.querySelectorAll('label, span');
+    for (var i = 0; i < labels.length; i++) {
+      if (labels[i].textContent.trim() === labelText) {
+        var container = labels[i].closest('[data-field], fieldset, [class]');
+        if (!container) container = labels[i].parentElement;
+        // Walk up a few levels to find the field group
+        for (var el = labels[i]; el && el !== document.body; el = el.parentElement) {
+          var input = el.querySelector('input, textarea, select');
+          if (input) return input;
+        }
+      }
+    }
+    return null;
+  }
 
-  closeBtn.addEventListener('click', function() {
-    overlay.classList.remove('active');
-  });
+  function setSelectValue(selectEl, val) {
+    for (var i = 0; i < selectEl.options.length; i++) {
+      if (selectEl.options[i].value === val || selectEl.options[i].text === val) {
+        selectEl.selectedIndex = i;
+        selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+        return true;
+      }
+    }
+    return false;
+  }
 
-  overlay.addEventListener('click', function(e) {
-    if (e.target === overlay) overlay.classList.remove('active');
-  });
+  function fillField(labelText, value, isSelect) {
+    if (!value) return;
+    var el = findFieldByLabel(labelText);
+    if (!el) return;
+    if (isSelect && el.tagName === 'SELECT') {
+      setSelectValue(el, value);
+    } else if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+      setInputValue(el, value);
+    }
+  }
 
-  dropZone.addEventListener('click', function() { fileInput.click(); });
-  dropZone.addEventListener('dragover', function(e) {
-    e.preventDefault(); dropZone.classList.add('dragover');
-  });
-  dropZone.addEventListener('dragleave', function() {
-    dropZone.classList.remove('dragover');
-  });
-  dropZone.addEventListener('drop', function(e) {
-    e.preventDefault(); dropZone.classList.remove('dragover');
-    if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
-  });
+  function injectUploadZone() {
+    // Find the pdfUrl field by its label text
+    var labels = document.querySelectorAll('label, span');
+    var pdfLabel = null;
+    for (var i = 0; i < labels.length; i++) {
+      if (labels[i].textContent.trim() === 'Source PDF (R2 key)') {
+        pdfLabel = labels[i];
+        break;
+      }
+    }
+    if (!pdfLabel) return false;
 
-  fileInput.addEventListener('change', function() {
-    if (fileInput.files.length) handleFile(fileInput.files[0]);
-  });
+    // Find the field container (walk up to the field group)
+    var fieldContainer = pdfLabel;
+    for (var j = 0; j < 5; j++) {
+      if (fieldContainer.parentElement) fieldContainer = fieldContainer.parentElement;
+    }
 
-  function handleFile(file) {
+    // Don't inject twice
+    if (fieldContainer.querySelector('.ks-pdf-zone')) return true;
+
+    // Find the existing text input and hide it
+    var existingInput = fieldContainer.querySelector('input[type="text"]');
+    if (existingInput) existingInput.style.display = 'none';
+    // Also hide the description text
+    var desc = fieldContainer.querySelector('span');
+    if (desc && desc.textContent.includes('Auto-filled')) desc.style.display = 'none';
+
+    // Create upload zone
+    var zone = document.createElement('div');
+    zone.className = 'ks-pdf-zone';
+    zone.innerHTML = '<div class="ks-pdf-icon">&#128196;</div>'
+      + '<p class="ks-pdf-label">Upload Job Description PDF</p>'
+      + '<p class="ks-pdf-hint">Click or drag &amp; drop &#183; Max 20 MB &#183; All fields will be auto-filled</p>'
+      + '<input type="file" accept=".pdf,application/pdf" />';
+    fieldContainer.appendChild(zone);
+
+    var status = document.createElement('div');
+    status.className = 'ks-pdf-status';
+    fieldContainer.appendChild(status);
+
+    var fileInput = zone.querySelector('input[type="file"]');
+    zone.addEventListener('click', function(e) { if (e.target !== fileInput) fileInput.click(); });
+    zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', function() { zone.classList.remove('dragover'); });
+    zone.addEventListener('drop', function(e) {
+      e.preventDefault(); zone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0], zone, status, existingInput);
+    });
+    fileInput.addEventListener('change', function() {
+      if (fileInput.files.length) handleFile(fileInput.files[0], zone, status, existingInput);
+    });
+
+    return true;
+  }
+
+  function handleFile(file, zone, status, pdfInput) {
     if (file.type !== 'application/pdf') {
-      showError('Please select a PDF file.');
+      showStatus(status, 'error', 'Please select a PDF file.');
       return;
     }
     if (file.size > 20 * 1024 * 1024) {
-      showError('File exceeds 20 MB limit.');
+      showStatus(status, 'error', 'File exceeds 20 MB limit.');
       return;
     }
-    dropZone.style.display = 'none';
-    errorEl.classList.remove('active');
-    progress.classList.add('active');
+    zone.style.display = 'none';
+    showStatus(status, 'loading', 'Uploading and extracting — this takes 10-20 seconds...');
 
     var form = new FormData();
     form.append('file', file);
     fetch('/api/jobs/extract-pdf', { method: 'POST', body: form })
       .then(function(r) { return r.json(); })
       .then(function(data) {
-        progress.classList.remove('active');
         if (data.error) {
-          showError(data.error);
-          dropZone.style.display = '';
+          showStatus(status, 'error', data.error);
+          zone.style.display = '';
           return;
         }
-        textarea.value = data.markdown;
-        result.classList.add('active');
-        copyBtn.style.display = '';
-        // Auto-fill pdfUrl field if present
-        if (data.pdfKey) {
-          var pdfInput = document.querySelector('input[name="pdfUrl"]');
-          if (pdfInput) {
-            var nativeSet = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
-            nativeSet.call(pdfInput, data.pdfKey);
-            pdfInput.dispatchEvent(new Event('input', { bubbles: true }));
-          }
+
+        // Fill the pdfUrl hidden field
+        if (data.pdfKey && pdfInput) {
+          setInputValue(pdfInput, data.pdfKey);
         }
+
+        // Fill structured fields
+        var f = data.fields || {};
+        fillField('Title', f.title, false);
+        fillField('Department', f.department, true);
+        fillField('Location', f.location, false);
+        fillField('Type', f.type, true);
+        fillField('Summary (for card listing)', f.summary, false);
+
+        // Copy markdown to clipboard for pasting into body
+        var bodyMsg = '';
+        if (data.markdown) {
+          navigator.clipboard.writeText(data.markdown).then(function() {
+            showStatus(status, 'success',
+              'All fields filled from "' + file.name + '". Body markdown copied to clipboard — paste it into the Full Description field below.');
+          }).catch(function() {
+            showStatus(status, 'success',
+              'All fields filled from "' + file.name + '". Copy the body text manually from the text area below.');
+            // Show a textarea fallback for the markdown
+            var ta = document.createElement('textarea');
+            ta.value = data.markdown;
+            ta.readOnly = true;
+            ta.style.cssText = 'width:100%;min-height:120px;margin-top:0.5rem;font:12px/1.5 monospace;border:1px solid #d1d5db;border-radius:0.375rem;padding:0.5rem;';
+            status.parentElement.appendChild(ta);
+          });
+          return;
+        }
+
+        showStatus(status, 'success', 'Fields filled from "' + file.name + '".');
       })
       .catch(function(err) {
-        progress.classList.remove('active');
-        showError('Upload failed: ' + err.message);
-        dropZone.style.display = '';
+        showStatus(status, 'error', 'Upload failed: ' + err.message);
+        zone.style.display = '';
       });
   }
 
-  function showError(msg) {
-    errorEl.textContent = msg;
-    errorEl.classList.add('active');
+  function showStatus(el, type, msg) {
+    el.className = 'ks-pdf-status ' + type;
+    el.textContent = msg;
   }
 
-  copyBtn.addEventListener('click', function() {
-    navigator.clipboard.writeText(textarea.value).then(function() {
-      copyBtn.textContent = 'Copied!';
-      setTimeout(function() { copyBtn.textContent = 'Copy to Clipboard'; }, 2000);
-    });
-  });
+  // Use MutationObserver to wait for Keystatic to render the field
+  var injected = false;
+  function tryInject() {
+    if (injected) return;
+    if (injectUploadZone()) injected = true;
+  }
+  // Try immediately and watch for DOM changes
+  tryInject();
+  var obs = new MutationObserver(function() { tryInject(); });
+  obs.observe(document.body, { childList: true, subtree: true });
+  // Stop observing once injected (cleanup)
+  var checkInterval = setInterval(function() {
+    if (injected) { obs.disconnect(); clearInterval(checkInterval); }
+  }, 2000);
 })();
 </script>`;
 
@@ -330,9 +365,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
       const html = await response.text();
       const isMain = pathname.startsWith('/keystatic/branch/main');
       let injection = isMain ? READ_ONLY_BANNER : ADMIN_NAV_BUTTON;
-      // Add PDF import button on job editor pages (non-main branches)
+      // Add PDF import upload zone on job editor pages (non-main branches)
       if (!isMain && /\/keystatic\/branch\/[^/]+\/collection\/jobs\//.test(pathname)) {
-        injection += PDF_IMPORT_BUTTON;
+        injection += PDF_IMPORT_INJECTION;
       }
       return new Response(html + injection, {
         status: response.status,
