@@ -70,13 +70,20 @@ export const POST: APIRoute = async ({ locals, request }) => {
     });
   }
 
+  if (!markdown) {
+    return new Response(JSON.stringify({ error: 'No text could be extracted from this PDF' }), {
+      status: 422,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   // Extract structured fields using LLM
   let fields = { title: '', department: '', location: '', type: '', summary: '' };
   try {
-    const llmResult = await ai.run('@cf/meta/llama-3.1-8b-instruct', {
+    const llmResult = await ai.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
       messages: [
         { role: 'system', content: EXTRACT_PROMPT },
-        { role: 'user', content: markdown.slice(0, 4000) },
+        { role: 'user', content: markdown.slice(0, 6000) },
       ],
       max_tokens: 512,
     });

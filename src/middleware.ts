@@ -92,15 +92,25 @@ const ADMIN_NAV_BUTTON = `
 
 const PDF_IMPORT_INJECTION = `
 <style>
+  .ks-extract-btn {
+    display: inline-flex; align-items: center; gap: 0.375rem;
+    padding: 0.375rem 0.75rem; border-radius: 0.5rem; border: none; cursor: pointer;
+    font: 600 13px/1.25 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #7c3aed; color: #fff; transition: background 0.15s;
+    margin-left: 0.5rem;
+  }
+  .ks-extract-btn:hover { background: #6d28d9; }
+  .ks-extract-btn:disabled { opacity: 0.5; cursor: wait; }
+  .ks-extract-btn svg { width: 14px; height: 14px; }
   .ks-pdf-status {
     margin-top: 0.5rem; padding: 0.75rem; border-radius: 0.375rem;
     font: 400 13px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    display: none;
   }
-  .ks-pdf-status.loading { display: block; background: #eff6ff; color: #1d4ed8; }
-  .ks-pdf-status.error { display: block; background: #fef2f2; color: #dc2626; }
-  .ks-pdf-status.success { display: block; background: #f0fdf4; color: #15803d; }
-  .ks-pdf-body-preview {
+  .ks-pdf-status.hidden { display: none; }
+  .ks-pdf-status.loading { background: #eff6ff; color: #1d4ed8; }
+  .ks-pdf-status.error { background: #fef2f2; color: #dc2626; }
+  .ks-pdf-status.success { background: #f0fdf4; color: #15803d; }
+  .ks-pdf-body-fallback {
     width: 100%; min-height: 120px; margin-top: 0.5rem;
     font: 12px/1.5 'SF Mono', Monaco, monospace;
     border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.5rem;
@@ -112,179 +122,198 @@ const PDF_IMPORT_INJECTION = `
   var nativeSet = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
   var nativeTextSet = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
 
-  // ── Helpers: set values on React-controlled inputs ──
+  // ── Set value on a React-controlled input ──
   function setInput(el, val) {
     if (!el) return;
-    var setter = el.tagName === 'TEXTAREA' ? nativeTextSet : nativeSet;
-    setter.call(el, val);
+    (el.tagName === 'TEXTAREA' ? nativeTextSet : nativeSet).call(el, val);
     el.dispatchEvent(new Event('input', { bubbles: true }));
     el.dispatchEvent(new Event('change', { bubbles: true }));
   }
 
-  // Find a Keystatic field group by its label text.
-  // Returns the field group container element (walks up from the label).
+  // ── Find a field group by label text ──
+  // Walks up from a leaf span/label with matching text to find the container.
   function findFieldGroup(labelText) {
     var els = document.querySelectorAll('label, span');
     for (var i = 0; i < els.length; i++) {
-      var t = els[i].textContent.trim();
-      if (t === labelText && els[i].children.length === 0) {
-        // Walk up to the field group container
-        var el = els[i];
-        for (var j = 0; j < 8 && el.parentElement; j++) {
-          el = el.parentElement;
-          // Keystatic field groups use Flex with direction="column"
-          var inputs = el.querySelectorAll('input, textarea');
-          if (inputs.length > 0 && el.querySelectorAll('label, span[id]').length > 0) {
-            return el;
-          }
+      if (els[i].children.length > 0) continue; // Only leaf text nodes
+      if (els[i].textContent.trim() !== labelText) continue;
+      // For file fields: look for role="group" ancestor
+      var roleGroup = els[i].closest('[role="group"]');
+      if (roleGroup) return roleGroup;
+      // For other fields: walk up to find a container with inputs
+      var el = els[i];
+      for (var j = 0; j < 8 && el.parentElement; j++) {
+        el = el.parentElement;
+        if (el.querySelectorAll('input, textarea, button').length > 0
+            && el.querySelectorAll('label, span[id]').length > 0) {
+          return el;
         }
       }
     }
     return null;
   }
 
-  // ── Fill a text/textarea field by label ──
+  // ── Fill the slug field (Title) ──
+  function fillSlugField(value) {
+    if (!value) return;
+    // The slug field is the very first field group in the form.
+    // It has a label "Title" and two text inputs (name + slug).
+    var group = findFieldGroup('Title');
+    if (!group) return;
+    // First text input = name, second = slug
+    var inputs = group.querySelectorAll('input');
+    for (var i = 0; i < inputs.length; i++) {
+      if (inputs[i].type === 'text' || !inputs[i].type) {
+        setInput(inputs[i], value);
+        return; // Only set the first (name) input
+      }
+    }
+  }
+
+  // ── Fill a text or textarea field ──
   function fillTextField(labelText, value) {
     if (!value) return;
     var group = findFieldGroup(labelText);
     if (!group) return;
-    // For multiline fields, prefer textarea; else first text input
     var el = group.querySelector('textarea') || group.querySelector('input[type="text"], input:not([type])');
     if (el) setInput(el, value);
   }
 
-  // ── Fill the slug field (Title) ──
-  // Slug field has two text inputs: name (first) and slug (second).
-  function fillSlugField(value) {
-    if (!value) return;
-    var group = findFieldGroup('Title');
-    if (!group) return;
-    var inputs = group.querySelectorAll('input[type="text"], input:not([type])');
-    if (inputs.length >= 1) {
-      setInput(inputs[0], value); // Set the name input
-    }
-  }
-
-  // ── Fill a Keystatic Picker/Combobox (select) field ──
-  // Keystatic renders selects as custom Picker components with a trigger button.
-  // Strategy: click the trigger to open the listbox, then click the matching option.
-  function fillPickerField(labelText, value) {
-    if (!value) return;
+  // ── Fill a Keystatic Picker (custom combobox) ──
+  // Click trigger button -> wait for listbox popover -> click matching option.
+  function fillPickerField(labelText, value, callback) {
+    if (!value) { if (callback) callback(); return; }
     var group = findFieldGroup(labelText);
-    if (!group) return;
-    // The picker trigger is a button inside the field group
-    var trigger = group.querySelector('button[type="button"]');
-    if (!trigger) return;
+    if (!group) { if (callback) callback(); return; }
+    var trigger = group.querySelector('button');
+    if (!trigger) { if (callback) callback(); return; }
     trigger.click();
-    // Wait for the listbox popover to appear
     setTimeout(function() {
       var listbox = document.querySelector('[role="listbox"]');
-      if (!listbox) return;
-      var options = listbox.querySelectorAll('[role="option"]');
-      for (var i = 0; i < options.length; i++) {
-        if (options[i].textContent.trim() === value) {
-          options[i].click();
-          return;
+      if (listbox) {
+        var options = listbox.querySelectorAll('[role="option"]');
+        var matched = false;
+        for (var i = 0; i < options.length; i++) {
+          if (options[i].textContent.trim() === value) {
+            options[i].click();
+            matched = true;
+            break;
+          }
+        }
+        if (!matched) {
+          document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
         }
       }
-      // Close if no match found — press Escape
-      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-    }, 150);
+      setTimeout(function() { if (callback) callback(); }, 100);
+    }, 200);
   }
 
-  // ── Intercept the file field's "Choose file" button ──
+  // ── Main setup ──
   function setup() {
+    // Find the file field by its label
     var group = findFieldGroup('Upload Job Description PDF');
     if (!group) return false;
-    if (group.dataset.pdfHooked) return true; // Already set up
-    group.dataset.pdfHooked = '1';
+    if (group.querySelector('.ks-extract-btn')) return true; // Already injected
 
-    // Add status element after the field group
-    var status = document.createElement('div');
-    status.className = 'ks-pdf-status';
-    group.appendChild(status);
+    // Find the button group inside the file field
+    var btnGroup = null;
+    var buttons = group.querySelectorAll('button');
+    if (buttons.length > 0) {
+      btnGroup = buttons[0].parentElement;
+    }
+    if (!btnGroup) {
+      // If buttons haven't rendered yet, keep waiting
+      return false;
+    }
 
-    // Find the "Choose file" button and intercept clicks
-    var chooseBtn = group.querySelector('button');
-    if (!chooseBtn) return true;
-
-    // Create a hidden file input we control
+    // Create hidden file input
     var fileInput = document.createElement('input');
     fileInput.type = 'file';
     fileInput.accept = '.pdf,application/pdf';
     fileInput.style.display = 'none';
     group.appendChild(fileInput);
 
-    // Intercept the Choose file button click
-    chooseBtn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      e.preventDefault();
-      fileInput.click();
-    }, true); // Use capture to fire before Keystatic's handler
+    // Create "Extract & Fill" button
+    var extractBtn = document.createElement('button');
+    extractBtn.type = 'button';
+    extractBtn.className = 'ks-extract-btn';
+    extractBtn.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">'
+      + '<path d="M14 10v3a1 1 0 01-1 1H3a1 1 0 01-1-1v-3"/>'
+      + '<path d="M4 7l4 4 4-4"/><path d="M8 11V2"/></svg>'
+      + 'Extract &amp; Fill from PDF';
+    btnGroup.appendChild(extractBtn);
+
+    // Status area
+    var status = document.createElement('div');
+    status.className = 'ks-pdf-status hidden';
+    group.appendChild(status);
+
+    extractBtn.addEventListener('click', function() { fileInput.click(); });
 
     fileInput.addEventListener('change', function() {
       if (!fileInput.files.length) return;
       var file = fileInput.files[0];
+      fileInput.value = '';
+
       if (file.type !== 'application/pdf') {
         showStatus(status, 'error', 'Please select a PDF file.');
-        fileInput.value = '';
         return;
       }
       if (file.size > 20 * 1024 * 1024) {
         showStatus(status, 'error', 'File exceeds 20 MB limit.');
-        fileInput.value = '';
         return;
       }
-      showStatus(status, 'loading', 'Extracting text from PDF — this takes 10-20 seconds...');
+
+      extractBtn.disabled = true;
+      showStatus(status, 'loading', 'Extracting text from PDF \\u2014 this may take 10-30 seconds...');
 
       var form = new FormData();
       form.append('file', file);
       fetch('/api/jobs/extract-pdf', { method: 'POST', body: form })
         .then(function(r) { return r.json(); })
         .then(function(data) {
+          extractBtn.disabled = false;
           if (data.error) {
             showStatus(status, 'error', data.error);
             return;
           }
 
-          // Fill all structured fields
           var f = data.fields || {};
-          fillSlugField(f.title);
-          // Fill pickers sequentially (each opens a popover)
-          setTimeout(function() {
-            fillPickerField('Department', f.department);
-            setTimeout(function() {
-              fillPickerField('Type', f.type);
-              setTimeout(function() {
-                fillTextField('Location', f.location);
-                fillTextField('Summary (for card listing)', f.summary);
 
-                // Copy markdown body to clipboard
-                if (data.markdown) {
-                  navigator.clipboard.writeText(data.markdown).then(function() {
-                    showStatus(status, 'success',
-                      'Fields filled from "' + file.name + '". Body markdown copied to clipboard \\u2014 paste (Ctrl+V) into the Full Description editor below.');
-                  }).catch(function() {
-                    showStatus(status, 'success',
-                      'Fields filled from "' + file.name + '". Copy the body text below:');
-                    var ta = document.createElement('textarea');
-                    ta.className = 'ks-pdf-body-preview';
-                    ta.value = data.markdown;
-                    ta.readOnly = true;
-                    status.after(ta);
-                  });
-                } else {
-                  showStatus(status, 'success', 'Fields filled from "' + file.name + '".');
-                }
-              }, 200);
-            }, 300);
-          }, 200);
+          // Fill slug (title) first
+          fillSlugField(f.title);
+
+          // Fill pickers sequentially (each opens a popover that must close)
+          fillPickerField('Department', f.department, function() {
+            fillPickerField('Type', f.type, function() {
+              // Fill simple text fields
+              fillTextField('Location', f.location);
+              fillTextField('Summary (for card listing)', f.summary);
+
+              // Handle body markdown
+              if (data.markdown) {
+                navigator.clipboard.writeText(data.markdown).then(function() {
+                  showStatus(status, 'success',
+                    'All fields filled from "' + file.name + '". Body markdown copied to clipboard \\u2014 paste (Ctrl+V) into the Full Description editor below.');
+                }).catch(function() {
+                  showStatus(status, 'success',
+                    'All fields filled from "' + file.name + '". Copy the body text below:');
+                  var ta = document.createElement('textarea');
+                  ta.className = 'ks-pdf-body-fallback';
+                  ta.value = data.markdown;
+                  ta.readOnly = true;
+                  status.after(ta);
+                });
+              } else {
+                showStatus(status, 'success', 'Fields filled from "' + file.name + '".');
+              }
+            });
+          });
         })
         .catch(function(err) {
+          extractBtn.disabled = false;
           showStatus(status, 'error', 'Upload failed: ' + err.message);
         });
-
-      fileInput.value = '';
     });
 
     return true;
@@ -295,7 +324,7 @@ const PDF_IMPORT_INJECTION = `
     el.textContent = msg;
   }
 
-  // Wait for Keystatic to render the form, then set up
+  // Wait for Keystatic to render, then inject
   var ready = false;
   function trySetup() { if (!ready && setup()) ready = true; }
   trySetup();
@@ -303,7 +332,7 @@ const PDF_IMPORT_INJECTION = `
   obs.observe(document.body, { childList: true, subtree: true });
   var cleanup = setInterval(function() {
     if (ready) { obs.disconnect(); clearInterval(cleanup); }
-  }, 2000);
+  }, 3000);
 })();
 </script>`;
 
