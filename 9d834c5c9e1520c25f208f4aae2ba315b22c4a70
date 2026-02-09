@@ -1,0 +1,27 @@
+src/pages/admin/index.astro
+  40f9a1df57e0c647 514,516-518,691-711
+src/middleware.ts
+  40f9a1df57e0c647 25-50,76-77,81-83
+src/pages/api/admin/create-pr.ts
+  40f9a1df57e0c647 1-84
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.0.42",
+  "base_commit_sha": "9d834c5c9e1520c25f208f4aae2ba315b22c4a70",
+  "prompts": {
+    "40f9a1df57e0c647": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9bc462de-601d-40f4-a162-45ff5b156126",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Bikash Phukan <bphkns@gmail.com>",
+      "messages": [],
+      "total_additions": 140,
+      "total_deletions": 4,
+      "accepted_lines": 140,
+      "overriden_lines": 0
+    }
+  }
+}
