@@ -1,0 +1,23 @@
+src/components/layout/Header.tsx
+  60d3e882ed482842 145
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.0.42",
+  "base_commit_sha": "7e69390df1211dc789afe07f74a5f116383b1668",
+  "prompts": {
+    "60d3e882ed482842": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "62157d67-1a63-428e-9312-58ca9bd0499f",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Bikash Phukan <bphkns@gmail.com>",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 2,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    }
+  }
+}
