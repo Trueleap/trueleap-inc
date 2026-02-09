@@ -1,0 +1,29 @@
+wrangler.toml
+  f6b5614d5c2696ee 15-17,29-30,40-41
+src/pages/api/jobs/extract-pdf.ts
+  f6b5614d5c2696ee 1-75
+src/middleware.ts
+  f6b5614d5c2696ee 93-285,332-336
+keystatic.config.ts
+  f6b5614d5c2696ee 203
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.0.42",
+  "base_commit_sha": "512881a0e11f32e90572c49d30571499c0329753",
+  "prompts": {
+    "f6b5614d5c2696ee": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dd1f00d6-7e12-4154-9452-afc16e4b61e4",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Bikash Phukan <bphkns@gmail.com>",
+      "messages": [],
+      "total_additions": 281,
+      "total_deletions": 1,
+      "accepted_lines": 281,
+      "overriden_lines": 0
+    }
+  }
+}
