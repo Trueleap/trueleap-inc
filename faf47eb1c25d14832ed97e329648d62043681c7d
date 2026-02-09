@@ -1,0 +1,25 @@
+.github/workflows/deploy.yml
+  6ae4b26496fcfd34 26,30
+wrangler.toml
+  6ae4b26496fcfd34 17-34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.0.42",
+  "base_commit_sha": "faf47eb1c25d14832ed97e329648d62043681c7d",
+  "prompts": {
+    "6ae4b26496fcfd34": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "49a208f4-98e9-45b6-aba6-d8bdb2965a94",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Bikash Phukan <bphkns@gmail.com>",
+      "messages": [],
+      "total_additions": 38,
+      "total_deletions": 20,
+      "accepted_lines": 23,
+      "overriden_lines": 0
+    }
+  }
+}
