@@ -13,6 +13,7 @@ export async function POST() {
     headers: {
       Authorization: `Bearer ${GITHUB_TOKEN}`,
       Accept: 'application/vnd.github+json',
+      'User-Agent': 'trueleap-cms',
       'X-GitHub-Api-Version': '2022-11-28',
     },
     body: JSON.stringify({ event_type: 'payload-publish' }),
