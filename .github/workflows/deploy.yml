@@ -9,6 +9,10 @@ on:
       - payload-publish
   workflow_dispatch:
 
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # ── CMS Worker (on push when trueleap-cms/ changes, or manual trigger) ──
   deploy-cms:
