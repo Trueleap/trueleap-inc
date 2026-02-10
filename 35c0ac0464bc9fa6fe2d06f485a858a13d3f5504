@@ -1,0 +1,27 @@
+trueleap-cms/src/components/DraftBanner.tsx
+  e3ca863cf014c40b 13-19,68-70,184-200,226,230,232,238,244-245,255-258,267,270,273,276,279-280,282-283,285-286,288-289,435-493
+trueleap-cms/src/app/api/deploy/history/route.ts
+  e3ca863cf014c40b 1-36
+trueleap-cms/src/app/(payload)/custom.scss
+  e3ca863cf014c40b 127-139,390-461
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.1",
+  "base_commit_sha": "35c0ac0464bc9fa6fe2d06f485a858a13d3f5504",
+  "prompts": {
+    "e3ca863cf014c40b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_3b9d0f75effe2Ef4KXwR8zUUsf",
+        "model": "anthropic/claude-opus-4-6"
+      },
+      "human_author": "Bikash Phukan <bphkns@gmail.com>",
+      "messages": [],
+      "total_additions": 355,
+      "total_deletions": 131,
+      "accepted_lines": 232,
+      "overriden_lines": 0
+    }
+  }
+}
