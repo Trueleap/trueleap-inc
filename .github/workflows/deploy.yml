@@ -50,19 +50,12 @@ jobs:
         run: pnpm install --frozen-lockfile
         working-directory: trueleap-cms
 
-      - name: Build Next.js
+      - name: Build (Next.js + OpenNext)
         if: steps.changes.outputs.cms == 'true'
-        run: CLOUDFLARE_ENV=dev pnpm run build
+        run: npx opennextjs-cloudflare build
         working-directory: trueleap-cms
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-
-      - name: Build OpenNext
-        if: steps.changes.outputs.cms == 'true'
-        run: npx opennextjs-cloudflare build --skipBuild
-        working-directory: trueleap-cms
-        env:
+          CLOUDFLARE_ENV: dev
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
