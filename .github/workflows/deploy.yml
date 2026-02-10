@@ -64,6 +64,8 @@ jobs:
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          wranglerVersion: '4.61.1'
+          packageManager: pnpm
           command: deploy --env dev
           workingDirectory: trueleap-cms
 
