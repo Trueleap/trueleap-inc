@@ -1,5 +1,6 @@
 'use client'
 import React, { useCallback, useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 interface DraftItem {
   type: 'global' | 'collection'
@@ -249,8 +250,8 @@ const DraftBanner: React.FC = () => {
         </button>
       )}
 
-      {/* ── Publish modal ── */}
-      {showModal && (
+      {/* ── Publish modal (portaled to body to escape header overflow) ── */}
+      {showModal && createPortal(
         <div className="publish-modal-overlay" onClick={() => setShowModal(false)}>
           <div className="publish-modal" onClick={(e) => e.stopPropagation()}>
             <div className="publish-modal__header">
@@ -320,11 +321,12 @@ const DraftBanner: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
 
-      {/* ── Publish & deploy confirmation dialog ── */}
-      {showConfirm && (
+      {/* ── Publish & deploy confirmation dialog (portaled to body) ── */}
+      {showConfirm && createPortal(
         <div className="publish-modal-overlay" onClick={() => { if (publishPhase === 'idle') { setShowConfirm(false); setShowModal(true) } }}>
           <div
             className="publish-modal publish-modal--confirm"
@@ -344,7 +346,7 @@ const DraftBanner: React.FC = () => {
 
             <div className="publish-modal__body">
               This will publish <strong>{selectedCount} item{selectedCount !== 1 ? 's' : ''}</strong> and
-              trigger a site rebuild. The live site will update in ~2‑3 minutes.
+              trigger a site rebuild. The live site will update in ~2&#x2011;3 minutes.
             </div>
 
             <div className="publish-modal__footer">
@@ -370,7 +372,8 @@ const DraftBanner: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   )

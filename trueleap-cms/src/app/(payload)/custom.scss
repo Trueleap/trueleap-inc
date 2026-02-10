@@ -166,15 +166,11 @@
   font-family: var(--tl-font);
   animation: tl-modal-in 200ms cubic-bezier(0.22, 1, 0.36, 1);
   overflow-y: auto;
+  white-space: normal;
+  word-wrap: break-word;
 }
 
-/* Ensure Payload's header/action bar doesn't clip our fixed-position modal overlay */
-.app-header,
-header,
-[class*="AppHeader"],
-[class*="actions_"] {
-  overflow: visible !important;
-}
+
 
 .publish-modal--confirm {
   max-width: 440px;
@@ -225,6 +221,9 @@ header,
   font-size: 14px;
   line-height: 1.5;
   color: var(--tl-text-muted);
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .publish-modal__controls {
