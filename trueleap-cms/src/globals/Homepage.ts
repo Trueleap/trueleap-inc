@@ -89,6 +89,11 @@ export const Homepage: GlobalConfig = {
               options: [
                 { label: 'Dashboard', value: 'dashboard' },
                 { label: 'Mobile', value: 'mobile' },
+                { label: 'Photo', value: 'photo' },
+                { label: 'Hardware', value: 'hardware' },
+                { label: 'Logo', value: 'logo' },
+                { label: 'Chart', value: 'chart' },
+                { label: 'Map', value: 'map' },
               ],
             },
           ],
