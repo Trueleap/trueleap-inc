@@ -1,18 +1,14 @@
 ---
-export const prerender = true;
 import Page from '../../../layouts/Page.astro';
-import { reader } from '../../../lib/keystatic';
+import { getPayload } from '../../../lib/payload';
 
 const lang = 'en';
+const cms = getPayload(Astro);
 
-const teamSlugs = await reader.collections.team.list();
-const teamMembers = await Promise.all(
-  teamSlugs.map(async (slug) => {
-    const member = await reader.collections.team.read(slug);
-    return member ? { ...member, slug } : null;
-  })
-);
-const allMembers = teamMembers.filter(Boolean).sort((a, b) => (a?.order ?? 0) - (b?.order ?? 0));
+const allMembers = await cms.collections.list<Record<string, unknown>>('team', {
+  sort: 'order',
+  limit: 100,
+});
 const executives = allMembers.filter((m) => m?.category === 'executive');
 const advisors = allMembers.filter((m) => m?.category === 'advisory');
 ---

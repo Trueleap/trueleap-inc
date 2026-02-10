@@ -12,14 +12,8 @@ directory = "./dist"
 binding = "IMAGES_BUCKET"
 bucket_name = "trueleap-images"
 
-[ai]
-binding = "AI"
-
-# AI Gateway for Anthropic (optional — falls back to Workers AI if not set)
-# Set secrets: wrangler secret put ANTHROPIC_API_KEY --env dev
 [vars]
-CF_ACCOUNT_ID = "b01357b51e0ceb9e37e2bdf82bbcbc34"
-AI_GATEWAY_ID = "trueleap"
+PAYLOAD_URL = "https://cms.trueleapinc.com"
 
 [observability]
 enabled = true
@@ -30,24 +24,23 @@ routes = [
   { pattern = "dev.trueleapinc.com/*", zone_name = "trueleapinc.com" },
 ]
 [env.dev.vars]
-CF_ACCOUNT_ID = "b01357b51e0ceb9e37e2bdf82bbcbc34"
-AI_GATEWAY_ID = "trueleap"
+PAYLOAD_URL = "https://cms.trueleapinc.com"
 [[env.dev.r2_buckets]]
 binding = "IMAGES_BUCKET"
 bucket_name = "trueleap-images"
-[env.dev.ai]
-binding = "AI"
 
-# Preview: dev-preview.trueleapinc.com
+# Preview: dev-preview.trueleapinc.com (always fetches draft content)
 [env.preview]
 routes = [
   { pattern = "dev-preview.trueleapinc.com/*", zone_name = "trueleapinc.com" },
 ]
 [env.preview.vars]
-CF_ACCOUNT_ID = "b01357b51e0ceb9e37e2bdf82bbcbc34"
-AI_GATEWAY_ID = "trueleap"
+PAYLOAD_URL = "https://cms.trueleapinc.com"
+PAYLOAD_API_KEY = "daaae8e2-41e4-4c3b-bbc4-faa3ed424398"
+DRAFT_MODE = "true"
 [[env.preview.r2_buckets]]
 binding = "IMAGES_BUCKET"
 bucket_name = "trueleap-images"
-[env.preview.ai]
-binding = "AI"
+[[env.preview.services]]
+binding = "CMS"
+service = "trueleap-cms-dev"

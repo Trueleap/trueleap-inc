@@ -6,229 +6,261 @@
 |-----------|-------|
 | **Platform** | Cloudflare Workers |
 | **Cloudflare Account** | Sandip's — `b01357b51e0ceb9e37e2bdf82bbcbc34` |
-| **Worker Name** | `trueleap-inc` |
+| **Frontend Worker** | `trueleap-inc` |
+| **CMS Worker** | `trueleap-cms` |
 | **Zone** | `trueleapinc.com` (Zone ID: `f2e8adbf061e2a861b6feba81a43f394`) |
 | **GitHub Repo** | `Trueleap/trueleap-inc` |
-| **Framework** | Astro 5.17 + `@astrojs/cloudflare` adapter |
-| **CMS** | Keystatic 0.5.48 (GitHub mode, `branchPrefix: 'content/'`) |
+| **Frontend** | Astro 5.17 + `@astrojs/cloudflare` adapter |
+| **CMS** | Payload CMS 3.75 + Cloudflare D1 + R2 |
 | **Access Control** | Cloudflare Access (App ID: `f008e844-6011-4c77-ba7b-774f38055e52`) |
+
+---
+
+## Architecture
+
+```
+┌─────────────────────┐                  ┌─────────────────────┐
+│   Customer Site     │   REST API       │    Payload CMS      │
+│   (CF Worker)       │ ◄─(published)──► │    (CF Worker)       │
+│ Prerendered / Static│                  │                      │
+│ dev.trueleapinc.com │                  │ cms.trueleapinc.com  │
+└─────────────────────┘                  └──────┬──────┬────────┘
+                                                │      │      ▲
+┌─────────────────────┐   REST API              │      │      │
+│   Preview Site      │ ◄─(drafts)──────────────┘      │  livePreview
+│   (CF Worker / SSR) │                                │   (iframe)
+│ DRAFT_MODE=true     │                                │
+│ dev-preview.        │ ◄──────────────────────────────┘
+│   trueleapinc.com   │
+└─────────────────────┘
+
+    ┌───────────┐  ┌────────────┐              ┌───────────────┐
+    │ R2 Bucket │  │ D1 (SQLite)│              │ CF AI/Gateway │
+    │ (images)  │  │ (content)  │              │ (PDF extract) │
+    └───────────┘  └────────────┘              └───────────────┘
+```
 
 ---
 
 ## Environments
 
+### Frontend (Astro) — Same codebase, deployed twice
+
+| Environment | Domain | Wrangler Env | Mode | Content | Deploys From |
+|-------------|--------|-------------|------|---------|--------------|
+| **Dev (customer)** | `dev.trueleapinc.com` | `--env dev` | Prerendered (static) | Published | `main` branch + Payload webhook |
+| **Preview (editors)** | `dev-preview.trueleapinc.com` | `--env preview` | SSR (`DRAFT_MODE=true`) | Drafts | `main` branch + Payload webhook |
+| **Production** | `trueleapinc.com` | _(not configured yet)_ | Prerendered | Published | _(site not ready)_ |
+
+### CMS (Payload)
+
 | Environment | Domain | Wrangler Env | Deploys From |
 |-------------|--------|-------------|--------------|
-| **Dev** | `dev.trueleapinc.com` | `--env dev` | `main` branch (via GitHub Actions) |
-| **Preview** | `dev-preview.trueleapinc.com` | `--env preview` | Manual (`npx wrangler deploy --env preview`) |
-| **Production** | `trueleapinc.com` | _(not configured yet)_ | _(site not ready)_ |
-
-### Dev (`dev.trueleapinc.com`)
-
-- Primary development environment
-- Auto-deploys on every push to `main` via GitHub Actions
-- Keystatic CMS editor accessible at `/keystatic`
-- Admin dashboard at `/admin`
-- Protected by Cloudflare Access
-
-### Preview (`dev-preview.trueleapinc.com`)
-
-- Preview environment for testing before dev
-- Manual deployment only
-- Protected by Cloudflare Access (entire domain)
+| **Dev** | `cms.trueleapinc.com` | `--env dev` | Manual / CI from `trueleap-cms/` |
 
 ---
 
 ## DNS Configuration
 
-Both dev and preview domains use **AAAA records** pointing to `100::` (the standard Cloudflare Workers routes proxy address — NOT a CNAME).
+All domains use **AAAA records** pointing to `100::` (Cloudflare Workers routes proxy address).
 
-| Record | Type | Name | Content |
-|--------|------|------|---------|
-| Dev | AAAA | `dev` | `100::` |
-| Preview | AAAA | `dev-preview` | `100::` |
-
-> **Why AAAA `100::`?** Workers routes require the domain to be proxied through Cloudflare. AAAA `100::` is the Cloudflare-recommended dummy address for this purpose. CNAME to `*.workers.dev` does NOT work for Workers routes.
+| Record | Type | Name | Content | Proxied |
+|--------|------|------|---------|---------|
+| Frontend Dev | AAAA | `dev` | `100::` | Yes |
+| Frontend Preview | AAAA | `dev-preview` | `100::` | Yes |
+| CMS | AAAA | `cms` | `100::` | Yes |
+| Root | A | `@` | `34.174.142.239` | Yes |
+| WWW | CNAME | `www` | `trueleapinc.com` | Yes |
 
 ---
 
 ## Secrets & Environment Variables
 
-### Cloudflare Workers Secrets
+### Frontend Worker Secrets
 
 Set via `npx wrangler secret put <NAME> --env <ENV>`:
 
-| Secret | Purpose | Where Set |
-|--------|---------|-----------|
-| `GITHUB_TOKEN` | GitHub PAT for Keystatic auth + admin API endpoints | Each worker env separately |
+| Secret | Purpose |
+|--------|---------|
+| `PAYLOAD_API_KEY` | API key for Payload CMS REST API |
 
-```bash
-# Set for dev
-npx wrangler secret put GITHUB_TOKEN --env dev
+### Frontend Worker Vars (in `wrangler.toml`)
 
-# Set for preview
-npx wrangler secret put GITHUB_TOKEN --env preview
-```
+| Var | Purpose | Dev | Preview |
+|-----|---------|-----|---------|
+| `PAYLOAD_URL` | Payload CMS base URL | `https://cms.trueleapinc.com` | same |
+| `DRAFT_MODE` | Fetch draft content | _(not set)_ | `"true"` |
 
-The GitHub token is a **non-expiring PAT** with repo scope on `Trueleap/trueleap-inc`.
+### CMS Worker Secrets
+
+Set via `cd trueleap-cms && npx wrangler secret put <NAME> --env <ENV>`:
+
+| Secret | Purpose |
+|--------|---------|
+| `PAYLOAD_SECRET` | Encryption secret (generate with `openssl rand -hex 32`) |
+| `GITHUB_TOKEN` | GitHub PAT for webhook `repository_dispatch` events |
+| `FRONTEND_URL` | Customer site URL (for "Open in new tab" preview) |
+| `PREVIEW_URL` | Preview site URL (for live preview iframe) |
 
 ### GitHub Actions Secrets
-
-Set in repo Settings > Secrets and variables > Actions:
 
 | Secret | Purpose |
 |--------|---------|
 | `CLOUDFLARE_API_TOKEN` | Wrangler authentication for deployment |
+| `PAYLOAD_URL` | Payload CMS URL (for static build) |
+| `PAYLOAD_API_KEY` | API key for Payload CMS (for static build) |
 
 ---
 
 ## Deployment
 
-### Automatic (GitHub Actions)
+### Frontend — Automatic (GitHub Actions)
 
-Every push to `main` triggers `.github/workflows/deploy.yml`:
+Every push to `main` OR Payload `repository_dispatch` event triggers `.github/workflows/deploy.yml`, which runs **two parallel jobs**:
 
-1. Checkout code
-2. `npm ci`
-3. `npm run build`
-4. `npx wrangler deploy --env dev`
+**Job 1: Customer site (`deploy-dev`)**
+1. `npm ci`
+2. `npm run build` (prerendered, published content)
+3. `npx wrangler deploy --env dev`
 
-### Manual
+**Job 2: Preview site (`deploy-preview`)**
+1. `npm ci`
+2. `DRAFT_MODE=true npm run build` (SSR, draft content)
+3. `npx wrangler deploy --env preview`
+
+### Frontend — Manual
 
 ```bash
-# Build
-npm run build
+# Customer site
+npm run build && npx wrangler deploy --env dev
 
-# Deploy to dev
-npx wrangler deploy --env dev
-
-# Deploy to preview
-npx wrangler deploy --env preview
+# Preview site
+DRAFT_MODE=true npm run build && npx wrangler deploy --env preview
 ```
 
-### Wrangler Config (`wrangler.toml`)
+### CMS — Deploy
 
-```toml
-name = "trueleap-inc"
-account_id = "b01357b51e0ceb9e37e2bdf82bbcbc34"
-main = "./dist/_worker.js/index.js"
-compatibility_date = "2026-02-04"
-compatibility_flags = ["nodejs_compat"]
-
-[assets]
-binding = "ASSETS"
-directory = "./dist"
-
-[[r2_buckets]]
-binding = "IMAGES_BUCKET"
-bucket_name = "trueleap-images"
-
-[observability]
-enabled = true
-
-[env.dev]
-routes = [
-  { pattern = "dev.trueleapinc.com/*", zone_name = "trueleapinc.com" },
-]
-[[env.dev.r2_buckets]]
-binding = "IMAGES_BUCKET"
-bucket_name = "trueleap-images"
-
-[env.preview]
-routes = [
-  { pattern = "dev-preview.trueleapinc.com/*", zone_name = "trueleapinc.com" },
-]
-[[env.preview.r2_buckets]]
-binding = "IMAGES_BUCKET"
-bucket_name = "trueleap-images"
+```bash
+cd trueleap-cms
+pnpm install
+CLOUDFLARE_ENV=dev pnpm run deploy
 ```
 
-> **Note:** R2 bucket bindings must be repeated in each `[env.*]` section — Wrangler does not inherit top-level bindings.
+This runs:
+1. `payload migrate` with remote D1 bindings
+2. `PRAGMA optimize` on remote D1
+3. `opennextjs-cloudflare build` (Next.js via OpenNext adapter)
+4. `opennextjs-cloudflare deploy` (uploads to Cloudflare Workers)
+
+**Requires Workers Paid plan** ($5/mo) — worker bundle is ~5MB gzipped (free plan limit is 3MB).
+
+### Deployed Versions (2026-02-10)
+
+| Service | Worker Name | Version ID | Route |
+|---------|-------------|------------|-------|
+| CMS | `trueleap-cms-dev` | `98b93c5b-a4ca-4325-a22c-1e7287f062f9` | `cms.trueleapinc.com/*` |
+| Frontend Dev | `trueleap-inc-dev` | `9e1f5330-6e03-4fbf-a52d-dcf08a80d0b9` | `dev.trueleapinc.com/*` |
+| Frontend Preview | `trueleap-inc-preview` | `e11f7bb5-acce-43f6-b692-82cd6ddb22d5` | `dev-preview.trueleapinc.com/*` |
 
 ---
 
-## Cloudflare Access
+## Content Workflow (Post-Migration)
 
-A single Cloudflare Access application protects all admin and CMS routes across all domains.
+### Editing (drafts)
+1. Log in to Payload admin at `cms.trueleapinc.com/admin`
+2. Create/edit content → click **Save Draft**
+3. Use **Live Preview** in CMS to see draft changes instantly (iframe loads `dev-preview.trueleapinc.com`)
+
+### Publishing
+1. Click **Publish** in Payload admin
+2. DraftBanner component triggers GitHub Actions `repository_dispatch` event
+3. GitHub Actions rebuilds both customer + preview sites (~2-3 min)
+4. Deploy status shown in CMS header (Deploying... → Deployed)
+5. Published content live on `dev.trueleapinc.com`
+
+No branches, no PRs, no merge conflicts.
+
+---
+
+## Monorepo Structure
+
+```
+trueleap-inc/
+├── src/                    # Astro frontend
+│   ├── components/         # React UI components
+│   ├── layouts/            # Page layouts
+│   ├── pages/              # Astro pages
+│   ├── lib/
+│   │   └── payload.ts      # Payload REST API client
+│   └── middleware.ts        # Minimal /admin redirect
+├── public/                 # Static assets
+├── scripts/                # Migration scripts
+│   ├── migrate-images.ts
+│   ├── migrate-collections.ts
+│   └── migrate-globals.ts
+├── trueleap-cms/           # Payload CMS (separate Next.js app)
+│   ├── src/
+│   │   ├── collections/    # 10 collections (Users, Media, + 8 content)
+│   │   ├── globals/        # 23 globals (page singletons)
+│   │   ├── fields/         # Reusable field groups (cta, hero, stat)
+│   │   └── payload.config.ts
+│   ├── wrangler.jsonc
+│   └── package.json
+├── wrangler.toml           # Frontend worker config
+├── astro.config.mjs
+└── package.json
+```
+
+---
+
+## Access Control
+
+### Layer 1: Cloudflare Access (network gate)
 
 **App ID:** `f008e844-6011-4c77-ba7b-774f38055e52`
+**Policy:** Admin Access (email-based OTP)
+**Authorized users:** `bikash@trueleap.io`, `mahesh@trueleap.io`, `sandip@trueleap.io`, `sunny@trueleap.io`
+**Session duration:** 24h
 
-### Protected Paths
+Only authorized team members can reach these paths:
 
-| Domain | Path |
-|--------|------|
-| `dev.trueleapinc.com` | `/admin` |
-| `dev.trueleapinc.com` | `/api/admin/*` |
-| `dev.trueleapinc.com` | `/keystatic/*` |
-| `dev.trueleapinc.com` | `/api/keystatic/*` |
-| `dev-preview.trueleapinc.com` | `/*` (entire domain) |
+| Domain | Path | Why |
+|--------|------|-----|
+| `cms.trueleapinc.com` | `/admin` | CMS admin panel |
+| `dev-preview.trueleapinc.com` | `/*` (entire domain) | Exposes draft content |
 
----
+**Note:** CMS `/api/*` is intentionally public — Payload's own access control handles API security. Published content reads are open; draft content requires `PAYLOAD_API_KEY`.
 
-## GitHub Actions Workflows
+### Layer 2: Payload Users (app-level auth)
 
-### 1. `deploy.yml` — Deploy to Cloudflare Workers
+- Payload's built-in `Users` collection handles CMS login
+- Each editor has an account in the CMS
+- Role-based access can be added via `role` field on Users collection
 
-- **Trigger:** Push to `main`
-- **Action:** Build + `wrangler deploy --env dev`
+### Layer 3: API access
 
-### 2. `content-pr.yml` — Auto-create PR from Content Branches
-
-- **Trigger:** Push to `content/**` branches
-- **Action:** Creates a PR to `main` if one doesn't exist (title: `Content: {branch-name}`)
-
-### 3. `preview-comment.yml` — Post Admin Link on Content PRs
-
-- **Trigger:** PR opened/synchronized against `main` from `content/*` branches
-- **Action:** Posts a comment with links to the CMS editor and Admin Dashboard
+- Payload REST API (`/api/*`) has `access.read: () => true` for published content reads
+- Draft content also reads publicly — secured by Cloudflare Access on the preview domain
+- Build-time fetching uses `PAYLOAD_API_KEY` for authenticated access
 
 ---
 
-## Application Architecture
+## Local Development
 
-### Routes
+Run all three services simultaneously:
 
-| Route | Type | Purpose |
-|-------|------|---------|
-| `/admin` | SSR | Admin dashboard — branch/PR management |
-| `/keystatic/*` | SSR | Keystatic CMS editor |
-| `/api/admin/create-branch` | POST | Create `content/{name}` branch from main HEAD |
-| `/api/admin/delete-branch` | POST | Delete a `content/*` branch (rejects if open PR) |
-| `/api/admin/merge-pr` | POST | Merge a PR (squash merge) |
-| `/api/admin/rebase-pr` | POST | Rebase a PR branch onto main |
-| `/api/admin/create-pr` | POST | Create a PR from a `content/*` branch to main |
-| `/api/keystatic/*` | SSR | Keystatic API (GitHub proxy) |
+```bash
+# Terminal 1: CMS (port 3000)
+cd trueleap-cms && pnpm dev
 
-### Middleware (`src/middleware.ts`)
+# Terminal 2: Customer site (port 4321) — prerendered, published content
+npm run dev
 
-1. **Cookie Injection:** Sets `keystatic-gh-access-token` cookie from `GITHUB_TOKEN` env var on all `/keystatic` and `/api/keystatic` routes — enables Keystatic GitHub auth without user login
-2. **Redirect:** `/keystatic` or `/keystatic/` → 302 to `/admin`
-3. **Read-Only Main:** `/keystatic/branch/main*` → injects CSS banner + full-page shield overlay (blocks pointer events; GitHub branch protection is the real enforcement)
-4. **Admin Nav:** `/keystatic/branch/*` (non-main) → injects floating "Admin" button (bottom-right) linking back to `/admin`
-
-### Keystatic Branch URL Encoding
-
-Keystatic uses `encodeURIComponent` for branch names in URLs. The `/` in `content/branch-name` is encoded as `%2F`:
-
-```
-/keystatic/branch/content%2Fmy-branch
+# Terminal 3: Preview site (port 4322) — SSR, draft content
+DRAFT_MODE=true npm run dev -- --port 4322
 ```
 
-> **Important:** The encoding is `%2F`, NOT `~2F`. All admin dashboard links and API responses use `%2F`.
-
----
-
-## Content Workflow
-
-1. **Create branch** via `/admin` dashboard → calls `POST /api/admin/create-branch`
-2. Branch `content/{name}` is created from main HEAD
-3. Redirect to Keystatic editor at `/keystatic/branch/content%2F{name}`
-4. Edit content in Keystatic → commits to `content/{name}` branch
-5. First push triggers `content-pr.yml` → creates PR to main
-6. PR appears on admin dashboard with status (Ready / Conflict / Checking)
-7. **Rebase** if conflicts → `POST /api/admin/rebase-pr`
-8. **Publish** when ready → `POST /api/admin/merge-pr` (squash merge)
-9. Push to main triggers `deploy.yml` → auto-deploy to dev
+The CMS live preview iframe points to `PREVIEW_URL` (defaults to `http://localhost:4322`).
 
 ---
 
@@ -237,31 +269,42 @@ Keystatic uses `encodeURIComponent` for branch names in URLs. The `/` in `conten
 ### DNS not resolving
 
 ```bash
-# Flush local DNS cache
 sudo systemctl restart systemd-resolved
-# or
-sudo resolvectl flush-caches
-
-# Verify resolution
 dig dev.trueleapinc.com AAAA
+dig cms.trueleapinc.com AAAA
 ```
 
-### Keystatic "branch does not exist"
+### Payload CMS not accessible
 
-- Ensure URLs use `%2F` encoding (not `~2F`)
-- Verify the branch actually exists on GitHub
-- Check `GITHUB_TOKEN` secret is set on the correct worker environment
+- Verify D1 database is created: `cd trueleap-cms && npx wrangler d1 list`
+- Check `PAYLOAD_SECRET` is set: `npx wrangler secret list --env dev`
+- Check Worker logs in Cloudflare dashboard
+
+### Build fails (content fetch errors)
+
+- Verify `PAYLOAD_URL` and `PAYLOAD_API_KEY` are set in GitHub Actions secrets
+- Test the API: `curl https://cms.trueleapinc.com/api/globals/homepage`
 
 ### Wrangler deploy issues
 
 ```bash
-# Verify account
 npx wrangler whoami
-
-# Deploy with verbose logging
 npx wrangler deploy --env dev --log-level debug
 ```
 
 ### R2 bucket not found
 
-Ensure `[[env.{name}.r2_buckets]]` is defined in `wrangler.toml` for each environment. Top-level bindings are NOT inherited.
+R2 bucket bindings must be repeated in each `[env.*]` section — Wrangler does not inherit top-level bindings.
+
+### Worker size limit exceeded
+
+CMS worker requires **Workers Paid plan** (~$5/mo). The bundle is ~5MB gzipped. Free plan limit is 3MB, paid allows 10MB.
+
+```bash
+# Check bundle size
+du -sh trueleap-cms/.open-next/server-functions/default/handler.mjs
+```
+
+### Access blocking API calls during build
+
+CMS `/api/*` must NOT be behind Cloudflare Access — only `/admin` should be protected. Payload's own access control handles API security. If builds fail with `"<!DOCTYPE" is not valid JSON`, check that Access isn't gating `/api`.

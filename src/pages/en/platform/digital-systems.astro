@@ -1,11 +1,11 @@
 ---
-export const prerender = true;
 import Page from '../../../layouts/Page.astro';
 import { AnimatedSection } from '../../../components/ui/AnimatedSection';
-import { reader } from '../../../lib/keystatic';
+import { getPayload } from '../../../lib/payload';
 
 const lang = 'en';
-const page = await reader.singletons['digital-systems-page'].read();
+const cms = getPayload(Astro);
+const page = await cms.globals.read('digital-systems-page');
 ---
 
 <Page title="Digital Systems" lang={lang}>
@@ -56,7 +56,7 @@ const page = await reader.singletons['digital-systems-page'].read();
                 {system.features?.map((feature: any) => (
                   <li class="flex items-start gap-3">
                     <span class="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0"></span>
-                    <span class="text-charcoal/80">{feature}</span>
+                    <span class="text-charcoal/80">{typeof feature === 'string' ? feature : feature.text}</span>
                   </li>
                 ))}
               </ul>

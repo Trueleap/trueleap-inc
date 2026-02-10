@@ -1,0 +1,62 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "trueleap-cms",
+  "account_id": "b01357b51e0ceb9e37e2bdf82bbcbc34",
+  "compatibility_date": "2026-02-04",
+  "compatibility_flags": [
+    "nodejs_compat",
+    "global_fetch_strictly_public"
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "d1_databases": [
+    {
+      "binding": "D1",
+      "database_id": "c41e33b8-a35d-41e6-a695-c31bdab7c96f",
+      "database_name": "trueleap-cms",
+      "remote": true
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "R2",
+      "bucket_name": "trueleap-images"
+    }
+  ],
+  "ai": {
+    "binding": "AI"
+  },
+
+  // Dev: cms.trueleapinc.com
+  "env": {
+    "dev": {
+      "name": "trueleap-cms-dev",
+      "routes": [
+        { "pattern": "cms.trueleapinc.com/*", "zone_name": "trueleapinc.com" }
+      ],
+      "d1_databases": [
+        {
+          "binding": "D1",
+          "database_id": "c41e33b8-a35d-41e6-a695-c31bdab7c96f",
+          "database_name": "trueleap-cms",
+          "remote": true
+        }
+      ],
+      "r2_buckets": [
+        {
+          "binding": "R2",
+          "bucket_name": "trueleap-images"
+        }
+      ],
+      "ai": {
+        "binding": "AI"
+      }
+    }
+  }
+}

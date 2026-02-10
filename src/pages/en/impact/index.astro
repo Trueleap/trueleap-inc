@@ -1,10 +1,10 @@
 ---
-export const prerender = true;
 import Page from '../../../layouts/Page.astro';
-import { reader } from '../../../lib/keystatic';
+import { getPayload } from '../../../lib/payload';
 
 const lang = 'en';
-const page = await reader.singletons['impact-overview'].read();
+const cms = getPayload(Astro);
+const page = await cms.globals.read('impact-overview');
 
 const stats = page?.stats ?? [];
 const navCards = page?.navCards ?? [];

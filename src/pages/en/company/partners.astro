@@ -1,18 +1,14 @@
 ---
-export const prerender = true;
 import Page from '../../../layouts/Page.astro';
-import { reader } from '../../../lib/keystatic';
+import { getPayload } from '../../../lib/payload';
 
 const lang = 'en';
+const cms = getPayload(Astro);
 
-const partnerSlugs = await reader.collections.partners.list();
-const partnerEntries = await Promise.all(
-  partnerSlugs.map(async (slug) => {
-    const partner = await reader.collections.partners.read(slug);
-    return partner ? { ...partner, slug } : null;
-  })
-);
-const allPartners = partnerEntries.filter(Boolean).sort((a, b) => (a?.order ?? 0) - (b?.order ?? 0));
+const allPartners = await cms.collections.list<Record<string, unknown>>('partners', {
+  sort: 'order',
+  limit: 100,
+});
 
 const tierLabels: Record<string, { name: string; description: string }> = {
   technology: {

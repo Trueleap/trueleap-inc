@@ -32,8 +32,12 @@ Core content works without JS. Interactivity enhances, never gates. The globe is
 ### 3. Internationalization Ready
 All user-facing strings externalized. Route structure supports `/[lang]/` prefix. RTL consideration in layouts.
 
-### 4. CMS Agnostic Content
-Content schemas define structure. Keystatic is the CMS with GitHub storage in production and local storage in dev.
+### 4. CMS-Driven Content
+Content schemas define structure. Payload CMS (at `cms.trueleapinc.com`) stores content in Cloudflare D1 (SQLite) with media in R2. The same Astro codebase is deployed twice:
+- **Customer site** (`dev.trueleapinc.com`): prerendered, fetches published content at build time
+- **Preview site** (`dev-preview.trueleapinc.com`): SSR with `DRAFT_MODE=true`, fetches draft content on every request
+
+Publishing triggers a GitHub Actions rebuild of both sites via `repository_dispatch` webhook. The CMS live preview iframe points to the preview site for instant draft feedback.
 
 ### 5. Component Composition
 Prefer composition over configuration. Components should be combinable, not configurable with boolean props.
@@ -58,7 +62,7 @@ Lighthouse CI with thresholds. Bundle size checks on PR. Core Web Vitals monitor
 - `src/components/` - Reusable UI primitives
 - `src/layouts/` - Page-level structural components
 - `src/pages/` - Route definitions only, minimal logic
-- `src/content/` - Content collections and schemas
+- `trueleap-cms/` - Payload CMS (separate Next.js app deployed as CF Worker)
 - `src/lib/` - Utilities, hooks, helpers
 - `src/styles/` - Global styles, Tailwind config
 

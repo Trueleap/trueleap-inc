@@ -3,15 +3,20 @@ import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
 import cloudflare from '@astrojs/cloudflare';
-import keystatic from '@keystatic/astro';
-import markdoc from '@astrojs/markdoc';
+
+const DRAFT_MODE = process.env.DRAFT_MODE === 'true';
 
 export default defineConfig({
   site: 'https://trueleapinc.com',
-  integrations: [react(), keystatic(), markdoc()],
-  output: 'server',
+  integrations: [react()],
+  // Customer site: static (pages prerendered by default, API routes can opt out)
+  // Preview site: server (all pages SSR for live draft content)
+  output: DRAFT_MODE ? 'server' : 'static',
   vite: {
     plugins: [tailwindcss()],
   },
-  adapter: cloudflare({ platformProxy: { enabled: true } }),
+  adapter: cloudflare({
+    platformProxy: { enabled: true },
+    imageService: 'compile',
+  }),
 });

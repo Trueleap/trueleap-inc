@@ -1,11 +1,11 @@
 ---
-export const prerender = true;
 import Page from '../../../layouts/Page.astro';
 import { AnimatedSection } from '../../../components/ui/AnimatedSection';
-import { reader } from '../../../lib/keystatic';
+import { getPayload } from '../../../lib/payload';
 
 const lang = 'en';
-const page = await reader.singletons['trust-center-page'].read();
+const cms = getPayload(Astro);
+const page = await cms.globals.read('trust-center-page');
 ---
 
 <Page title="Trust Center" lang={lang}>
@@ -99,16 +99,19 @@ const page = await reader.singletons['trust-center-page'].read();
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-8">
         <span class="text-sm text-white/60">Certifications:</span>
         <div class="flex flex-wrap gap-6">
-          {page?.certifications?.map((cert: string) => (
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 bg-white/10 rounded flex items-center justify-center">
-                <span class="text-xs font-medium text-white">{cert.slice(0, 3)}</span>
+          {page?.certifications?.map((cert: any) => {
+            const certText = typeof cert === 'string' ? cert : cert.text;
+            return (
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-white/10 rounded flex items-center justify-center">
+                  <span class="text-xs font-medium text-white">{certText.slice(0, 3)}</span>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-white">{certText}</p>
+                </div>
               </div>
-              <div>
-                <p class="text-sm font-medium text-white">{cert}</p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

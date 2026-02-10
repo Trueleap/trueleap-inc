@@ -1,21 +1,14 @@
 ---
-export const prerender = true;
 import Page from '../../../layouts/Page.astro';
-import { reader } from '../../../lib/keystatic';
+import { getPayload } from '../../../lib/payload';
 
 const lang = 'en';
-const page = await reader.singletons['case-studies-page'].read();
+const cms = getPayload(Astro);
+const page = await cms.globals.read<Record<string, unknown>>('case-studies-page');
 
-const slugs = await reader.collections['case-studies'].list();
-const caseStudies = await Promise.all(
-  slugs.map(async (slug) => {
-    const entry = await reader.collections['case-studies'].read(slug);
-    return entry ? { slug, ...entry } : null;
-  })
-);
-const allStudies = caseStudies.filter(Boolean) as NonNullable<(typeof caseStudies)[number]>[];
+const allStudies = await cms.collections.list<Record<string, unknown>>('case-studies');
 
-const categories = page?.categoryFilters ?? [];
+const categories = (page?.categoryFilters as Array<Record<string, unknown>> | undefined) ?? [];
 const featuredStudies = allStudies.filter((c) => c.featured);
 ---
 
@@ -40,7 +33,7 @@ const featuredStudies = allStudies.filter((c) => c.featured);
       <div class="flex flex-wrap gap-2">
         {categories.map((cat, i) => (
           <button class={`px-4 py-2 text-sm font-medium transition-colors ${i === 0 ? 'bg-charcoal text-white' : 'bg-cream text-muted hover:bg-charcoal hover:text-white'}`}>
-            {cat}
+            {typeof cat === 'string' ? cat : cat.text}
           </button>
         ))}
       </div>

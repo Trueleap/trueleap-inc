@@ -1,23 +1,16 @@
 ---
-export const prerender = true;
 import Page from '../../../layouts/Page.astro';
-import { reader } from '../../../lib/keystatic';
+import { getPayload } from '../../../lib/payload';
 
 const lang = 'en';
+const cms = getPayload(Astro);
 
-const page = await reader.singletons['careers-page'].read();
+const page = await cms.globals.read<Record<string, unknown>>('careers-page');
 
-const jobSlugs = await reader.collections.jobs.list();
-const jobEntries = await Promise.all(
-  jobSlugs.map(async (slug) => {
-    const job = await reader.collections.jobs.read(slug);
-    return job ? { ...job, slug } : null;
-  })
-);
-const jobs = jobEntries
-  .filter(Boolean)
+const allJobs = await cms.collections.list<Record<string, unknown>>('jobs');
+const jobs = allJobs
   .filter((job) => job?.active === true)
-  .sort((a, b) => (a?.order ?? 0) - (b?.order ?? 0));
+  .sort((a, b) => ((a?.order as number) ?? 0) - ((b?.order as number) ?? 0));
 
 // Build department counts from active jobs
 const departmentCounts: Record<string, number> = {};

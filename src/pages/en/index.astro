@@ -1,5 +1,4 @@
 ---
-export const prerender = true;
 import Page from '../../layouts/Page.astro';
 import { AnimatedSection } from '../../components/ui/AnimatedSection';
 import { AnimatedHeadline } from '../../components/ui/AnimatedHeadline';
@@ -12,10 +11,11 @@ import { HorizontalScroll, HorizontalSlide } from '../../components/ui/Horizonta
 import { HeroWireframe } from '../../components/ui/HeroWireframe';
 import { PartnerLogos } from '../../components/ui/PartnerLogos';
 import { TestimonialMarquee, sampleTestimonials } from '../../components/ui/TestimonialMarquee';
-import { reader } from '../../lib/keystatic';
+import { getPayload } from '../../lib/payload';
 
 const lang = 'en';
-const page = await reader.singletons.homepage.read();
+const cms = getPayload(Astro);
+const page = await cms.globals.read('homepage');
 
 const capabilities = page?.platform?.capabilities ?? [];
 const products = page?.products?.items ?? [];
