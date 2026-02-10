@@ -41,7 +41,7 @@ jobs:
       - uses: actions/setup-node@v4
         if: steps.changes.outputs.cms == 'true'
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
           cache-dependency-path: trueleap-cms/pnpm-lock.yaml
 
