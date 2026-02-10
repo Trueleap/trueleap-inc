@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import { sqliteD1Adapter } from '@payloadcms/db-d1-sqlite'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { PayloadAiPluginLexicalEditorFeature, payloadAiPlugin } from '@ai-stack/payloadcms'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import type { CloudflareContext } from '@opennextjs/cloudflare'
@@ -198,7 +199,12 @@ export default buildConfig({
       Navigation,
     ]),
   ],
-  editor: lexicalEditor(),
+  editor: lexicalEditor({
+    features: ({ rootFeatures }) => [
+      ...rootFeatures,
+      PayloadAiPluginLexicalEditorFeature(),
+    ],
+  }),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
@@ -209,6 +215,83 @@ export default buildConfig({
       bucket: cloudflare.env.R2,
       collections: { media: true },
     }),
+    payloadAiPlugin({
+      collections: {
+        'case-studies': true,
+        news: true,
+        team: true,
+        partners: true,
+        jobs: true,
+        testimonials: true,
+        'industry-solutions': true,
+        'outcome-solutions': true,
+      },
+      globals: {
+        homepage: true,
+        'company-overview': true,
+        'mission-page': true,
+        'careers-page': true,
+        'platform-overview': true,
+        'infrastructure-page': true,
+        'digital-systems-page': true,
+        'edge-ai-page': true,
+        'stack-page': true,
+        'solutions-overview': true,
+        'impact-overview': true,
+        'case-studies-page': true,
+        'metrics-page': true,
+        'network-map-page': true,
+        'last-mile-page': true,
+        'resources-overview': true,
+        'trust-center-page': true,
+        'newsroom-page': true,
+        'docs-page': true,
+        'privacy-page': true,
+        'terms-page': true,
+      },
+      access: {
+        generate: ({ req }) => Boolean(req.user),
+        settings: ({ req }) => (req.user as { role?: string } | null)?.role === 'admin',
+      },
+      generatePromptOnInit: true,
+      debugging: !isProduction,
+      seedPrompts: ({ path, fieldType, fieldLabel }) => {
+        if (path.endsWith('.slug') || path.endsWith('.order')) return false
+        if (path.endsWith('.body'))
+          return {
+            data: {
+              prompt:
+                'Write detailed, professional content about {{ title }} for a B2G technology company. Use clear, authoritative language.',
+            },
+          }
+        if (path.endsWith('.description'))
+          return {
+            data: {
+              prompt: 'Write a concise description for {{ title }} in a professional B2G tone.',
+            },
+          }
+        if (path.endsWith('.bio'))
+          return {
+            data: { prompt: 'Write a professional bio for {{ name }}, {{ title }}.' },
+          }
+        if (path.endsWith('.summary'))
+          return {
+            data: {
+              prompt: 'Summarize the key responsibilities and requirements for this {{ title }} position.',
+            },
+          }
+        if (path.endsWith('.quote'))
+          return {
+            data: { prompt: 'Write a compelling, authentic-sounding testimonial quote.' },
+          }
+        // Default: always return { data } to avoid systemGenerate needing OpenAI/Anthropic keys
+        return {
+          data: {
+            prompt: `Generate professional ${fieldType} content for the "${fieldLabel}" field based on {{ title }}.`,
+          },
+        }
+      },
+    }),
   ],
 })
 
@@ -217,7 +300,7 @@ async function getCloudflareContextFromWrangler(): Promise<CloudflareContext> {
     ({ getPlatformProxy }: { getPlatformProxy: (opts: GetPlatformProxyOptions) => Promise<CloudflareContext> }) =>
       getPlatformProxy({
         environment: process.env.CLOUDFLARE_ENV,
-        remoteBindings: isProduction,
+        remoteBindings: isProduction || process.env.USE_REMOTE_DB === 'true',
       } satisfies GetPlatformProxyOptions),
   )
 }

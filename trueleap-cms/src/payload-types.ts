@@ -77,6 +77,7 @@ export interface Config {
     testimonials: Testimonial;
     'industry-solutions': IndustrySolution;
     'outcome-solutions': OutcomeSolution;
+    'plugin-ai-instructions': PluginAiInstruction;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -94,6 +95,7 @@ export interface Config {
     testimonials: TestimonialsSelect<false> | TestimonialsSelect<true>;
     'industry-solutions': IndustrySolutionsSelect<false> | IndustrySolutionsSelect<true>;
     'outcome-solutions': OutcomeSolutionsSelect<false> | OutcomeSolutionsSelect<true>;
+    'plugin-ai-instructions': PluginAiInstructionsSelect<false> | PluginAiInstructionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -556,6 +558,88 @@ export interface OutcomeSolution {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "plugin-ai-instructions".
+ */
+export interface PluginAiInstruction {
+  id: number;
+  /**
+   * Please don't change this unless you're sure of what you're doing
+   */
+  'schema-path'?: string | null;
+  /**
+   * Please don't change this unless you're sure of what you're doing
+   */
+  'field-type'?: ('text' | 'textarea' | 'upload' | 'richText') | null;
+  'relation-to'?: string | null;
+  'model-id'?: ('GEMINI-text' | 'GEMINI-object' | 'imagen') | null;
+  /**
+   * Please reload your collection after applying the changes
+   */
+  disabled?: boolean | null;
+  /**
+   * Click 'Compose' to run this custom prompt and generate content
+   */
+  prompt?: string | null;
+  images?:
+    | {
+        /**
+         * Please make sure the image is publicly accessible.
+         */
+        image?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  system?: string | null;
+  layout?: string | null;
+  'GEMINI-text-settings'?: {
+    model?:
+      | (
+          | 'gemini-3-pro-preview'
+          | 'gemini-2.5-pro'
+          | 'gemini-2.5-flash'
+          | 'gemini-2.5-flash-lite'
+          | 'gemini-2.0-flash'
+          | 'gemini-2.0-flash-lite'
+          | 'gemini-flash-latest'
+        )
+      | null;
+    maxTokens?: number | null;
+    temperature?: number | null;
+    extractAttachments?: boolean | null;
+  };
+  'GEMINI-object-settings'?: {
+    model?:
+      | (
+          | 'gemini-3-pro-preview'
+          | 'gemini-2.5-pro'
+          | 'gemini-2.5-flash'
+          | 'gemini-2.5-flash-lite'
+          | 'gemini-2.0-flash'
+          | 'gemini-2.0-flash-lite'
+          | 'gemini-flash-latest'
+        )
+      | null;
+    maxTokens?: number | null;
+    temperature?: number | null;
+    extractAttachments?: boolean | null;
+  };
+  'imagen-settings'?: {
+    model?:
+      | (
+          | 'imagen-4.0-fast-generate-001'
+          | 'imagen-4.0-generate-001'
+          | 'imagen-4.0-ultra-generate-001'
+          | 'imagen-3.0-generate-002'
+        )
+      | null;
+    aspectRatio?: ('1:1' | '3:4' | '4:3' | '9:16' | '16:9') | null;
+    outputMimeType?: ('image/png' | 'image/jpeg') | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -617,6 +701,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'outcome-solutions';
         value: number | OutcomeSolution;
+      } | null)
+    | ({
+        relationTo: 'plugin-ai-instructions';
+        value: number | PluginAiInstruction;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -965,6 +1053,51 @@ export interface OutcomeSolutionsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "plugin-ai-instructions_select".
+ */
+export interface PluginAiInstructionsSelect<T extends boolean = true> {
+  'schema-path'?: T;
+  'field-type'?: T;
+  'relation-to'?: T;
+  'model-id'?: T;
+  disabled?: T;
+  prompt?: T;
+  images?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
+  system?: T;
+  layout?: T;
+  'GEMINI-text-settings'?:
+    | T
+    | {
+        model?: T;
+        maxTokens?: T;
+        temperature?: T;
+        extractAttachments?: T;
+      };
+  'GEMINI-object-settings'?:
+    | T
+    | {
+        model?: T;
+        maxTokens?: T;
+        temperature?: T;
+        extractAttachments?: T;
+      };
+  'imagen-settings'?:
+    | T
+    | {
+        model?: T;
+        aspectRatio?: T;
+        outputMimeType?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
