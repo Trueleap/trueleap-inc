@@ -50,24 +50,14 @@ jobs:
         run: pnpm install --frozen-lockfile
         working-directory: trueleap-cms
 
-      - name: Build (Next.js + OpenNext)
+      - name: Build & Deploy CMS Worker
         if: steps.changes.outputs.cms == 'true'
-        run: npx opennextjs-cloudflare build
+        run: pnpm exec opennextjs-cloudflare build --env dev && pnpm exec opennextjs-cloudflare deploy --env dev
         working-directory: trueleap-cms
         env:
           CLOUDFLARE_ENV: dev
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-
-      - name: Deploy CMS Worker
-        if: steps.changes.outputs.cms == 'true'
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          wranglerVersion: '4.61.1'
-          packageManager: pnpm
-          command: deploy --env dev
-          workingDirectory: trueleap-cms
 
   # ── Customer site (static, prerendered) ──
   deploy-dev:
