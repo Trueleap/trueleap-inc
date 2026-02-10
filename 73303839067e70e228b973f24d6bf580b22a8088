@@ -1,0 +1,23 @@
+.github/workflows/deploy.yml
+  e3ca863cf014c40b 67-68
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.1",
+  "base_commit_sha": "73303839067e70e228b973f24d6bf580b22a8088",
+  "prompts": {
+    "e3ca863cf014c40b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_3b9d0f75effe2Ef4KXwR8zUUsf",
+        "model": "anthropic/claude-opus-4-6"
+      },
+      "human_author": "Bikash Phukan <bphkns@gmail.com>",
+      "messages": [],
+      "total_additions": 2,
+      "total_deletions": 0,
+      "accepted_lines": 2,
+      "overriden_lines": 0
+    }
+  }
+}
