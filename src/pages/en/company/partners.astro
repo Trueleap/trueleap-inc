@@ -1,9 +1,9 @@
 ---
 import Page from '../../../layouts/Page.astro';
-import { payload } from '../../../lib/payload';
+import { getPayload } from '../../../lib/payload';
 
 const lang = 'en';
-const cms = payload;
+const cms = getPayload(Astro);
 
 const allPartners = await cms.collections.list<Record<string, unknown>>('partners', {
   sort: 'order',

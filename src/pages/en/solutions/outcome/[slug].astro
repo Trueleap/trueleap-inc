@@ -1,16 +1,18 @@
 ---
 import type { GetStaticPaths } from 'astro';
 import Page from '../../../../layouts/Page.astro';
-import { payload } from '../../../../lib/payload';
+import { getPayload } from '../../../../lib/payload';
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const docs = await payload.collections.list<Record<string, unknown>>('outcome-solutions');
+  const cms = getPayload();
+  const docs = await cms.collections.list<Record<string, unknown>>('outcome-solutions');
   return docs.map((d) => ({
     params: { slug: (d.title as string).toLowerCase().replace(/\s+/g, '-') },
     props: { entry: d },
   }));
 };
 
+const cms = getPayload(Astro);
 const lang = 'en';
 
 // In prerender mode, entry comes from getStaticPaths props.
@@ -18,7 +20,7 @@ const lang = 'en';
 let entry = Astro.props.entry;
 if (!entry) {
   const { slug } = Astro.params;
-  const docs = await payload.collections.list<Record<string, unknown>>('outcome-solutions');
+  const docs = await cms.collections.list<Record<string, unknown>>('outcome-solutions');
   entry = docs.find(
     (d) => (d.title as string).toLowerCase().replace(/\s+/g, '-') === slug,
   );

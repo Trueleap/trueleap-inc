@@ -81,7 +81,8 @@ async function migrateJsonGlobal(slug: string): Promise<void> {
   }
 
   const raw: unknown = JSON.parse(fs.readFileSync(filePath, 'utf-8'))
-  const data = transformStringArrays(raw)
+  const data = transformStringArrays(raw) as Record<string, unknown>
+  data._status = 'published'
 
   const res = await fetch(`${PAYLOAD_URL}/api/globals/${slug}`, {
     method: 'POST',

@@ -153,29 +153,7 @@ export default buildConfig({
         Icon: '@/components/Icon',
       },
     },
-    livePreview: {
-      breakpoints: [
-        { label: 'Desktop', name: 'l', width: 1440, height: 900 },
-        { label: 'Tablet', name: 'm', width: 768, height: 1024 },
-        { label: 'Mobile', name: 's', width: 375, height: 667 },
-      ],
-      url: ({ data, documentInfo }) => {
-        const slug = documentInfo?.slug
-        if (!slug) return PREVIEW_URL
-        // Globals
-        const globalPath = globalUrlMap[slug]
-        if (globalPath) return `${PREVIEW_URL}${globalPath}`
-        // Collections
-        const basePath = collectionUrlMap[slug]
-        if (basePath && data?.title) {
-          const docSlug = String(data.title).toLowerCase().replace(/\s+/g, '-')
-          return `${PREVIEW_URL}${basePath}/${docSlug}`
-        }
-        return PREVIEW_URL
-      },
-      collections: ['case-studies', 'news', 'industry-solutions', 'outcome-solutions'],
-      globals: Object.keys(globalUrlMap),
-    },
+
   },
   collections: [
     Users,

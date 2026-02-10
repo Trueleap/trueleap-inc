@@ -147,6 +147,7 @@ async function migrateCollection(config: CollectionConfig): Promise<void> {
     }
 
     const transformed = transformStringArrays(data) as Record<string, unknown>
+    transformed._status = 'published'
 
     const res = await fetch(`${PAYLOAD_URL}/api/${config.slug}`, {
       method: 'POST',

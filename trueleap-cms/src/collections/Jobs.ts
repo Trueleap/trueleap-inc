@@ -5,6 +5,11 @@ export const Jobs: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'department', 'location', 'type', 'active'],
+    components: {
+      edit: {
+        beforeDocumentControls: ['@/components/ExtractPdfButton'],
+      },
+    },
   },
   access: {
     read: () => true,

@@ -313,3 +313,66 @@ a.publish-modal__item-info {
     cursor: not-allowed;
   }
 }
+
+/* ── Extract PDF button (Jobs edit view) ── */
+.extract-pdf {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.extract-pdf__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  border: 1px solid var(--theme-border-color);
+  border-radius: var(--style-radius-m);
+  background: var(--theme-elevation-0);
+  color: var(--theme-elevation-800);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 150ms ease;
+  min-width: 90px;
+
+  &:hover {
+    background: var(--theme-elevation-50);
+    border-color: var(--theme-elevation-300);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.extract-pdf__spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--theme-elevation-200);
+  border-top-color: var(--theme-elevation-600);
+  border-radius: 50%;
+  animation: extract-spin 0.6s linear infinite;
+}
+
+@keyframes extract-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.extract-pdf__msg {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.extract-pdf__msg--success {
+  color: var(--theme-success-500);
+}
+
+.extract-pdf__msg--error {
+  color: var(--theme-error-500);
+}

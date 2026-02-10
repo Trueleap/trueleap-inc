@@ -11,10 +11,10 @@ import { HorizontalScroll, HorizontalSlide } from '../../components/ui/Horizonta
 import { HeroWireframe } from '../../components/ui/HeroWireframe';
 import { PartnerLogos } from '../../components/ui/PartnerLogos';
 import { TestimonialMarquee, sampleTestimonials } from '../../components/ui/TestimonialMarquee';
-import { payload } from '../../lib/payload';
+import { getPayload } from '../../lib/payload';
 
 const lang = 'en';
-const cms = payload;
+const cms = getPayload(Astro);
 const page = await cms.globals.read('homepage');
 
 const capabilities = page?.platform?.capabilities ?? [];

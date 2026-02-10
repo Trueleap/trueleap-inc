@@ -1,12 +1,13 @@
 /**
  * Payload CMS REST API client for the Astro frontend.
  *
- * All pages use `export const prerender = true` (static build).
- * The Payload CMS runs at PAYLOAD_URL (e.g. https://cms.trueleapinc.com).
+ * Works in both modes:
+ * - Static build (customer site): uses import.meta.env (inlined at build time)
+ * - SSR on Cloudflare Workers (preview site): uses Astro.locals.runtime.env
+ *   and the CMS Service Binding to avoid Worker-to-Worker 522 timeouts
+ *
+ * Pages should call `getPayload(Astro)` to get a properly configured client.
  */
-
-const PAYLOAD_URL = import.meta.env.PAYLOAD_URL ?? 'http://localhost:3000'
-const PAYLOAD_API_KEY = import.meta.env.PAYLOAD_API_KEY ?? ''
 
 interface PayloadListResponse<T> {
   docs: T[]
@@ -29,8 +30,28 @@ interface RequestOptions {
   sort?: string
 }
 
-async function payloadFetch<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const url = new URL(`/api${path}`, PAYLOAD_URL)
+interface EnvConfig {
+  payloadUrl: string
+  payloadApiKey: string
+  draftMode: boolean
+  /** Cloudflare Service Binding to CMS worker (avoids public network hop) */
+  cmsBinding?: { fetch: typeof fetch }
+}
+
+function resolveEnv(astroInstance?: { locals: { runtime?: { env?: Record<string, unknown> } } }): EnvConfig {
+  // Try Cloudflare runtime env first (SSR), fall back to import.meta.env (static build)
+  const runtimeEnv = astroInstance?.locals?.runtime?.env
+  return {
+    payloadUrl: (runtimeEnv?.PAYLOAD_URL as string) ?? import.meta.env.PAYLOAD_URL ?? 'http://localhost:3000',
+    payloadApiKey: (runtimeEnv?.PAYLOAD_API_KEY as string) ?? import.meta.env.PAYLOAD_API_KEY ?? '',
+    draftMode: ((runtimeEnv?.DRAFT_MODE as string) ?? import.meta.env.DRAFT_MODE) === 'true',
+    // CMS Service Binding (set in wrangler.toml as [[services]] binding = "CMS")
+    cmsBinding: runtimeEnv?.CMS as { fetch: typeof fetch } | undefined,
+  }
+}
+
+async function payloadFetch<T>(env: EnvConfig, path: string, options: RequestOptions = {}): Promise<T> {
+  const url = new URL(`/api${path}`, env.payloadUrl)
 
   if (options.depth !== undefined) url.searchParams.set('depth', String(options.depth))
   if (options.limit !== undefined) url.searchParams.set('limit', String(options.limit))
@@ -41,34 +62,42 @@ async function payloadFetch<T>(path: string, options: RequestOptions = {}): Prom
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   }
-  if (PAYLOAD_API_KEY) {
-    headers['Authorization'] = `users API-Key ${PAYLOAD_API_KEY}`
+  if (env.payloadApiKey) {
+    headers['Authorization'] = `users API-Key ${env.payloadApiKey}`
   }
 
-  const res = await fetch(url.toString(), { headers })
+  // Use Service Binding if available (Worker-to-Worker, no public network hop)
+  // Fall back to global fetch for static builds / local dev
+  const fetcher = env.cmsBinding?.fetch?.bind(env.cmsBinding) ?? fetch
+  const res = await fetcher(url.toString(), { headers })
 
   if (!res.ok) {
-    throw new Error(`Payload API error: ${res.status} ${res.statusText} on ${path}`)
+    const body = await res.text().catch(() => '')
+    throw new Error(`Payload API error: ${res.status} ${res.statusText} on ${path} — ${body.slice(0, 200)}`)
   }
 
   return res.json() as Promise<T>
 }
 
 /** Read a Payload global (singleton) */
-async function readGlobal<T>(slug: string, options?: RequestOptions): Promise<T | null> {
+async function readGlobal<T>(env: EnvConfig, slug: string, options?: RequestOptions): Promise<T | null> {
   try {
-    return await payloadFetch<T>(`/globals/${slug}`, options)
-  } catch {
+    return await payloadFetch<T>(env, `/globals/${slug}`, options)
+  } catch (err) {
+    console.error(`[payload] readGlobal("${slug}") failed:`, err)
+    console.error(`[payload] env: url=${env.payloadUrl}, key=${env.payloadApiKey ? 'SET' : 'MISSING'}, draft=${env.draftMode}, binding=${env.cmsBinding ? 'YES' : 'NO'}`)
     return null
   }
 }
 
 /** List all documents in a Payload collection */
 async function listCollection<T>(
+  env: EnvConfig,
   slug: string,
   options: RequestOptions = {},
 ): Promise<T[]> {
   const res = await payloadFetch<PayloadListResponse<T>>(
+    env,
     `/${slug}`,
     { limit: 100, ...options },
   )
@@ -77,12 +106,13 @@ async function listCollection<T>(
 
 /** Read a single document from a Payload collection by ID */
 async function readCollectionById<T>(
+  env: EnvConfig,
   slug: string,
   id: string | number,
   options?: RequestOptions,
 ): Promise<T | null> {
   try {
-    return await payloadFetch<T>(`/${slug}/${id}`, options)
+    return await payloadFetch<T>(env, `/${slug}/${id}`, options)
   } catch {
     return null
   }
@@ -93,12 +123,13 @@ async function readCollectionById<T>(
  * Uses Payload where queries.
  */
 async function findOne<T>(
+  env: EnvConfig,
   collectionSlug: string,
   field: string,
   value: string,
   options?: RequestOptions,
 ): Promise<T | null> {
-  const res = await payloadFetch<PayloadListResponse<T>>(`/${collectionSlug}`, {
+  const res = await payloadFetch<PayloadListResponse<T>>(env, `/${collectionSlug}`, {
     ...options,
     limit: 1,
     where: { [field]: { equals: value } },
@@ -106,29 +137,38 @@ async function findOne<T>(
   return res.docs[0] ?? null
 }
 
-/** Create a payload client — pass `{ draft: true }` for preview mode */
-function createClient(defaults: RequestOptions = {}) {
+/** Create a payload client bound to a specific env config */
+function createClient(env: EnvConfig, defaults: RequestOptions = {}) {
   return {
     globals: {
       read: <T>(slug: string, options?: RequestOptions) =>
-        readGlobal<T>(slug, { ...defaults, ...options }),
+        readGlobal<T>(env, slug, { ...defaults, ...options }),
     },
     collections: {
       list: <T>(slug: string, options?: RequestOptions) =>
-        listCollection<T>(slug, { ...defaults, ...options }),
+        listCollection<T>(env, slug, { ...defaults, ...options }),
       readById: <T>(slug: string, id: string | number, options?: RequestOptions) =>
-        readCollectionById<T>(slug, id, { ...defaults, ...options }),
+        readCollectionById<T>(env, slug, id, { ...defaults, ...options }),
       findOne: <T>(slug: string, field: string, value: string, options?: RequestOptions) =>
-        findOne<T>(slug, field, value, { ...defaults, ...options }),
+        findOne<T>(env, slug, field, value, { ...defaults, ...options }),
     },
   }
 }
 
 /**
- * DRAFT_MODE env var controls draft fetching:
- * - Customer site (dev.trueleapinc.com): not set → published content
- * - Preview site (dev-preview.trueleapinc.com): "true" → draft content
+ * Get a Payload client configured for the current environment.
+ *
+ * Usage in Astro pages:
+ *   const cms = getPayload(Astro)
+ *   const page = await cms.globals.read('homepage')
  */
-const DRAFT_MODE = import.meta.env.DRAFT_MODE === 'true'
+export function getPayload(astroInstance?: { locals: { runtime?: { env?: Record<string, unknown> } } }) {
+  const env = resolveEnv(astroInstance)
+  return createClient(env, env.draftMode ? { draft: true } : {})
+}
 
-export const payload = createClient(DRAFT_MODE ? { draft: true } : {})
+/**
+ * Default client for backward compatibility (uses import.meta.env only).
+ * Works for static builds. For SSR, use getPayload(Astro) instead.
+ */
+export const payload = getPayload()

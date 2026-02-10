@@ -10,6 +10,7 @@ interface DraftItem {
 }
 
 type DeployStatus = 'idle' | 'triggering' | 'deploying' | 'success' | 'failure'
+type PublishPhase = 'idle' | 'publishing' | 'deploying'
 
 const GLOBAL_LABELS: Record<string, string> = {
   homepage: 'Homepage',
@@ -53,12 +54,12 @@ const DraftBanner: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
-  const [publishing, setPublishing] = useState(false)
+  const [publishPhase, setPublishPhase] = useState<PublishPhase>('idle')
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [deployStatus, setDeployStatus] = useState<DeployStatus>('idle')
 
-  const fetchDrafts = useCallback(async () => {
-    setLoading(true)
+  const fetchDrafts = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true)
     const items: DraftItem[] = []
 
     await Promise.all(
@@ -100,11 +101,14 @@ const DraftBanner: React.FC = () => {
     setLoading(false)
   }, [])
 
+  // Fetch drafts on mount + poll every 30s to stay in sync
   useEffect(() => {
     fetchDrafts()
+    const interval = setInterval(() => fetchDrafts(true), 30_000)
+    return () => clearInterval(interval)
   }, [fetchDrafts])
 
-  // Poll deploy status when deploying
+  // Poll deploy status when deploying; refresh drafts on success
   useEffect(() => {
     if (deployStatus !== 'deploying') return
     const poll = setInterval(async () => {
@@ -113,6 +117,7 @@ const DraftBanner: React.FC = () => {
         const data = await res.json()
         if (data.status === 'success') {
           setDeployStatus('success')
+          fetchDrafts(true)
           setTimeout(() => setDeployStatus('idle'), 5000)
         } else if (data.status === 'failure') {
           setDeployStatus('failure')
@@ -121,7 +126,7 @@ const DraftBanner: React.FC = () => {
       } catch {}
     }, 10000)
     return () => clearInterval(poll)
-  }, [deployStatus])
+  }, [deployStatus, fetchDrafts])
 
   const itemKey = (d: DraftItem) =>
     d.type === 'global' ? `global:${d.slug}` : `collection:${d.slug}:${d.id}`
@@ -172,8 +177,7 @@ const DraftBanner: React.FC = () => {
 
   // Step 2: Actually publish + deploy after confirmation
   const confirmPublishAndDeploy = async () => {
-    setShowConfirm(false)
-    setPublishing(true)
+    setPublishPhase('publishing')
     const toPublish = drafts.filter((d) => selected.has(itemKey(d)))
 
     for (const item of toPublish) {
@@ -196,9 +200,15 @@ const DraftBanner: React.FC = () => {
       }
     }
 
-    setPublishing(false)
-    fetchDrafts()
-    triggerDeploy()
+    // Small delay to let D1 writes propagate before re-querying
+    await new Promise((r) => setTimeout(r, 500))
+    await fetchDrafts()
+
+    setPublishPhase('deploying')
+    await triggerDeploy()
+
+    setPublishPhase('idle')
+    setShowConfirm(false)
   }
 
   if (loading) return null
@@ -315,16 +325,17 @@ const DraftBanner: React.FC = () => {
 
       {/* ── Publish & deploy confirmation dialog ── */}
       {showConfirm && (
-        <div className="publish-modal-overlay" onClick={() => { setShowConfirm(false); setShowModal(true) }}>
+        <div className="publish-modal-overlay" onClick={() => { if (publishPhase === 'idle') { setShowConfirm(false); setShowModal(true) } }}>
           <div
             className="publish-modal publish-modal--confirm"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="publish-modal__header">
-              <h2>Publish & Deploy?</h2>
+              <h2>{publishPhase === 'publishing' ? 'Publishing...' : publishPhase === 'deploying' ? 'Triggering Deploy...' : 'Publish & Deploy?'}</h2>
               <button
                 type="button"
                 className="publish-modal__close"
+                disabled={publishPhase !== 'idle'}
                 onClick={() => { setShowConfirm(false); setShowModal(true) }}
               >
                 &times;
@@ -340,17 +351,22 @@ const DraftBanner: React.FC = () => {
               <button
                 type="button"
                 className="publish-modal__cancel"
+                disabled={publishPhase !== 'idle'}
                 onClick={() => { setShowConfirm(false); setShowModal(true) }}
               >
-                {publishing ? 'Please wait...' : 'Back'}
+                {publishPhase !== 'idle' ? 'Please wait...' : 'Back'}
               </button>
               <button
                 type="button"
                 className="publish-modal__publish"
-                disabled={publishing}
+                disabled={publishPhase !== 'idle'}
                 onClick={confirmPublishAndDeploy}
               >
-                {publishing ? 'Publishing...' : 'Publish & Deploy'}
+                {publishPhase === 'publishing'
+                  ? 'Publishing...'
+                  : publishPhase === 'deploying'
+                    ? 'Triggering deploy...'
+                    : 'Publish & Deploy'}
               </button>
             </div>
           </div>

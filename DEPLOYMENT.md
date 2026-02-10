@@ -64,11 +64,13 @@
 
 All domains use **AAAA records** pointing to `100::` (Cloudflare Workers routes proxy address).
 
-| Record | Type | Name | Content |
-|--------|------|------|---------|
-| Frontend Dev | AAAA | `dev` | `100::` |
-| Frontend Preview | AAAA | `dev-preview` | `100::` |
-| CMS | AAAA | `cms` | `100::` |
+| Record | Type | Name | Content | Proxied |
+|--------|------|------|---------|---------|
+| Frontend Dev | AAAA | `dev` | `100::` | Yes |
+| Frontend Preview | AAAA | `dev-preview` | `100::` | Yes |
+| CMS | AAAA | `cms` | `100::` | Yes |
+| Root | A | `@` | `34.174.142.239` | Yes |
+| WWW | CNAME | `www` | `trueleapinc.com` | Yes |
 
 ---
 
@@ -87,8 +89,6 @@ Set via `npx wrangler secret put <NAME> --env <ENV>`:
 | Var | Purpose | Dev | Preview |
 |-----|---------|-----|---------|
 | `PAYLOAD_URL` | Payload CMS base URL | `https://cms.trueleapinc.com` | same |
-| `CF_ACCOUNT_ID` | Cloudflare account ID | `b01357b5...` | same |
-| `AI_GATEWAY_ID` | AI Gateway name | `trueleap` | same |
 | `DRAFT_MODE` | Fetch draft content | _(not set)_ | `"true"` |
 
 ### CMS Worker Secrets
@@ -98,12 +98,7 @@ Set via `cd trueleap-cms && npx wrangler secret put <NAME> --env <ENV>`:
 | Secret | Purpose |
 |--------|---------|
 | `PAYLOAD_SECRET` | Encryption secret (generate with `openssl rand -hex 32`) |
-| `GITHUB_PAT` | GitHub PAT for webhook `repository_dispatch` events |
-
-### CMS Worker Vars
-
-| Var | Purpose |
-|-----|---------|
+| `GITHUB_TOKEN` | GitHub PAT for webhook `repository_dispatch` events |
 | `FRONTEND_URL` | Customer site URL (for "Open in new tab" preview) |
 | `PREVIEW_URL` | Preview site URL (for live preview iframe) |
 
@@ -148,10 +143,24 @@ DRAFT_MODE=true npm run build && npx wrangler deploy --env preview
 ```bash
 cd trueleap-cms
 pnpm install
-pnpm run deploy
+CLOUDFLARE_ENV=dev pnpm run deploy
 ```
 
-This runs migrations, builds with OpenNext, and deploys to Cloudflare Workers.
+This runs:
+1. `payload migrate` with remote D1 bindings
+2. `PRAGMA optimize` on remote D1
+3. `opennextjs-cloudflare build` (Next.js via OpenNext adapter)
+4. `opennextjs-cloudflare deploy` (uploads to Cloudflare Workers)
+
+**Requires Workers Paid plan** ($5/mo) — worker bundle is ~5MB gzipped (free plan limit is 3MB).
+
+### Deployed Versions (2026-02-10)
+
+| Service | Worker Name | Version ID | Route |
+|---------|-------------|------------|-------|
+| CMS | `trueleap-cms-dev` | `98b93c5b-a4ca-4325-a22c-1e7287f062f9` | `cms.trueleapinc.com/*` |
+| Frontend Dev | `trueleap-inc-dev` | `9e1f5330-6e03-4fbf-a52d-dcf08a80d0b9` | `dev.trueleapinc.com/*` |
+| Frontend Preview | `trueleap-inc-preview` | `e11f7bb5-acce-43f6-b692-82cd6ddb22d5` | `dev-preview.trueleapinc.com/*` |
 
 ---
 
@@ -209,14 +218,18 @@ trueleap-inc/
 ### Layer 1: Cloudflare Access (network gate)
 
 **App ID:** `f008e844-6011-4c77-ba7b-774f38055e52`
+**Policy:** Admin Access (email-based OTP)
+**Authorized users:** `bikash@trueleap.io`, `mahesh@trueleap.io`, `sandip@trueleap.io`, `sunny@trueleap.io`
+**Session duration:** 24h
 
-Only authorized team members can reach these paths (via email OTP or SSO):
+Only authorized team members can reach these paths:
 
 | Domain | Path | Why |
 |--------|------|-----|
-| `cms.trueleapinc.com` | `/admin/*` | CMS admin panel |
+| `cms.trueleapinc.com` | `/admin` | CMS admin panel |
 | `dev-preview.trueleapinc.com` | `/*` (entire domain) | Exposes draft content |
-| `dev.trueleapinc.com` | `/admin` | Redirects to CMS |
+
+**Note:** CMS `/api/*` is intentionally public — Payload's own access control handles API security. Published content reads are open; draft content requires `PAYLOAD_API_KEY`.
 
 ### Layer 2: Payload Users (app-level auth)
 
@@ -282,3 +295,16 @@ npx wrangler deploy --env dev --log-level debug
 ### R2 bucket not found
 
 R2 bucket bindings must be repeated in each `[env.*]` section — Wrangler does not inherit top-level bindings.
+
+### Worker size limit exceeded
+
+CMS worker requires **Workers Paid plan** (~$5/mo). The bundle is ~5MB gzipped. Free plan limit is 3MB, paid allows 10MB.
+
+```bash
+# Check bundle size
+du -sh trueleap-cms/.open-next/server-functions/default/handler.mjs
+```
+
+### Access blocking API calls during build
+
+CMS `/api/*` must NOT be behind Cloudflare Access — only `/admin` should be protected. Payload's own access control handles API security. If builds fail with `"<!DOCTYPE" is not valid JSON`, check that Access isn't gating `/api`.

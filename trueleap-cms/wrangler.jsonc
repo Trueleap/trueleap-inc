@@ -18,7 +18,7 @@
   "d1_databases": [
     {
       "binding": "D1",
-      "database_id": "DATABASE_ID",
+      "database_id": "c41e33b8-a35d-41e6-a695-c31bdab7c96f",
       "database_name": "trueleap-cms",
       "remote": true
     }
@@ -29,6 +29,9 @@
       "bucket_name": "trueleap-images"
     }
   ],
+  "ai": {
+    "binding": "AI"
+  },
 
   // Dev: cms.trueleapinc.com
   "env": {
@@ -40,7 +43,7 @@
       "d1_databases": [
         {
           "binding": "D1",
-          "database_id": "DATABASE_ID",
+          "database_id": "c41e33b8-a35d-41e6-a695-c31bdab7c96f",
           "database_name": "trueleap-cms",
           "remote": true
         }
@@ -50,7 +53,10 @@
           "binding": "R2",
           "bucket_name": "trueleap-images"
         }
-      ]
+      ],
+      "ai": {
+        "binding": "AI"
+      }
     }
   }
 }

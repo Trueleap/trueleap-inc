@@ -2,7 +2,7 @@
 import Base from './Base.astro';
 import { Header } from '../components/layout/Header';
 import { Footer } from '../components/layout/Footer';
-import { payload } from '../lib/payload';
+import { getPayload } from '../lib/payload';
 import type { Language } from '../lib/i18n';
 
 interface Props {
@@ -12,7 +12,7 @@ interface Props {
 }
 
 const { title, description, lang = 'en' } = Astro.props;
-const cms = payload;
+const cms = getPayload(Astro);
 
 const navigation = await cms.globals.read<Record<string, unknown>>('navigation');
 const siteSettings = await cms.globals.read<Record<string, unknown>>('site-settings');
