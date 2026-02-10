@@ -1,10 +1,10 @@
 ---
-export const prerender = true;
 import Page from '../../../layouts/Page.astro';
-import { reader } from '../../../lib/keystatic';
+import { payload } from '../../../lib/payload';
 
 const lang = 'en';
-const page = await reader.singletons['infrastructure-page'].read();
+const cms = payload;
+const page = await cms.globals.read('infrastructure-page');
 ---
 
 <Page title="Physical Infrastructure" lang={lang}>

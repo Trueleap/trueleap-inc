@@ -1,11 +1,11 @@
 ---
-export const prerender = true;
 import Page from '../../../layouts/Page.astro';
-import { reader } from '../../../lib/keystatic';
+import { payload } from '../../../lib/payload';
 
 const lang = 'en';
+const cms = payload;
 
-const data = await reader.singletons['solutions-overview'].read();
+const data = await cms.globals.read('solutions-overview');
 const hero = data?.hero;
 const industryCards = data?.industryCards ?? [];
 const outcomeCards = data?.outcomeCards ?? [];
@@ -50,7 +50,7 @@ const cta = data?.cta;
                     <svg class="w-4 h-4 text-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                     </svg>
-                    {feature}
+                    {typeof feature === 'string' ? feature : feature.text}
                   </li>
                 ))}
               </ul>

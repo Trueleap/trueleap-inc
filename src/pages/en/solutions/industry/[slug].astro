@@ -1,17 +1,30 @@
 ---
-export const prerender = true;
+import type { GetStaticPaths } from 'astro';
 import Page from '../../../../layouts/Page.astro';
-import { reader } from '../../../../lib/keystatic';
+import { payload } from '../../../../lib/payload';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const docs = await payload.collections.list<Record<string, unknown>>('industry-solutions');
+  return docs.map((d) => ({
+    params: { slug: (d.title as string).toLowerCase().replace(/\s+/g, '-') },
+    props: { entry: d },
+  }));
+};
 
 const lang = 'en';
 
-export async function getStaticPaths() {
-  const slugs = await reader.collections['industry-solutions'].list();
-  return slugs.map((slug) => ({ params: { slug } }));
+// In prerender mode, entry comes from getStaticPaths props.
+// In SSR mode (preview site), getStaticPaths is ignored — fetch by slug.
+let entry = Astro.props.entry;
+if (!entry) {
+  const { slug } = Astro.params;
+  const docs = await payload.collections.list<Record<string, unknown>>('industry-solutions');
+  entry = docs.find(
+    (d) => (d.title as string).toLowerCase().replace(/\s+/g, '-') === slug,
+  );
 }
 
-const { slug } = Astro.params;
-const entry = await reader.collections['industry-solutions'].read(slug!);
+if (!entry) return Astro.redirect('/en/solutions');
 
 const benefits = entry?.benefits ?? [];
 const useCases = entry?.useCases ?? [];
@@ -20,7 +33,7 @@ const whyCards = entry?.whyCards ?? [];
 const ctaSection = entry?.ctaSection;
 ---
 
-<Page title={`Solutions for ${entry?.title ?? slug}`} lang={lang}>
+<Page title={`Solutions for ${entry?.title ?? 'Industry'}`} lang={lang}>
   <!-- Hero -->
   <section class="pt-32 pb-20 bg-cream relative overflow-hidden">
     <div class="absolute inset-0 grid-lines opacity-40"></div>

@@ -1,10 +1,10 @@
 ---
-export const prerender = true;
 import Page from '../../../layouts/Page.astro';
-import { reader } from '../../../lib/keystatic';
+import { payload } from '../../../lib/payload';
 
 const lang = 'en';
-const page = await reader.singletons['platform-overview'].read();
+const cms = payload;
+const page = await cms.globals.read('platform-overview');
 ---
 
 <Page title="Platform" lang={lang}>
@@ -47,7 +47,7 @@ const page = await reader.singletons['platform-overview'].read();
                     <svg class="w-4 h-4 text-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                     </svg>
-                    {feature}
+                    {typeof feature === 'string' ? feature : feature.text}
                   </li>
                 ))}
               </ul>

@@ -1,0 +1,315 @@
+/* TrueLeap — branded admin theme (light) */
+
+/* ── Brand accents on Payload's default light theme ── */
+:root {
+  /* TrueLeap success green */
+  --color-success-500: #0ABD74;
+
+  /* Slightly larger base for readability */
+  --base-body-size: 16;
+
+  /* Wider nav */
+  --nav-width: 280px;
+}
+
+/* ── Reorder sidebar: Dashboard → Pages → Settings → Content → Collections ── */
+.nav__wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+#nav-group-Pages {
+  order: 2;
+}
+
+#nav-group-Settings {
+  order: 3;
+}
+
+#nav-group-Content {
+  order: 4;
+}
+
+#nav-group-Collections {
+  order: 5;
+}
+
+.nav__controls {
+  order: 6;
+}
+
+
+/* ── Draft banner (header bar) ── */
+.draft-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  background: var(--theme-warning-100);
+  border: 1px solid var(--theme-warning-300);
+  border-radius: var(--style-radius-m);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--theme-warning-800);
+  transition: all 150ms ease;
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--theme-warning-200);
+  }
+}
+
+.draft-banner--published {
+  background: var(--theme-success-100);
+  border-color: var(--theme-success-300);
+  color: var(--theme-success-700);
+  cursor: default;
+  font-size: 0.8rem;
+}
+
+/* ── Deploy status banner ── */
+.deploy-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--style-radius-m);
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.deploy-banner--building {
+  background: var(--theme-elevation-100);
+  color: var(--theme-elevation-600);
+  animation: fade-pulse 2s ease-in-out infinite;
+}
+
+.deploy-banner--success {
+  background: var(--theme-success-100);
+  color: var(--theme-success-700);
+}
+
+.deploy-banner--failure {
+  background: var(--theme-error-100);
+  color: var(--theme-error-500);
+}
+
+.deploy-banner__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--theme-elevation-400);
+  animation: pulse-dot 1.5s infinite;
+}
+
+@keyframes fade-pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.draft-banner__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--theme-warning-500);
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* ── Publish modal ── */
+.publish-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.publish-modal--confirm {
+  max-width: 460px;
+}
+
+.publish-modal__body {
+  padding: 1rem 1.5rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--theme-elevation-600);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.publish-modal {
+  background: var(--theme-elevation-0);
+  border: 1px solid var(--theme-border-color);
+  border-radius: var(--style-radius-l);
+  width: 90%;
+  max-width: 560px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.publish-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--theme-border-color);
+
+  h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--theme-elevation-900);
+  }
+}
+
+.publish-modal__close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--theme-elevation-450);
+  padding: 0 0.25rem;
+  line-height: 1;
+
+  &:hover {
+    color: var(--theme-elevation-800);
+  }
+}
+
+.publish-modal__controls {
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid var(--theme-border-color);
+  background: var(--theme-elevation-50);
+}
+
+.publish-modal__select-all {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--theme-elevation-600);
+  cursor: pointer;
+
+  input {
+    cursor: pointer;
+  }
+}
+
+.publish-modal__list {
+  overflow-y: auto;
+  flex: 1;
+  padding: 0.5rem 0;
+}
+
+.publish-modal__item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1.5rem;
+  cursor: pointer;
+  transition: background 100ms ease;
+
+  &:hover {
+    background: var(--theme-elevation-50);
+  }
+
+  input {
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+}
+
+a.publish-modal__item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  text-decoration: none;
+  flex: 1;
+
+  &:hover .publish-modal__item-title {
+    text-decoration: underline;
+  }
+}
+
+.publish-modal__item-type {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--theme-elevation-400);
+}
+
+.publish-modal__item-title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--theme-elevation-800);
+}
+
+.publish-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--theme-border-color);
+}
+
+.publish-modal__cancel {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--theme-border-color);
+  border-radius: var(--style-radius-m);
+  background: var(--theme-elevation-0);
+  color: var(--theme-elevation-600);
+  font-size: 0.9rem;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--theme-elevation-50);
+  }
+}
+
+.publish-modal__publish {
+  padding: 0.5rem 1.25rem;
+  border: none;
+  border-radius: var(--style-radius-m);
+  background: var(--color-success-500);
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

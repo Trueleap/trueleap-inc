@@ -1,10 +1,10 @@
 ---
-export const prerender = true;
 import Page from '../../../layouts/Page.astro';
-import { reader } from '../../../lib/keystatic';
+import { payload } from '../../../lib/payload';
 
 const lang = 'en';
-const page = await reader.singletons['company-overview'].read();
+const cms = payload;
+const page = await cms.globals.read('company-overview');
 ---
 
 <Page title="Company" lang={lang}>
@@ -47,7 +47,7 @@ const page = await reader.singletons['company-overview'].read();
           </h2>
           {page?.story?.paragraphs?.map((paragraph, i) => (
             <p class={`${i === 0 ? 'text-body-lg' : 'text-body'} text-muted mb-6`}>
-              {paragraph}
+              {typeof paragraph === 'string' ? paragraph : paragraph.text}
             </p>
           ))}
           <a href={page?.story?.linkHref} class="link-arrow text-charcoal font-medium">

@@ -20,6 +20,7 @@ binding = "AI"
 [vars]
 CF_ACCOUNT_ID = "b01357b51e0ceb9e37e2bdf82bbcbc34"
 AI_GATEWAY_ID = "trueleap"
+PAYLOAD_URL = "https://cms.trueleapinc.com"
 
 [observability]
 enabled = true
@@ -32,13 +33,14 @@ routes = [
 [env.dev.vars]
 CF_ACCOUNT_ID = "b01357b51e0ceb9e37e2bdf82bbcbc34"
 AI_GATEWAY_ID = "trueleap"
+PAYLOAD_URL = "https://cms.trueleapinc.com"
 [[env.dev.r2_buckets]]
 binding = "IMAGES_BUCKET"
 bucket_name = "trueleap-images"
 [env.dev.ai]
 binding = "AI"
 
-# Preview: dev-preview.trueleapinc.com
+# Preview: dev-preview.trueleapinc.com (always fetches draft content)
 [env.preview]
 routes = [
   { pattern = "dev-preview.trueleapinc.com/*", zone_name = "trueleapinc.com" },
@@ -46,6 +48,8 @@ routes = [
 [env.preview.vars]
 CF_ACCOUNT_ID = "b01357b51e0ceb9e37e2bdf82bbcbc34"
 AI_GATEWAY_ID = "trueleap"
+PAYLOAD_URL = "https://cms.trueleapinc.com"
+DRAFT_MODE = "true"
 [[env.preview.r2_buckets]]
 binding = "IMAGES_BUCKET"
 bucket_name = "trueleap-images"

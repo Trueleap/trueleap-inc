@@ -1,12 +1,12 @@
 ---
-export const prerender = true;
 import Page from '../../../layouts/Page.astro';
 import { AnimatedSection } from '../../../components/ui/AnimatedSection';
 import { NumberTicker } from '../../../components/ui/NumberTicker';
-import { reader } from '../../../lib/keystatic';
+import { payload } from '../../../lib/payload';
 
 const lang = 'en';
-const page = await reader.singletons['metrics-page'].read();
+const cms = payload;
+const page = await cms.globals.read('metrics-page');
 
 const primaryMetrics = page?.primaryMetrics ?? [];
 const secondaryMetrics = page?.secondaryMetrics ?? [];

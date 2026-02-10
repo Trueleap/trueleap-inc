@@ -1,13 +1,13 @@
 ---
-export const prerender = true;
 import Page from '../../../layouts/Page.astro';
 import { Globe } from '../../../components/globe/Globe';
 import { AnimatedSection } from '../../../components/ui/AnimatedSection';
 import { NumberTicker } from '../../../components/ui/NumberTicker';
-import { reader } from '../../../lib/keystatic';
+import { payload } from '../../../lib/payload';
 
 const lang = 'en';
-const page = await reader.singletons['network-map-page'].read();
+const cms = payload;
+const page = await cms.globals.read('network-map-page');
 
 const liveStats = page?.liveStats ?? [];
 const regions = page?.regionalDistribution ?? [];

@@ -1,11 +1,11 @@
 ---
-export const prerender = true;
 import Page from '../../../layouts/Page.astro';
 import { AnimatedSection } from '../../../components/ui/AnimatedSection';
-import { reader } from '../../../lib/keystatic';
+import { payload } from '../../../lib/payload';
 
 const lang = 'en';
-const page = await reader.singletons['edge-ai-page'].read();
+const cms = payload;
+const page = await cms.globals.read('edge-ai-page');
 ---
 
 <Page title="Edge AI Engine" lang={lang}>

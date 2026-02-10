@@ -1,10 +1,10 @@
 ---
-export const prerender = true;
 import Page from '../../../layouts/Page.astro';
-import { reader } from '../../../lib/keystatic';
+import { payload } from '../../../lib/payload';
 
 const lang = 'en';
-const page = await reader.singletons['last-mile-page'].read();
+const cms = payload;
+const page = await cms.globals.read('last-mile-page');
 
 const stats = page?.stats ?? [];
 const topics = page?.topicFilters ?? [];
@@ -147,7 +147,7 @@ const articles = [
       <div class="flex flex-wrap gap-2">
         {topics.map((topic, i) => (
           <button class={`px-4 py-2 text-sm font-medium transition-colors ${i === 0 ? 'bg-charcoal text-white' : 'bg-cream text-muted hover:bg-charcoal hover:text-white'}`}>
-            {topic}
+            {typeof topic === 'string' ? topic : topic.text}
           </button>
         ))}
       </div>

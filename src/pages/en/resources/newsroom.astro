@@ -1,27 +1,15 @@
 ---
-export const prerender = true;
 import Page from '../../../layouts/Page.astro';
-import { reader } from '../../../lib/keystatic';
+import { payload } from '../../../lib/payload';
 
 const lang = 'en';
-const page = await reader.singletons['newsroom-page'].read();
+const cms = payload;
+const page = await cms.globals.read<Record<string, unknown>>('newsroom-page');
 
-// Read news collection
-const newsSlugs = await reader.collections.news.list();
-const newsEntries = await Promise.all(
-  newsSlugs.map(async (slug) => {
-    const entry = await reader.collections.news.read(slug);
-    return { slug, ...entry };
-  })
-);
-// Sort by publishedAt descending
-const news = newsEntries
-  .filter((n) => n.title)
-  .sort((a, b) => {
-    const dateA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
-    const dateB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
-    return dateB - dateA;
-  });
+const news = await cms.collections.list<Record<string, unknown>>('news', {
+  sort: '-publishedAt',
+  limit: 100,
+});
 ---
 
 <Page title="Newsroom" lang={lang}>

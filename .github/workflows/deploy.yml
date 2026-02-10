@@ -4,9 +4,13 @@ on:
   push:
     branches:
       - main
+  repository_dispatch:
+    types:
+      - payload-publish
 
 jobs:
-  deploy:
+  deploy-dev:
+    name: Deploy customer site (dev)
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -22,9 +26,40 @@ jobs:
       - run: npm ci
 
       - run: npm run build
+        env:
+          PAYLOAD_URL: ${{ secrets.PAYLOAD_URL }}
+          PAYLOAD_API_KEY: ${{ secrets.PAYLOAD_API_KEY }}
 
       - name: Deploy dev
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           command: deploy --env dev
+
+  deploy-preview:
+    name: Deploy preview site
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run build
+        env:
+          PAYLOAD_URL: ${{ secrets.PAYLOAD_URL }}
+          PAYLOAD_API_KEY: ${{ secrets.PAYLOAD_API_KEY }}
+          DRAFT_MODE: 'true'
+
+      - name: Deploy preview
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          command: deploy --env preview
