@@ -1,0 +1,41 @@
+trueleap-cms/src/components/ExtractPdfButton.tsx
+  e3ca863cf014c40b 3-4,13-14,36,51-67,70-90,97,122
+trueleap-cms/src/payload.config.ts
+  a36adbff0f1ff249 255-256
+trueleap-cms/src/app/api/extract-job-pdf/route.ts
+  a36adbff0f1ff249 200-206
+  e3ca863cf014c40b 77
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.1",
+  "base_commit_sha": "7fa242d90c29de3f8eb2d1ae3fb9cc9b70f04877",
+  "prompts": {
+    "a36adbff0f1ff249": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_3b448532cffetL1a0aDWA533u7",
+        "model": "anthropic/claude-opus-4-6"
+      },
+      "human_author": "Bikash Phukan <bphkns@gmail.com>",
+      "messages": [],
+      "total_additions": 13,
+      "total_deletions": 6,
+      "accepted_lines": 9,
+      "overriden_lines": 0
+    },
+    "e3ca863cf014c40b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_3b9d0f75effe2Ef4KXwR8zUUsf",
+        "model": "anthropic/claude-opus-4-6"
+      },
+      "human_author": "Bikash Phukan <bphkns@gmail.com>",
+      "messages": [],
+      "total_additions": 47,
+      "total_deletions": 24,
+      "accepted_lines": 46,
+      "overriden_lines": 0
+    }
+  }
+}
