@@ -74,7 +74,7 @@ async function getAI(): Promise<{
       for (const file of files) {
         form.append('files', file.blob, file.name)
       }
-      const res = await fetch(`${baseUrl}/toMarkdown`, { method: 'POST', headers, body: form })
+      const res = await fetch(`${baseUrl}/tomarkdown`, { method: 'POST', headers, body: form })
       if (!res.ok) throw new Error(`toMarkdown API: HTTP ${res.status} ${await res.text()}`)
       const json = await res.json() as any
       return json.result || []
@@ -196,6 +196,13 @@ export async function POST(req: Request) {
   } catch {
     // Fields stay empty — markdown body is still useful
   }
+
+  // Clean up markdown from PDF extraction:
+  // 1. Remove unicode bullet chars inside markdown list items (causes double bullets)
+  // 2. Convert standalone bullet lines (● text) into proper markdown list items
+  markdown = markdown
+    .replace(/^([*-]\s+)[●•◦▪▸►‣⁃]\s*/gm, '$1')   // "- ● text" → "- text"
+    .replace(/^[●•◦▪▸►‣⁃]\s+/gm, '- ')              // "● text"  → "- text"
 
   // Convert markdown to Lexical JSON for the body richText field
   let lexicalBody = null

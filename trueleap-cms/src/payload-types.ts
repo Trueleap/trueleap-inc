@@ -1199,7 +1199,7 @@ export interface Homepage {
           name: string;
           tagline?: string | null;
           description?: string | null;
-          wireframe?: ('dashboard' | 'mobile') | null;
+          wireframe?: ('dashboard' | 'mobile' | 'photo' | 'hardware' | 'logo' | 'chart' | 'map') | null;
           id?: string | null;
         }[]
       | null;
