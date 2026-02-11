@@ -295,7 +295,18 @@ const DraftBanner: React.FC = () => {
       {deployIndicator()}
 
       {drafts.length === 0 ? (
-        <span className="draft-banner draft-banner--published">All published</span>
+        <>
+          <span className="draft-banner draft-banner--published">All published</span>
+          {deployStatus === 'idle' && (
+            <button
+              type="button"
+              className="deploy-banner deploy-banner--manual deploy-banner--clickable"
+              onClick={triggerDeploy}
+            >
+              Deploy
+            </button>
+          )}
+        </>
       ) : (
         <button
           className="draft-banner draft-banner--drafts"

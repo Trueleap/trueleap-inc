@@ -124,6 +124,11 @@
   color: var(--tl-badge-err-text);
 }
 
+.deploy-banner--manual {
+  background: var(--tl-surface-active);
+  color: var(--tl-text-primary);
+}
+
 .deploy-banner--clickable {
   cursor: pointer;
   border: none;
